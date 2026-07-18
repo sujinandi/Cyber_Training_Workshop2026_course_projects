@@ -1,0 +1,290 @@
+#INFO: **** input file is /vscratch/grp-cyberwksp21/sbakenhaster/tues_7_7/cybertraining_examples/pyscf_prism_examples/08_si_soc_nevpt2/nitroxyl/08_si_soc_nevpt2.py ****
+import numpy as np
+import math
+from pyscf import gto, scf, mcscf
+import prism.interface
+import prism.nevpt
+
+# Specify geometry and molecular information
+mol = gto.Mole()
+#mol.atom = [
+#            ['Zn', (0.0, 0.0, 0.0)],
+#            ['H', (0.0,  0,  1.595 )]]
+mol.atom = '/projects/academic/cyberwksp21/SOFTWARE_2026/pyscf_prism_examples/geometries/nitroxyl.xyz'
+mol.basis = 'def2-tzvp'
+mol.symmetry = False
+mol.spin = 0
+mol.verbose = 4
+mol.build()
+
+# Use DFT (BP86) to compute guess orbitals
+mf = scf.RKS(mol).x2c() # Include scalar relativistic effects
+mf.xc = "bp86"
+ehf = mf.scf()
+mf.analyze()
+
+# Run SA-CASSCF calculation
+n_states = 3
+weights = np.ones(n_states)/n_states
+mc = mcscf.CASSCF(mf, 5, 3).state_average_(weights)
+emc = mc.mc1step()[0]
+mc.analyze()
+
+# Run QD-NEVPT2 calculation without spin-orbit coupling
+interface = prism.interface.PYSCF(mf, mc, backend = 'opt_einsum')
+nevpt = prism.nevpt.NEVPT(interface)
+nevpt.method = "nevpt2"
+nevpt.method_type = "qd"
+nevpt.verbose = 4
+nevpt.kernel()
+
+# Run QD-NEVPT2 calculation with state-interaction treatment of spin-orbit coupling
+nevpt = prism.nevpt.NEVPT(interface)
+nevpt.method = "nevpt2"
+nevpt.method_type = "qd"
+nevpt.soc = "DKH1" # Possible methods: Breit-Pauli (BP), DKH1 (x2c-1)
+nevpt.verbose = 4
+nevpt.gtensor = True # Compute magnetic properties (g-tensor)
+nevpt.kernel()
+#INFO: ******************** input file end ********************
+
+
+System: uname_result(system='Linux', node='cpn-b03-36-01.core.ccr.buffalo.edu', release='6.8.0-124-generic', version='#124-Ubuntu SMP PREEMPT_DYNAMIC Tue May 26 13:00:45 UTC 2026', machine='x86_64')  Threads 12
+Python 3.13.14 | packaged by Anaconda, Inc. | (main, Jun 17 2026, 20:12:46) [GCC 14.3.0]
+numpy 2.4.6  scipy 1.18.0  h5py 3.16.0
+Date: Tue Jul  7 13:44:35 2026
+PySCF version 2.13.1
+PySCF path  /projects/academic/cyberwksp21/SOFTWARE_2026/conda/miniconda3/envs/pyscf/lib/python3.13/site-packages/pyscf
+
+[CONFIG] conf_file None
+[INPUT] verbose = 4
+[INPUT] num. atoms = 3
+[INPUT] num. electrons = 16
+[INPUT] charge = 0
+[INPUT] spin (= nelec alpha-beta = 2S) = 0
+[INPUT] symmetry False subgroup None
+[INPUT] Mole.unit = angstrom
+[INPUT] Symbol           X                Y                Z      unit          X                Y                Z       unit  Magmom
+[INPUT]  1 O      0.111654780000   0.000000000000   1.140178240000 AA    0.210996954699   0.000000000000   2.154624606789 Bohr   0.0
+[INPUT]  2 N     -0.236948950000   0.000000000000  -0.018993560000 AA   -0.447768621003   0.000000000000  -0.035892626530 Bohr   0.0
+[INPUT]  3 H      0.625294180000   0.000000000000  -0.621184670000 AA    1.181634747484   0.000000000000  -1.173868899078 Bohr   0.0
+
+nuclear repulsion = 30.3111081662337
+number of shells = 26
+number of NR pGTOs = 100
+number of NR cGTOs = 68
+basis = def2-tzvp
+ecp = {}
+CPU time:         1.48
+
+
+******** <class 'pyscf.x2c.sfx2c1e.sfX2C1eRKS'> ********
+method = sfX2C1eRKS
+initial guess = minao
+damping factor = 0
+level_shift factor = 0
+DIIS = <class 'pyscf.scf.diis.CDIIS'>
+diis_start_cycle = 1
+diis_space = 8
+diis_damp = 0
+SCF conv_tol = 1e-09
+SCF conv_tol_grad = None
+SCF max_cycles = 50
+direct_scf = True
+direct_scf_tol = 1e-13
+chkfile to save SCF result = /scratch/25177679/tmpq9jkqy5_
+max_memory 4000 MB (current use 98 MB)
+XC library pyscf.dft.libxc version 7.0.0
+    S. Lehtola, C. Steigemann, M. J.T. Oliveira, and M. A.L. Marques.,  SoftwareX 7, 1–5 (2018)
+XC functionals = bp86
+    A. D. Becke.,  Phys. Rev. A 38, 3098 (1988)
+    J. P. Perdew.,  Phys. Rev. B 33, 8822 (1986)
+radial grids: 
+Treutler-Ahlrichs [JCP 102, 346 (1995); DOI:10.1063/1.469408] (M4) radial grids
+
+becke partition: Becke, JCP 88, 2547 (1988); DOI:10.1063/1.454033
+pruning grids: <function nwchem_prune at 0xb0b737d8cc0>
+grids dens level: 3
+symmetrized grids: False
+atomic radii adjust function: <function treutler_atomic_radii_adjust at 0xb0b737d8c20>
+small_rho_cutoff = 0
+
+
+******** <class 'pyscf.x2c.sfx2c1e.SpinFreeX2CHelper'> ********
+approx = 1e
+xuncontract = 1
+Set gradient conv threshold to 3.16228e-05
+Initial guess from minao.
+tot grids = 37792
+init E= -130.817908824982
+  HOMO = -0.247349747595621  LUMO = -0.169602398623077
+cycle= 1 E= -130.532701645073  delta_E= 0.285  |g|= 0.672  |ddm|= 1.49
+  HOMO = -0.106487195804805  LUMO = -0.0837450508564739
+cycle= 2 E= -129.750354250392  delta_E= 0.782  |g|= 2.06  |ddm|= 1.75
+  HOMO = -0.197018542662029  LUMO = -0.153424665512063
+cycle= 3 E= -130.613180078887  delta_E= -0.863  |g|= 0.0991  |ddm|= 1.42
+  HOMO = -0.211945163234008  LUMO = -0.170070089141152
+cycle= 4 E= -130.614496226709  delta_E= -0.00132  |g|= 0.055  |ddm|= 0.131
+  HOMO = -0.203217169195298  LUMO = -0.160360054571207
+cycle= 5 E= -130.615091861027  delta_E= -0.000596  |g|= 0.0162  |ddm|= 0.0681
+  HOMO = -0.204939154599236  LUMO = -0.162424527256143
+cycle= 6 E= -130.615148747376  delta_E= -5.69e-05  |g|= 0.000556  |ddm|= 0.0153
+  HOMO = -0.204954057749229  LUMO = -0.162447953353954
+cycle= 7 E= -130.615148820043  delta_E= -7.27e-08  |g|= 0.000203  |ddm|= 0.00102
+  HOMO = -0.204960646815648  LUMO = -0.162450378544565
+cycle= 8 E= -130.615148831148  delta_E= -1.11e-08  |g|= 2.79e-05  |ddm|= 0.000212
+  HOMO = -0.204959149755821  LUMO = -0.162448704265281
+cycle= 9 E= -130.615148831327  delta_E= -1.79e-10  |g|= 3.1e-06  |ddm|= 1.94e-05
+  HOMO = -0.204959351915802  LUMO = -0.162448985842549
+Extra cycle  E= -130.615148831325  delta_E= 1.65e-12  |g|= 4.38e-06  |ddm|= 4.51e-06
+converged SCF energy = -130.615148831325
+**** SCF Summaries ****
+Total Energy =                        -130.615148831325200
+Nuclear Repulsion Energy =              30.311108166233730
+One-electron Energy =                 -237.979002452731692
+Two-electron Coulomb Energy =           92.837251770996659
+DFT Exchange-Correlation Energy =      -15.784506315823913
+**** MO energy ****
+MO #1   energy= -18.8614239405971  occ= 2
+MO #2   energy= -14.1284594326802  occ= 2
+MO #3   energy= -1.09244135038666  occ= 2
+MO #4   energy= -0.6696149067566   occ= 2
+MO #5   energy= -0.484926980887231 occ= 2
+MO #6   energy= -0.432698425073251 occ= 2
+MO #7   energy= -0.402640286910311 occ= 2
+MO #8   energy= -0.204959351915802 occ= 2
+MO #9   energy= -0.162448985842549 occ= 0
+MO #10  energy= 0.0165156717478396 occ= 0
+MO #11  energy= 0.153127385982884  occ= 0
+MO #12  energy= 0.268390050313578  occ= 0
+MO #13  energy= 0.284937355288849  occ= 0
+MO #14  energy= 0.325843907914404  occ= 0
+MO #15  energy= 0.356534830953669  occ= 0
+MO #16  energy= 0.405902509947818  occ= 0
+MO #17  energy= 0.426120344223213  occ= 0
+MO #18  energy= 0.446742256195825  occ= 0
+MO #19  energy= 0.451034249714403  occ= 0
+MO #20  energy= 0.696528648158193  occ= 0
+MO #21  energy= 0.822765306831101  occ= 0
+MO #22  energy= 0.949103991546856  occ= 0
+MO #23  energy= 1.02487627605068   occ= 0
+MO #24  energy= 1.13015468981196   occ= 0
+MO #25  energy= 1.34930588640531   occ= 0
+MO #26  energy= 1.40232799023359   occ= 0
+MO #27  energy= 1.46776924265497   occ= 0
+MO #28  energy= 1.69999490319239   occ= 0
+MO #29  energy= 1.75268053397787   occ= 0
+MO #30  energy= 1.79603062383475   occ= 0
+MO #31  energy= 1.86269840754339   occ= 0
+MO #32  energy= 1.86619737623203   occ= 0
+MO #33  energy= 1.93135228488921   occ= 0
+MO #34  energy= 2.03778758113143   occ= 0
+MO #35  energy= 2.07313170463995   occ= 0
+MO #36  energy= 2.22185923372935   occ= 0
+MO #37  energy= 2.41839725898303   occ= 0
+MO #38  energy= 2.52700025932411   occ= 0
+MO #39  energy= 2.66341802308061   occ= 0
+MO #40  energy= 2.70026557740245   occ= 0
+MO #41  energy= 2.9278982236172    occ= 0
+MO #42  energy= 3.58477883608301   occ= 0
+MO #43  energy= 3.66566498007656   occ= 0
+MO #44  energy= 3.76530912361277   occ= 0
+MO #45  energy= 3.87349933927269   occ= 0
+MO #46  energy= 3.98766434343121   occ= 0
+MO #47  energy= 4.02349246424234   occ= 0
+MO #48  energy= 4.33988949499514   occ= 0
+MO #49  energy= 4.44036872012379   occ= 0
+MO #50  energy= 4.53461120583854   occ= 0
+MO #51  energy= 4.57640784772882   occ= 0
+MO #52  energy= 4.61360424140278   occ= 0
+MO #53  energy= 4.89958532910265   occ= 0
+MO #54  energy= 4.98444317205248   occ= 0
+MO #55  energy= 5.02110520959182   occ= 0
+MO #56  energy= 5.17220770641006   occ= 0
+MO #57  energy= 5.34569429155938   occ= 0
+MO #58  energy= 5.44579090493593   occ= 0
+MO #59  energy= 6.07727542069346   occ= 0
+MO #60  energy= 6.08162576639974   occ= 0
+MO #61  energy= 6.11947325410927   occ= 0
+MO #62  energy= 6.21261147312256   occ= 0
+MO #63  energy= 6.68517669048677   occ= 0
+MO #64  energy= 6.74405024270546   occ= 0
+MO #65  energy= 6.83971859059574   occ= 0
+MO #66  energy= 7.03574129497862   occ= 0
+MO #67  energy= 30.9205440168916   occ= 0
+MO #68  energy= 42.5981416418951   occ= 0
+ ** Mulliken pop on meta-lowdin orthogonal AOs  **
+ ** Mulliken pop  **
+pop of  0 O 1s            1.99994
+pop of  0 O 2s            1.75574
+pop of  0 O 3s            0.01128
+pop of  0 O 4s            0.00058
+pop of  0 O 5s            0.00009
+pop of  0 O 2px           1.88703
+pop of  0 O 2py           1.14547
+pop of  0 O 2pz           1.35997
+pop of  0 O 3px           0.00506
+pop of  0 O 3py           0.00144
+pop of  0 O 3pz           0.00554
+pop of  0 O 4px           0.00022
+pop of  0 O 4py           0.00000
+pop of  0 O 4pz           0.00030
+pop of  0 O 3dxy          0.00014
+pop of  0 O 3dyz          0.00327
+pop of  0 O 3dz^2         0.00701
+pop of  0 O 3dxz          0.00366
+pop of  0 O 3dx2-y2       0.00022
+pop of  0 O 4dxy          0.00000
+pop of  0 O 4dyz          0.00006
+pop of  0 O 4dz^2         0.00033
+pop of  0 O 4dxz          0.00011
+pop of  0 O 4dx2-y2       0.00002
+pop of  0 O 4f-3          0.00000
+pop of  0 O 4f-2          0.00003
+pop of  0 O 4f-1          0.00016
+pop of  0 O 4f+0          0.00056
+pop of  0 O 4f+1          0.00047
+pop of  0 O 4f+2          0.00006
+pop of  0 O 4f+3          0.00001
+pop of  1 N 1s            1.99991
+pop of  1 N 2s            1.55875
+pop of  1 N 3s            0.02304
+pop of  1 N 4s            0.00074
+pop of  1 N 5s            0.00015
+pop of  1 N 2px           1.52227
+pop of  1 N 2py           0.84480
+pop of  1 N 2pz           1.01113
+pop of  1 N 3px           0.00413
+pop of  1 N 3py           0.00024
+pop of  1 N 3pz           0.01367
+pop of  1 N 4px           0.00116
+pop of  1 N 4py           0.00002
+pop of  1 N 4pz           0.00018
+pop of  1 N 3dxy          0.00173
+pop of  1 N 3dyz          0.00211
+pop of  1 N 3dz^2         0.00438
+pop of  1 N 3dxz          0.00575
+pop of  1 N 3dx2-y2       0.00427
+pop of  1 N 4dxy          0.00004
+pop of  1 N 4dyz          0.00000
+pop of  1 N 4dz^2         0.00009
+pop of  1 N 4dxz          0.00006
+pop of  1 N 4dx2-y2       0.00021
+pop of  1 N 4f-3          0.00001
+pop of  1 N 4f-2          0.00002
+pop of  1 N 4f-1          0.00021
+pop of  1 N 4f+0          0.00090
+pop of  1 N 4f+1          0.00067
+pop of  1 N 4f+2          0.00012
+pop of  1 N 4f+3          0.00011
+pop of  2 H 1s            0.79561
+pop of  2 H 2s            0.00873
+pop of  2 H 3s            0.00420
+pop of  2 H 2px           0.00086
+pop of  2 H 2py           0.00023
+pop of  2 H 2pz           0.00071
+ ** Mulliken atomic charges  **
+charge of    0O =     -0.18877
+charge of    1N =     -0.00088
+charge of    2H =      0.18965
+Dipole moment(X, Y, Z, Debye):  1.09059, -0.00000, -1.20696

@@ -1,0 +1,8 @@
+converged SCF energy = -149.609461121647
+E(UMP2) = -149.98233257584  E_corr = -0.372871454193267
+E(SCS-UMP2) = -149.955552642881  E_corr = -0.346091521234724
+Traceback (most recent call last):
+  File "/vscratch/grp-cyberwksp21/sbakenhaster/tues_7_7/cybertraining_examples/pyscf_prism_examples/project/pdft/test/casci_pdft.py", line 10, in <module>
+    noons, natorbs = mcscf.addons.make_natural_orbitals(mymp)
+                     ^^^^^
+NameError: name 'mcscf' is not defined

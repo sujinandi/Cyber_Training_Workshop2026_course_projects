@@ -1,0 +1,2 @@
+/Users/juan/Downloads/pytenso-main-3/tutorials_buffalo/ex3_spin_boson_noncommuting_fluctuations/example3_plot.py:46: UserWarning: FigureCanvasAgg is non-interactive, and thus cannot be shown
+  plt.show()

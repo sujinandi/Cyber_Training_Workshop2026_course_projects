@@ -1,0 +1,2 @@
+/Users/juan/Downloads/pytenso-main-3/tutorials_buffalo/ex1_spin_boson_simple/example1_plot.py:52: UserWarning: FigureCanvasAgg is non-interactive, and thus cannot be shown
+  plt.show()

@@ -1,0 +1,307 @@
+#INFO: **** input file is /vscratch/grp-cyberwksp21/sbakenhaster/tues_7_7/cybertraining_examples/pyscf_prism_examples/project/cp_rad/rsh_nosing.py ****
+import numpy as np
+from pyscf import gto, dft, adc, tddft
+from pyscf.tools import cubegen
+from pyscf.tools import molden
+
+# Specify geometry and molecular information
+mol = gto.Mole()
+mol.atom = '/vscratch/grp-cyberwksp21/sbakenhaster/tues_7_7/cybertraining_examples/pyscf_prism_examples/project/cp_rad/geom.xyz'
+ #'/pirojects/academic/cyberwksp21/SOFTWARE_2026/pyscf_prism_examples/geometries/ethylene.xyz'
+mol.basis = 'aug-cc-pvdz'
+mol.verbose = 4
+mol.charge = 0
+mol.spin = 1
+mol.max_memory = 10000
+mol.build()
+
+# Run reference (ground-state) Hartree-Fock calculation
+mf = dft.RKS(mol)
+mf.xc = 'SR_HF(0.1) * 0.25 + LR_HF(0.1) * 1.0 + 0.75*PBE, PBE'
+#mf.xc = "b3lyp"
+mf.kernel()
+
+# Run time-dependent DFT calculation in the Tamm-Dancoff approximation (CIS)
+mytd = tddft.TDA(mf)
+mytd.nstates = 10
+#imytd.singlet = True
+mytd.kernel()
+
+# Analyze the results
+mytd.analyze()
+
+# Compute natural transition orbitals
+for i in range(mytd.nstates):
+    weights, nto = mytd.get_nto(state=i+1, verbose=4)
+    molden.from_mo(mol, 'nto-tda-%s.molden' % str(i+1), nto)
+
+# Function for calculating TDA density matrix
+def tda_density_matrix(td, state_id):
+    '''
+    Taking the TDA amplitudes as the CIS coefficients, calculate the density
+    matrix (in AO basis) of the excited states
+    '''
+    cis_t1 = td.xy[state_id][0]
+    dm_oo =-np.einsum('ia,ka->ik', cis_t1.conj(), cis_t1)
+    dm_vv = np.einsum('ia,ic->ac', cis_t1, cis_t1.conj())
+
+    # The ground state density matrix in mo_basis
+    mf = td._scf
+    dm = np.diag(mf.mo_occ)
+
+    # Add CIS contribution
+    nocc = cis_t1.shape[0]
+    # Note that dm_oo and dm_vv correspond to spin-up contribution. "*2" to
+    # include the spin-down contribution
+    dm[:nocc,:nocc] += dm_oo * 2
+    dm[nocc:,nocc:] += dm_vv * 2
+
+    # Transform density matrix to AO basis
+    mo = mf.mo_coeff
+    dm = np.einsum('pi,ij,qj->pq', mo, dm, mo.conj())
+    return dm
+
+# Density matrix for the 3rd excited state
+dm = tda_density_matrix(mytd, 2)
+
+# Write to cube format
+from pyscf.tools import cubegen
+cubegen.density(mol, 'tda_density.cube', dm)
+
+# Write the density difference between excited state and ground state
+cubegen.density(mol, 'density_diff.cube', dm - mf.make_rdm1())
+
+# Run full time-dependent SCF calculation (RPA)
+mytd = tddft.TDDFT(mf)
+mytd.nstates = 10
+#mytd.singlet = True
+mytd.kernel()
+
+# Analyze the results
+mytd.analyze()
+
+# Compute natural transition orbitals
+for i in range(mytd.nstates):
+    weights, nto = mytd.get_nto(state=i+1, verbose=4)
+    molden.from_mo(mol, 'nto-rpa-%s.molden' % str(i+1), nto)
+
+#INFO: ******************** input file end ********************
+
+
+System: uname_result(system='Linux', node='cpn-c02-04.core.ccr.buffalo.edu', release='6.8.0-124-generic', version='#124-Ubuntu SMP PREEMPT_DYNAMIC Tue May 26 13:00:45 UTC 2026', machine='x86_64')  Threads 4
+Python 3.13.14 | packaged by Anaconda, Inc. | (main, Jun 17 2026, 20:12:46) [GCC 14.3.0]
+numpy 1.26.4  scipy 1.14.1  h5py 3.16.0
+Date: Fri Jul 17 12:42:02 2026
+PySCF version 2.13.1
+PySCF path  /projects/academic/cyberwksp21/SOFTWARE_2026/conda/miniconda3/envs/pyscf/lib/python3.13/site-packages/pyscf
+
+[CONFIG] conf_file None
+[INPUT] verbose = 4
+[INPUT] num. atoms = 10
+[INPUT] num. electrons = 35
+[INPUT] charge = 0
+[INPUT] spin (= nelec alpha-beta = 2S) = 1
+[INPUT] symmetry False subgroup None
+[INPUT] Mole.unit = angstrom
+[INPUT] Symbol           X                Y                Z      unit          X                Y                Z       unit  Magmom
+[INPUT]  1 C      1.169997484221  -0.314265166131  -0.097907551856 AA    2.210974811609  -0.593875094478  -0.185018458535 Bohr   0.0
+[INPUT]  2 C      0.740281167602   0.981940169457   0.009409760087 AA    1.398928661941   1.855597990982   0.017781869463 Bohr   0.0
+[INPUT]  3 C     -0.740223099996   0.981982562542   0.009410408169 AA   -1.398818930068   1.855678102303   0.017783094160 Bohr   0.0
+[INPUT]  4 C     -1.170015738444  -0.314199422965  -0.097907023314 AA   -2.211009307090  -0.593750857899  -0.185017459736 Bohr   0.0
+[INPUT]  5 C     -0.000034624707  -1.145135075842  -0.165797340356 AA   -0.000065431213  -2.163991668974  -0.313311565455 Bohr   0.0
+[INPUT]  6 H      2.198120743785  -0.663441655387  -0.127491182004 AA    4.153846194478  -1.253723028310  -0.240923417284 Bohr   0.0
+[INPUT]  7 H      1.362324312493   1.871777720973   0.080795425442 AA    2.574419843448   3.537147258701   0.152681226204 Bohr   0.0
+[INPUT]  8 H     -1.362215843735   1.871855621952   0.080794294768 AA   -2.574214867203   3.537294470218   0.152679089538 Bohr   0.0
+[INPUT]  9 H     -2.198159739022  -0.663314975546  -0.127491082140 AA   -4.153919884797  -1.253483638105  -0.240923228569 Bohr   0.0
+[INPUT] 10 H     -0.000066340289  -2.230903581953  -0.256201173489 AA   -0.000125364978  -4.215796780203  -0.484150050687 Bohr   0.0
+
+nuclear repulsion = 148.558290395075
+number of shells = 65
+number of NR pGTOs = 230
+number of NR cGTOs = 160
+basis = aug-cc-pvdz
+ecp = {}
+CPU time:         1.33
+
+
+******** <class 'pyscf.dft.roks.ROKS'> ********
+method = ROKS
+initial guess = minao
+damping factor = 0
+level_shift factor = 0
+DIIS = <class 'pyscf.scf.diis.CDIIS'>
+diis_start_cycle = 1
+diis_space = 8
+diis_damp = 0
+SCF conv_tol = 1e-09
+SCF conv_tol_grad = None
+SCF max_cycles = 50
+direct_scf = True
+direct_scf_tol = 1e-13
+chkfile to save SCF result = /scratch/25293633/tmp9uh5ud7_
+max_memory 10000 MB (current use 96 MB)
+num. doubly occ = 17  num. singly occ = 1
+XC library pyscf.dft.libxc version 7.0.0
+    S. Lehtola, C. Steigemann, M. J.T. Oliveira, and M. A.L. Marques.,  SoftwareX 7, 1–5 (2018)
+XC functionals = SR_HF(0.1) * 0.25 + LR_HF(0.1) * 1.0 + 0.75*PBE, PBE
+    J. P. Perdew, K. Burke, and M. Ernzerhof.,  Phys. Rev. Lett. 77, 3865 (1996)
+    J. P. Perdew, K. Burke, and M. Ernzerhof.,  Phys. Rev. Lett. 78, 1396 (1997)
+    J. P. Perdew, K. Burke, and M. Ernzerhof.,  Phys. Rev. Lett. 77, 3865 (1996)
+    J. P. Perdew, K. Burke, and M. Ernzerhof.,  Phys. Rev. Lett. 78, 1396 (1997)
+radial grids: 
+Treutler-Ahlrichs [JCP 102, 346 (1995); DOI:10.1063/1.469408] (M4) radial grids
+
+becke partition: Becke, JCP 88, 2547 (1988); DOI:10.1063/1.454033
+pruning grids: <function nwchem_prune at 0x1487691120c0>
+grids dens level: 3
+symmetrized grids: False
+atomic radii adjust function: <function treutler_atomic_radii_adjust at 0x148769112020>
+small_rho_cutoff = 0
+Set gradient conv threshold to 3.16228e-05
+tot grids = 119632
+init E= -195.522221098756
+  HOMO = -0.266346469001867  LUMO = -0.0277759381609645
+cycle= 1 E= -194.687122191551  delta_E= 0.835  |g|= 0.274  |ddm|= 5.04
+  HOMO = -0.201207812718488  LUMO = 0.00636175515265247
+cycle= 2 E= -194.693486552534  delta_E= -0.00636  |g|= 0.25  |ddm|= 1.06
+  HOMO = -0.226203678409665  LUMO = 0.00339759489776492
+cycle= 3 E= -194.709988409426  delta_E= -0.0165  |g|= 0.0217  |ddm|= 0.332
+  HOMO = -0.227843805808927  LUMO = 0.00328718226255953
+cycle= 4 E= -194.709992756174  delta_E= -4.35e-06  |g|= 0.0248  |ddm|= 0.0791
+  HOMO = -0.226426919810705  LUMO = 0.00339209478894986
+cycle= 5 E= -194.710196470599  delta_E= -0.000204  |g|= 0.00392  |ddm|= 0.0336
+  HOMO = -0.225988291545197  LUMO = 0.00340526703150301
+cycle= 6 E= -194.710205114895  delta_E= -8.64e-06  |g|= 0.00122  |ddm|= 0.00838
+  HOMO = -0.226171803858267  LUMO = 0.00337971087868727
+cycle= 7 E= -194.710207793998  delta_E= -2.68e-06  |g|= 0.000832  |ddm|= 0.00319
+  HOMO = -0.226082570454733  LUMO = 0.00337384638601224
+cycle= 8 E= -194.710208932356  delta_E= -1.14e-06  |g|= 0.000196  |ddm|= 0.00279
+  HOMO = -0.226068506522727  LUMO = 0.00337631470793776
+cycle= 9 E= -194.710209031976  delta_E= -9.96e-08  |g|= 2.55e-05  |ddm|= 0.000942
+  HOMO = -0.226067791890381  LUMO = 0.00337697128744852
+cycle= 10 E= -194.710209033057  delta_E= -1.08e-09  |g|= 3.33e-06  |ddm|= 0.000131
+  HOMO = -0.226067863307933  LUMO = 0.00337716716830538
+cycle= 11 E= -194.710209033069  delta_E= -1.22e-11  |g|= 6.6e-07  |ddm|= 1.48e-05
+  HOMO = -0.226067810000058  LUMO = 0.00337718913168228
+Extra cycle  E= -194.710209033069  delta_E= 1.71e-13  |g|= 3.5e-07  |ddm|= 2.66e-06
+converged SCF energy = -194.710209033069
+
+
+******** <class 'pyscf.tdscf.uks.TDA'> for <class 'pyscf.dft.uks.UKS'> ********
+nstates = 10
+deg_eia_thresh = 1.000e-03
+wfnsym = None
+conv_tol = 1e-05
+eigh lindep = 1e-12
+eigh level_shift = 0
+eigh max_cycle = 100
+chkfile = /scratch/25293633/tmp9uh5ud7_
+max_memory 10000 MB (current use 797 MB)
+
+WARN: Ground state SCF is not converged
+
+
+
+Excitation energies (eV)
+[0.84123961 4.26998789 4.87904655 4.93876637 5.03991644 5.37995026
+ 5.51063426 5.56709819 5.83275519 5.84297493]
+
+** Excitation energies and oscillator strengths **
+Excited State   1:      0.84124 eV   1473.83 nm  f=0.0002
+      17b ->   18b      0.99065
+Excited State   2:      4.26999 eV    290.36 nm  f=0.0176
+      17a ->   25a      0.37001
+      18a ->   24a      0.35202
+      16b ->   18b     -0.83065
+      17b ->   25b     -0.13144
+Excited State   3:      4.87905 eV    254.12 nm  f=0.0000
+      14b ->   18b      0.99176
+Excited State   4:      4.93877 eV    251.04 nm  f=0.0000
+      15b ->   18b      0.99313
+Excited State   5:      5.03992 eV    246.00 nm  f=0.0004
+      13b ->   18b     -0.99078
+Excited State   6:      5.37995 eV    230.46 nm  f=0.0001
+      17a ->   24a      0.74577
+      17a ->   39a     -0.13509
+      18a ->   25a      0.11602
+      16b ->   25b      0.11843
+      17b ->   24b     -0.59338
+      17b ->   39b      0.13857
+Excited State   7:      5.51063 eV    224.99 nm  f=0.0000
+      17a ->   25a      0.63107
+      17a ->   40a      0.11797
+      18a ->   24a     -0.31612
+      16b ->   18b      0.26306
+      16b ->   24b      0.12754
+      17b ->   25b     -0.59882
+      17b ->   40b     -0.13535
+Excited State   8:      5.56710 eV    222.71 nm  f=0.0000
+      17a ->   19a     -0.10490
+      17b ->   19b      0.97823
+      17b ->   34b      0.14972
+Excited State   9:      5.83276 eV    212.57 nm  f=0.0000
+      17a ->   19a      0.94266
+      17a ->   34a      0.14303
+      12b ->   18b      0.26179
+      17b ->   19b      0.10761
+Excited State  10:      5.84297 eV    212.19 nm  f=0.0000
+      17a ->   19a     -0.25964
+      12b ->   18b      0.95804
+
+** Transition electric dipole moments (AU) **
+state          X           Y           Z        Dip. S.      Osc.
+  1         0.0909     -0.0000     -0.0000      0.0083      0.0002
+  2         0.0000      0.4091      0.0339      0.1685      0.0176
+  3        -0.0001     -0.0000     -0.0000      0.0000      0.0000
+  4        -0.0000     -0.0025      0.0183      0.0003      0.0000
+  5         0.0000      0.0050     -0.0579      0.0034      0.0004
+  6         0.0304     -0.0000     -0.0000      0.0009      0.0001
+  7         0.0000     -0.0172     -0.0013      0.0003      0.0000
+  8        -0.0002      0.0000     -0.0000      0.0000      0.0000
+  9        -0.0002      0.0000      0.0000      0.0000      0.0000
+ 10         0.0001      0.0000     -0.0000      0.0000      0.0000
+
+** Transition velocity dipole moments (imaginary part, AU) **
+state          X           Y           Z        Dip. S.      Osc.
+  1        -0.0024      0.0000      0.0000      0.0000      0.0001
+  2        -0.0000     -0.0447     -0.0035      0.0020      0.0086
+  3        -0.0000      0.0000     -0.0000      0.0000      0.0000
+  4        -0.0000     -0.0017      0.0228      0.0005      0.0019
+  5         0.0000      0.0032     -0.0393      0.0016      0.0056
+  6         0.0063      0.0000      0.0000      0.0000      0.0001
+  7         0.0000      0.0186      0.0017      0.0003      0.0011
+  8        -0.0001      0.0000     -0.0000      0.0000      0.0000
+  9        -0.0001      0.0000      0.0000      0.0000      0.0000
+ 10         0.0000      0.0000     -0.0000      0.0000      0.0000
+
+** Transition magnetic dipole moments (imaginary part, AU) **
+state          X           Y           Z
+  1         0.0000      0.0681     -0.8284
+  2         0.0011      0.0000     -0.0000
+  3         0.0000      0.3006      0.0242
+  4         0.1428      0.0000      0.0000
+  5        -0.0529     -0.0000      0.0000
+  6        -0.0000     -0.0092      0.1134
+  7        -0.0001     -0.0000      0.0000
+  8        -0.0000     -0.3318     -0.0271
+  9        -0.0000     -0.4127     -0.0344
+ 10        -0.0000      0.0735      0.0050
+State 1: 0.84124 eV  NTO largest component 0.9919380356488005
+    alpha occ-NTO: -0.677245 (MO #16) + 0.735737 (MO #18)
+    alpha vir-NTO: 0.897939 (MO #25) + 0.380403 (MO #40)
+    beta occ-NTO: 1.000000 (MO #17)
+    beta vir-NTO: 0.999435 (MO #18)
+Traceback (most recent call last):
+  File "/vscratch/grp-cyberwksp21/sbakenhaster/tues_7_7/cybertraining_examples/pyscf_prism_examples/project/cp_rad/rsh_nosing.py", line 35, in <module>
+    molden.from_mo(mol, 'nto-tda-%s.molden' % str(i+1), nto)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/projects/academic/cyberwksp21/SOFTWARE_2026/conda/miniconda3/envs/pyscf/lib/python3.13/site-packages/pyscf/tools/molden.py", line 85, in from_mo
+    orbital_coeff(mol, f, mo_coeff, spin, symm, ene, occ, ignore_h)
+    ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/projects/academic/cyberwksp21/SOFTWARE_2026/conda/miniconda3/envs/pyscf/lib/python3.13/site-packages/pyscf/tools/molden.py", line 44, in orbital_coeff
+    mol, mo_coeff = remove_high_l(mol, mo_coeff)
+                    ~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "/projects/academic/cyberwksp21/SOFTWARE_2026/conda/miniconda3/envs/pyscf/lib/python3.13/site-packages/pyscf/tools/molden.py", line 555, in remove_high_l
+    return pmol, mo_coeff[idx]
+                 ~~~~~~~~^^^^^
+TypeError: only integer scalar arrays can be converted to a scalar index
