@@ -1,0 +1,276 @@
+#INFO: **** input file is /vscratch/grp-cyberwksp21/sbakenhaster/tues_7_7/cybertraining_examples/pyscf_prism_examples/05_eom_ccsd/nitroxyl/05_eom_ccsd.py ****
+import numpy as np
+from pyscf import gto, scf, cc
+from pyscf import lib
+from pyscf.tools import cubegen
+from pyscf.tools import molden
+
+# Specify geometry and molecular information
+mol = gto.Mole()
+mol.atom = '/projects/academic/cyberwksp21/SOFTWARE_2026/pyscf_prism_examples/geometries/nitroxyl.xyz'
+mol.basis = 'aug-cc-pvdz'
+mol.verbose = 4
+mol.charge = 0
+mol.max_memory = 10000
+mol.build()
+
+# Run reference (ground-state) Hartree-Fock calculation
+mf = scf.RHF(mol).density_fit("aug-cc-pvdz-jkfit")
+mf.conv_tol = 1e-8
+mf.kernel()
+
+# Run CCSD
+mycc = cc.CCSD(mf).set_frozen().density_fit("aug-cc-pvdz-ri")
+mycc.verbose = 5
+mycc.kernel()
+
+# Run EOM-CCSD for singlet states
+eS = mycc.eomee_ccsd_singlet(nroots=10)[0]
+
+# Print excitation energies
+for state in range(len(eS)):
+    print ("State #%d, dE = %9.6f (a.u.), %6.3f (eV)" % (state+1, eS[state], eS[state] * 27.2114))
+#INFO: ******************** input file end ********************
+
+
+System: uname_result(system='Linux', node='cpn-c04-07.core.ccr.buffalo.edu', release='6.8.0-124-generic', version='#124-Ubuntu SMP PREEMPT_DYNAMIC Tue May 26 13:00:45 UTC 2026', machine='x86_64')  Threads 12
+Python 3.13.14 | packaged by Anaconda, Inc. | (main, Jun 17 2026, 20:12:46) [GCC 14.3.0]
+numpy 2.4.6  scipy 1.18.0  h5py 3.16.0
+Date: Tue Jul  7 13:12:47 2026
+PySCF version 2.13.1
+PySCF path  /projects/academic/cyberwksp21/SOFTWARE_2026/conda/miniconda3/envs/pyscf/lib/python3.13/site-packages/pyscf
+
+[CONFIG] conf_file None
+[INPUT] verbose = 4
+[INPUT] num. atoms = 3
+[INPUT] num. electrons = 16
+[INPUT] charge = 0
+[INPUT] spin (= nelec alpha-beta = 2S) = 0
+[INPUT] symmetry False subgroup None
+[INPUT] Mole.unit = angstrom
+[INPUT] Symbol           X                Y                Z      unit          X                Y                Z       unit  Magmom
+[INPUT]  1 O      0.111654780000   0.000000000000   1.140178240000 AA    0.210996954699   0.000000000000   2.154624606789 Bohr   0.0
+[INPUT]  2 N     -0.236948950000   0.000000000000  -0.018993560000 AA   -0.447768621003   0.000000000000  -0.035892626530 Bohr   0.0
+[INPUT]  3 H      0.625294180000   0.000000000000  -0.621184670000 AA    1.181634747484   0.000000000000  -1.173868899078 Bohr   0.0
+
+nuclear repulsion = 30.3111081662337
+number of shells = 21
+number of NR pGTOs = 81
+number of NR cGTOs = 55
+basis = aug-cc-pvdz
+ecp = {}
+CPU time:         2.41
+
+
+******** <class 'pyscf.df.df_jk.DFRHF'> ********
+method = DFRHF
+initial guess = minao
+damping factor = 0
+level_shift factor = 0
+DIIS = <class 'pyscf.scf.diis.CDIIS'>
+diis_start_cycle = 1
+diis_space = 8
+diis_damp = 0
+SCF conv_tol = 1e-08
+SCF conv_tol_grad = None
+SCF max_cycles = 50
+direct_scf = False
+chkfile to save SCF result = /scratch/25176444/tmp__9izhgq
+max_memory 10000 MB (current use 97 MB)
+Set gradient conv threshold to 0.0001
+Initial guess from minao.
+******** <class 'pyscf.df.df.DF'> ********
+auxbasis = aug-cc-pvdz-jkfit
+max_memory = 10000
+init E= -129.867318593093
+  HOMO = -0.212450329931903  LUMO = -0.0941780393428937
+cycle= 1 E= -129.725840888296  delta_E= 0.141  |g|= 0.609  |ddm|= 1.87
+  HOMO = -0.417613907371554  LUMO = 0.00855884441507815
+cycle= 2 E= -129.759735120864  delta_E= -0.0339  |g|= 0.53  |ddm|= 0.67
+  HOMO = -0.437674803397338  LUMO = 0.0336385672867729
+cycle= 3 E= -129.809076419731  delta_E= -0.0493  |g|= 0.0535  |ddm|= 0.307
+  HOMO = -0.424057131728032  LUMO = 0.0351013246417837
+cycle= 4 E= -129.809994566143  delta_E= -0.000918  |g|= 0.0223  |ddm|= 0.0523
+  HOMO = -0.430389919134972  LUMO = 0.0354680348547745
+cycle= 5 E= -129.810202522689  delta_E= -0.000208  |g|= 0.00738  |ddm|= 0.0323
+  HOMO = -0.430313380803136  LUMO = 0.0353967679022955
+cycle= 6 E= -129.810241452872  delta_E= -3.89e-05  |g|= 0.00346  |ddm|= 0.0129
+  HOMO = -0.430811511499  LUMO = 0.0354599572573036
+cycle= 7 E= -129.810250371534  delta_E= -8.92e-06  |g|= 0.000965  |ddm|= 0.00753
+  HOMO = -0.430796962445888  LUMO = 0.035485042890286
+cycle= 8 E= -129.810251022384  delta_E= -6.51e-07  |g|= 0.000181  |ddm|= 0.00232
+  HOMO = -0.430786339835955  LUMO = 0.0354908607528293
+cycle= 9 E= -129.81025105258  delta_E= -3.02e-08  |g|= 3.61e-05  |ddm|= 0.000529
+  HOMO = -0.430788109828798  LUMO = 0.0354911849277322
+cycle= 10 E= -129.810251053648  delta_E= -1.07e-09  |g|= 7.36e-06  |ddm|= 0.00011
+  HOMO = -0.430788496199771  LUMO = 0.0354914198577094
+Extra cycle  E= -129.810251053682  delta_E= -3.34e-11  |g|= 3.2e-06  |ddm|= 1.35e-05
+converged SCF energy = -129.810251053682
+
+******** <class 'pyscf.cc.dfccsd.RCCSD'> ********
+CC2 = 0
+CCSD nocc = 6, nmo = 53
+frozen orbitals 2
+max_cycle = 50
+direct = 0
+conv_tol = 1e-07
+conv_tol_normt = 1e-05
+diis_space = 6
+diis_start_cycle = 0
+diis_start_energy_diff = 1e+09
+max_memory 10000 MB (current use 113 MB)
+******** <class 'pyscf.df.df.DF'> ********
+auxbasis = aug-cc-pvdz-ri
+max_memory = 10000
+Init t2, MP2 energy = -130.178248821877  E_corr(MP2) -0.367997768194701
+    CPU time for init mp2      0.01 sec, wall time      0.00 sec
+Init E_corr(RCCSD) = -0.367997768199638
+cycle = 1  E_corr(RCCSD) = -0.362243431987728  dE = 0.00575433621  norm(t1,t2) = 0.0566558
+    CPU time for RCCSD iter      2.00 sec, wall time      0.18 sec
+cycle = 2  E_corr(RCCSD) = -0.376195613955841  dE = -0.013952182  norm(t1,t2) = 0.0230181
+    CPU time for RCCSD iter      3.81 sec, wall time      0.34 sec
+cycle = 3  E_corr(RCCSD) = -0.376307516694979  dE = -0.000111902739  norm(t1,t2) = 0.0114543
+    CPU time for RCCSD iter      3.13 sec, wall time      0.28 sec
+cycle = 4  E_corr(RCCSD) = -0.378633363232027  dE = -0.00232584654  norm(t1,t2) = 0.00579009
+    CPU time for RCCSD iter      3.68 sec, wall time      0.32 sec
+cycle = 5  E_corr(RCCSD) = -0.378851577236022  dE = -0.000218214004  norm(t1,t2) = 0.00171511
+    CPU time for RCCSD iter      3.33 sec, wall time      0.29 sec
+cycle = 6  E_corr(RCCSD) = -0.378659837465342  dE = 0.000191739771  norm(t1,t2) = 0.000856428
+    CPU time for RCCSD iter      3.25 sec, wall time      0.28 sec
+cycle = 7  E_corr(RCCSD) = -0.37864000698126  dE = 1.98304841e-05  norm(t1,t2) = 0.000406095
+    CPU time for RCCSD iter      3.38 sec, wall time      0.29 sec
+cycle = 8  E_corr(RCCSD) = -0.378680887709669  dE = -4.08807284e-05  norm(t1,t2) = 0.000175028
+    CPU time for RCCSD iter      3.35 sec, wall time      0.29 sec
+cycle = 9  E_corr(RCCSD) = -0.378672960900302  dE = 7.92680937e-06  norm(t1,t2) = 7.34877e-05
+    CPU time for RCCSD iter      3.28 sec, wall time      0.28 sec
+cycle = 10  E_corr(RCCSD) = -0.378672721592209  dE = 2.39308093e-07  norm(t1,t2) = 2.55186e-05
+    CPU time for RCCSD iter      3.58 sec, wall time      0.31 sec
+cycle = 11  E_corr(RCCSD) = -0.378671822049091  dE = 8.99543118e-07  norm(t1,t2) = 1.01408e-05
+    CPU time for RCCSD iter      3.90 sec, wall time      0.35 sec
+cycle = 12  E_corr(RCCSD) = -0.378671537287582  dE = 2.8476151e-07  norm(t1,t2) = 4.91314e-06
+    CPU time for RCCSD iter      3.46 sec, wall time      0.30 sec
+cycle = 13  E_corr(RCCSD) = -0.378671692623795  dE = -1.55336214e-07  norm(t1,t2) = 1.72783e-06
+    CPU time for RCCSD iter      3.63 sec, wall time      0.32 sec
+cycle = 14  E_corr(RCCSD) = -0.378671621762684  dE = 7.0861111e-08  norm(t1,t2) = 9.3907e-07
+    CPU time for RCCSD iter      4.07 sec, wall time      0.36 sec
+    CPU time for RCCSD     47.85 sec, wall time      4.19 sec
+RCCSD converged
+E(RCCSD) = -130.1889226754445  E_corr = -0.3786716217626843
+
+******** <class 'pyscf.cc.eom_rccsd.EOMEESinglet'> ********
+max_space = 20
+max_cycle = 50
+conv_tol = 1e-07
+partition = None
+max_memory 10000 MB (current use 137 MB)
+    CPU time for EOM-CCSD EE intermediates      0.92 sec, wall time      0.08 sec
+    CPU time for EOM-CCSD EE intermediates      0.93 sec, wall time      0.08 sec
+davidson 0 10  |r|= 0.491  e= [0.21838507 0.37335121 0.42458058 0.42814357 0.44432513 0.45532601
+ 0.47983893 0.70910481 0.74923344 0.93031236]  max|de|= 0.93  lindep=    1
+Old state -> New state
+    3     ->     2 
+    2     ->     3 
+davidson 1 20  |r|= 0.224  e= [0.08535748 0.23997176 0.28761852 0.29441298 0.31966774 0.3270542
+ 0.34065404 0.51119288 0.59814891 0.75637507]  max|de|= -0.198  lindep= 0.929
+Old state -> New state
+    6     ->     4 
+    4     ->     5 
+    5     ->     6 
+davidson 2 30  |r|= 0.353  e= [0.0658135  0.23008409 0.26702281 0.28833932 0.31004091 0.31283122
+ 0.32278353 0.42817031 0.56143072 0.63537615]  max|de|= -0.121  lindep= 0.889
+davidson 3 40  |r|= 0.281  e= [0.06548476 0.22729428 0.2624547  0.28755479 0.3037211  0.31340352
+ 0.32141818 0.37596711 0.41190187 0.4564885 ]  max|de|= 0.412  lindep= 0.862
+davidson 4 50  |r|= 0.111  e= [0.06557441 0.22575704 0.26115438 0.28659243 0.30344204 0.31230727
+ 0.31936678 0.35876716 0.37540353 0.41311279]  max|de|= -0.0434  lindep= 0.935
+davidson 5 60  |r|= 0.0701  e= [0.06540825 0.22482186 0.26073327 0.28613201 0.30308022 0.3119971
+ 0.31859891 0.35651245 0.36190982 0.39972856]  max|de|= -0.0135  lindep= 0.916
+davidson 6 70  |r|= 0.0444  e= [0.06538054 0.22478546 0.26073538 0.28612038 0.30309572 0.31194837
+ 0.31844233 0.35634847 0.36109511 0.39604118]  max|de|= -0.00369  lindep= 0.914
+davidson 7 10  |r|= 0.0444  e= [0.06538054 0.22478546 0.26073538 0.28612038 0.30309572 0.31194837
+ 0.31844233 0.35634847 0.36109511 0.39604118]  max|de|= -3.5e-15  lindep= 0.997
+davidson 8 20  |r|= 0.0221  e= [0.06538503 0.22483518 0.26074033 0.28616511 0.30309145 0.31199298
+ 0.31855157 0.35606129 0.35997648 0.39409022]  max|de|= -0.00195  lindep= 0.931
+root 0 converged  |r|= 6.74e-05  e= 0.06538506340253045  max|de|= 3.39e-08
+davidson 9 30  |r|= 0.0259  e= [0.06538506 0.22486363 0.26074953 0.28617431 0.30304122 0.31198497
+ 0.3185552  0.35601626 0.35995746 0.39367582]  max|de|= -0.000414  lindep= 0.556
+davidson 10 39  |r|= 0.0228  e= [0.06538497 0.22483406 0.26075054 0.28616027 0.30311407 0.31199342
+ 0.31856066 0.35607157 0.35800162 0.39285403]  max|de|= -0.00196  lindep= 0.456
+davidson 11 48  |r|= 0.0633  e= [0.06538529 0.22483269 0.26074359 0.28615734 0.30308454 0.31198679
+ 0.31854452 0.35599327 0.35782027 0.39120492]  max|de|= -0.00165  lindep= 0.873
+davidson 12 58  |r|= 0.0413  e= [0.06538432 0.22483001 0.2607451  0.28615795 0.30308626 0.3119871
+ 0.31854254 0.3560328  0.35789928 0.3894816 ]  max|de|= -0.00172  lindep= 0.83
+davidson 13 68  |r|= 0.0264  e= [0.06538449 0.22483301 0.26074565 0.28615945 0.30308697 0.31198739
+ 0.31854702 0.35602131 0.35776192 0.38637161]  max|de|= -0.00311  lindep= 0.79
+root 0 converged  |r|= 5.2e-06  e= 0.06538448930456037  max|de|= 7.22e-16
+root 1 converged  |r|= 2.45e-05  e= 0.2248330144593128  max|de|= -8.33e-17
+root 2 converged  |r|= 1.82e-05  e= 0.26074564667309025  max|de|= 8.33e-16
+root 3 converged  |r|= 5.74e-05  e= 0.2861594510813711  max|de|= 1.33e-15
+root 4 converged  |r|= 4.6e-05  e= 0.3030869724645457  max|de|= 3.33e-16
+root 5 converged  |r|= 3.68e-05  e= 0.31198739079944227  max|de|= -1.67e-16
+root 6 converged  |r|= 0.000186  e= 0.31854702459276485  max|de|= 2.78e-16
+davidson 14 10  |r|= 0.0264  e= [0.06538449 0.22483301 0.26074565 0.28615945 0.30308697 0.31198739
+ 0.31854702 0.35602131 0.35776192 0.38637161]  max|de|= 1.33e-15  lindep= 0.895
+davidson 15 13  |r|= 0.0116  e= [0.06538445 0.22483302 0.26074556 0.2861592  0.30308646 0.31198744
+ 0.31854762 0.35602059 0.35777241 0.38625398]  max|de|= -0.000118  lindep= 0.881
+davidson 16 19  |r|= 0.00963  e= [0.06538443 0.2248331  0.26074559 0.28615859 0.30308561 0.31198718
+ 0.31854333 0.35601664 0.35777282 0.38589722]  max|de|= -0.000357  lindep= 0.792
+davidson 17 26  |r|= 0.00696  e= [0.06538442 0.22483298 0.2607456  0.28615908 0.30308522 0.31198746
+ 0.31854417 0.35601923 0.35776245 0.38582154]  max|de|= -7.57e-05  lindep= 0.503
+root 5 converged  |r|= 1.06e-05  e= 0.31198744985552307  max|de|= -5.64e-09
+davidson 18 34  |r|= 0.00495  e= [0.06538442 0.22483252 0.26074559 0.28615922 0.30308568 0.31198745
+ 0.31854559 0.35601782 0.35775843 0.38582546]  max|de|= -4.02e-06  lindep= 0.783
+root 3 converged  |r|= 2.32e-06  e= 0.28615913569293205  max|de|= -8.32e-08
+root 4 converged  |r|= 2.08e-06  e= 0.3030856869858979  max|de|= 7.31e-09
+root 7 converged  |r|= 3.16e-05  e= 0.3560177718043684  max|de|= -4.84e-08
+davidson 19 41  |r|= 0.00246  e= [0.06538441 0.22483273 0.26074562 0.28615914 0.30308569 0.3119875
+ 0.31854461 0.35601777 0.35776216 0.38577306]  max|de|= -5.24e-05  lindep= 0.931
+root 1 converged  |r|= 1.07e-06  e= 0.22483274420080096  max|de|= 1.35e-08
+root 6 converged  |r|= 9.56e-06  e= 0.318544651043431  max|de|= 4.4e-08
+davidson 20 45  |r|= 0.00186  e= [0.06538441 0.22483274 0.26074562 0.28615912 0.30308567 0.3119875
+ 0.31854465 0.35601777 0.35776373 0.38575137]  max|de|= -2.17e-05  lindep= 0.938
+davidson 21 47  |r|= 0.00121  e= [0.06538441 0.22483274 0.26074562 0.28615912 0.30308567 0.3119875
+ 0.3185449  0.35601777 0.35776126 0.38575152]  max|de|= -2.47e-06  lindep= 0.918
+root 6 converged  |r|= 2.77e-06  e= 0.31854488348349497  max|de|= -1.31e-08
+davidson 22 50  |r|= 0.00101  e= [0.06538441 0.22483274 0.26074562 0.28615912 0.30308568 0.3119875
+ 0.31854488 0.35601777 0.3577616  0.38576218]  max|de|= 1.07e-05  lindep= 0.882
+davidson 23 52  |r|= 0.00113  e= [0.06538441 0.22483274 0.26074562 0.28615912 0.30308568 0.3119875
+ 0.31854488 0.35601777 0.35776257 0.3857387 ]  max|de|= -2.35e-05  lindep= 0.93
+davidson 24 54  |r|= 0.00139  e= [0.06538441 0.22483274 0.26074562 0.28615912 0.30308568 0.3119875
+ 0.31854488 0.35601777 0.35776134 0.38575402]  max|de|= 1.53e-05  lindep= 0.926
+davidson 25 56  |r|= 0.00163  e= [0.06538441 0.22483274 0.26074562 0.28615912 0.30308568 0.3119875
+ 0.31854488 0.35601777 0.3577612  0.38577146]  max|de|= 1.74e-05  lindep= 0.938
+davidson 26 58  |r|= 0.000872  e= [0.06538441 0.22483274 0.26074562 0.28615912 0.30308568 0.3119875
+ 0.31854488 0.35601777 0.35776186 0.38575043]  max|de|= -2.1e-05  lindep= 0.941
+davidson 27 60  |r|= 0.000511  e= [0.06538441 0.22483274 0.26074562 0.28615912 0.30308568 0.3119875
+ 0.31854488 0.35601777 0.35776152 0.38575768]  max|de|= 7.25e-06  lindep= 0.925
+davidson 28 62  |r|= 0.000354  e= [0.06538441 0.22483274 0.26074562 0.28615912 0.30308568 0.3119875
+ 0.31854488 0.35601777 0.35776164 0.38575762]  max|de|= 1.23e-07  lindep= 0.902
+root 8 converged  |r|= 2.83e-06  e= 0.35776158000778707  max|de|= -5.88e-08
+davidson 29 64  |r|= 0.000309  e= [0.06538441 0.22483274 0.26074562 0.28615912 0.30308568 0.3119875
+ 0.31854487 0.35601777 0.35776158 0.38575787]  max|de|= 2.51e-07  lindep= 0.918
+davidson 30 65  |r|= 0.000216  e= [0.06538441 0.22483274 0.26074562 0.28615912 0.30308568 0.3119875
+ 0.31854487 0.35601777 0.35776159 0.38575755]  max|de|= -3.22e-07  lindep= 0.938
+root 9 converged  |r|= 0.000216  e= 0.385757550304029  max|de|= -7.77e-16
+converged 31 10  |r|= 0.000216  e= [0.06538441 0.22483274 0.26074562 0.28615912 0.30308568 0.3119875
+ 0.31854487 0.35601777 0.35776159 0.38575755]  max|de|= -9.99e-16
+EOM-CCSD root 0 E = 0.06538441233043554  qpwt = 0.945366  conv = True
+EOM-CCSD root 1 E = 0.2248327389133252  qpwt = 0.946358  conv = True
+EOM-CCSD root 2 E = 0.2607456210361996  qpwt = 0.855851  conv = True
+EOM-CCSD root 3 E = 0.286159124211762  qpwt = 0.942778  conv = True
+EOM-CCSD root 4 E = 0.3030856820530683  qpwt = 0.0468925  conv = True
+EOM-CCSD root 5 E = 0.3119875049801268  qpwt = 0.950213  conv = True
+EOM-CCSD root 6 E = 0.3185448730670958  qpwt = 0.880031  conv = True
+EOM-CCSD root 7 E = 0.3560177718043694  qpwt = 0.890587  conv = True
+EOM-CCSD root 8 E = 0.3577615859194799  qpwt = 0.941772  conv = True
+EOM-CCSD root 9 E = 0.385757550304029  qpwt = 0.951521  conv = True
+    CPU time for EOM-CCSD    348.94 sec, wall time     29.26 sec
+State #1, dE =  0.065384 (a.u.),  1.779 (eV)
+State #2, dE =  0.224833 (a.u.),  6.118 (eV)
+State #3, dE =  0.260746 (a.u.),  7.095 (eV)
+State #4, dE =  0.286159 (a.u.),  7.787 (eV)
+State #5, dE =  0.303086 (a.u.),  8.247 (eV)
+State #6, dE =  0.311988 (a.u.),  8.490 (eV)
+State #7, dE =  0.318545 (a.u.),  8.668 (eV)
+State #8, dE =  0.356018 (a.u.),  9.688 (eV)
+State #9, dE =  0.357762 (a.u.),  9.735 (eV)
+State #10, dE =  0.385758 (a.u.), 10.497 (eV)

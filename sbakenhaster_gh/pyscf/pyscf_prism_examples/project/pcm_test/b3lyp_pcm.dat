@@ -1,0 +1,156 @@
+#INFO: **** input file is /vscratch/grp-cyberwksp21/sbakenhaster/tues_7_7/cybertraining_examples/pyscf_prism_examples/project/pcm_test/b3lyp_pcm.py ****
+import numpy as np
+from pyscf import gto, scf, mcscf, mp, tdscf
+from pyscf import lib
+from pyscf.tools import cubegen
+from pyscf.tools import molden
+import prism.interface
+import prism.nevpt
+
+# Specify geometry and molecular information
+mol = gto.Mole()
+mol.atom = '/projects/academic/cyberwksp21/SOFTWARE_2026/pyscf_prism_examples/geometries/ethylene.xyz'
+mol.basis = 'aug-cc-pvdz'
+mol.verbose = 4
+mol.charge = 0
+mol.max_memory = 100000
+mol.build()
+
+# Run reference Hartree-Fock calculation
+mf = scf.RKS(mol).density_fit("aug-cc-pvdz-jkfit").PCM()
+mf.with_solvent.method = 'IEF-PCM'
+mf.with_solvent.eps = 4.00
+mf.xc = 'b3lyp'
+mf.conv_tol = 1e-8
+mf.kernel()
+
+# Run state-avereged CASSCF calculation for singlet states
+# n_states = 5
+# weights = np.ones(n_states)/n_states
+# mc = mcscf.CASSCF(mf, 6, 6).state_average_(weights).density_fit('aug-cc-pvdz-jkfit')
+# mc.max_cycle_macro = 200 
+#mc.fix_spin_(ss=0) # Singlet states only
+#emc = mc.mc1step()[0]
+
+#mo_mc = mc.mo_coeff.copy()
+
+# Run CASCI calculation using SA-CASSCF orbitals to compute relative energies and wavefunctions for each state
+#mc = mcscf.CASCI(mf, 6, 6).density_fit('aug-cc-pvdz-jkfit')
+#mc.fix_spin_(ss=0) # Singlet states only
+#mc.fcisolver.nroots = n_states
+#emc = #mc.casci(mo_mc)[0]
+
+#for state in range(n_states):
+#    print("State #%d, dE = " % (state + 1), (emc[state] - emc[0]) * 27.2114, "eV")
+
+# Analyze results
+###mc.analyze()
+#INFO: ******************** input file end ********************
+
+
+System: uname_result(system='Linux', node='cpn-c02-06.core.ccr.buffalo.edu', release='6.8.0-124-generic', version='#124-Ubuntu SMP PREEMPT_DYNAMIC Tue May 26 13:00:45 UTC 2026', machine='x86_64')  Threads 4
+Python 3.13.14 | packaged by Anaconda, Inc. | (main, Jun 17 2026, 20:12:46) [GCC 14.3.0]
+numpy 1.26.4  scipy 1.14.1  h5py 3.16.0
+Date: Thu Jul 16 10:13:35 2026
+PySCF version 2.13.1
+PySCF path  /projects/academic/cyberwksp21/SOFTWARE_2026/conda/miniconda3/envs/pyscf/lib/python3.13/site-packages/pyscf
+
+[CONFIG] conf_file None
+[INPUT] verbose = 4
+[INPUT] num. atoms = 6
+[INPUT] num. electrons = 16
+[INPUT] charge = 0
+[INPUT] spin (= nelec alpha-beta = 2S) = 0
+[INPUT] symmetry False subgroup None
+[INPUT] Mole.unit = angstrom
+[INPUT] Symbol           X                Y                Z      unit          X                Y                Z       unit  Magmom
+[INPUT]  1 C      0.000000000000   0.666903960000   0.000000000000 AA    0.000000000000   1.260265835788   0.000000000000 Bohr   0.0
+[INPUT]  2 C      0.000000000000  -0.666903960000   0.000000000000 AA    0.000000000000  -1.260265835788   0.000000000000 Bohr   0.0
+[INPUT]  3 H      0.000000000000   1.229521950000   0.922290640000 AA    0.000000000000   2.323459749641   1.742876716850 Bohr   0.0
+[INPUT]  4 H      0.000000000000  -1.229521950000   0.922290640000 AA    0.000000000000  -2.323459749641   1.742876716850 Bohr   0.0
+[INPUT]  5 H      0.000000000000   1.229521950000  -0.922290640000 AA    0.000000000000   2.323459749641  -1.742876716850 Bohr   0.0
+[INPUT]  6 H      0.000000000000  -1.229521950000  -0.922290640000 AA    0.000000000000  -2.323459749641  -1.742876716850 Bohr   0.0
+
+nuclear repulsion = 33.4093139565633
+number of shells = 36
+number of NR pGTOs = 114
+number of NR cGTOs = 82
+basis = aug-cc-pvdz
+ecp = {}
+CPU time:         1.61
+
+
+******** <class 'pyscf.solvent._attach_solvent.PCMDFRKS'> ********
+method = PCMDFRKS
+initial guess = minao
+damping factor = 0
+level_shift factor = 0
+DIIS = <class 'pyscf.scf.diis.CDIIS'>
+diis_start_cycle = 1
+diis_space = 8
+diis_damp = 0
+SCF conv_tol = 1e-08
+SCF conv_tol_grad = None
+SCF max_cycles = 50
+direct_scf = False
+chkfile to save SCF result = /scratch/25274827/tmpmvvto91j
+max_memory 100000 MB (current use 104 MB)
+XC library pyscf.dft.libxc version 7.0.0
+    S. Lehtola, C. Steigemann, M. J.T. Oliveira, and M. A.L. Marques.,  SoftwareX 7, 1–5 (2018)
+XC functionals = b3lyp
+    P. J. Stephens, F. J. Devlin, C. F. Chabalowski, and M. J. Frisch.,  J. Phys. Chem. 98, 11623 (1994)
+radial grids: 
+Treutler-Ahlrichs [JCP 102, 346 (1995); DOI:10.1063/1.469408] (M4) radial grids
+
+becke partition: Becke, JCP 88, 2547 (1988); DOI:10.1063/1.454033
+pruning grids: <function nwchem_prune at 0xd4757956020>
+grids dens level: 3
+symmetrized grids: False
+atomic radii adjust function: <function treutler_atomic_radii_adjust at 0xd4757955f80>
+small_rho_cutoff = 0
+******** <class 'pyscf.solvent.pcm.PCM'> (In testing) ********
+
+WARN: PCM is an experimental feature. It is still in testing.
+Features and APIs may be changed in the future.
+
+lebedev_order = 29 (302 grids per sphere)
+eps = 4.0
+frozen = False
+Set gradient conv threshold to 0.0001
+Initial guess from minao.
+tot grids = 67472
+******** <class 'pyscf.df.df.DF'> ********
+auxbasis = aug-cc-pvdz-jkfit
+max_memory = 100000
+PCM E_diel = -0.000143300068727402
+Solvent Energy = -0.000143300068727402
+init E= -78.5925583517042
+  HOMO = -0.320140798193154  LUMO = -0.0797263435308944
+PCM E_diel = -0.00217247592967881
+Solvent Energy = -0.00217247592967881
+cycle= 1 E= -78.5777988551398  delta_E= 0.0148  |g|= 0.27  |ddm|= 4.97
+  HOMO = -0.221487752229936  LUMO = 0.00636625413079672
+PCM E_diel = -0.0006949201802085
+Solvent Energy = -0.0006949201802085
+cycle= 2 E= -78.5735104916764  delta_E= 0.00429  |g|=  0.3  |ddm|= 1.26
+  HOMO = -0.28006851550062  LUMO = -0.0111044286832906
+PCM E_diel = -0.00137998237726028
+Solvent Energy = -0.00137998237726028
+cycle= 3 E= -78.5993461295667  delta_E= -0.0258  |g|= 0.00356  |ddm|=  0.5
+  HOMO = -0.279550972006893  LUMO = -0.0106698677015977
+PCM E_diel = -0.00137729954231087
+Solvent Energy = -0.00137729954231087
+cycle= 4 E= -78.5993510160985  delta_E= -4.89e-06  |g|= 0.000224  |ddm|= 0.0238
+  HOMO = -0.279574376953108  LUMO = -0.0106802842331124
+PCM E_diel = -0.00137884018509166
+Solvent Energy = -0.00137884018509166
+cycle= 5 E= -78.5993510347119  delta_E= -1.86e-08  |g|= 4.64e-05  |ddm|= 0.000874
+  HOMO = -0.279577350421665  LUMO = -0.0106873226389088
+PCM E_diel = -0.00137895564981734
+Solvent Energy = -0.00137895564981734
+cycle= 6 E= -78.5993510354238  delta_E= -7.12e-10  |g|= 5.14e-06  |ddm|= 0.000114
+  HOMO = -0.279576289072976  LUMO = -0.0106863746994028
+PCM E_diel = -0.00137897076460872
+Solvent Energy = -0.00137897076460872
+Extra cycle  E= -78.5993510354339  delta_E= -1.01e-11  |g|= 2.14e-06  |ddm|= 1.07e-05
+converged SCF energy = -78.5993510354339

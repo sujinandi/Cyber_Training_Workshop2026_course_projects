@@ -1,0 +1,914 @@
+#INFO: **** input file is /vscratch/grp-cyberwksp21/sbakenhaster/tues_7_7/cybertraining_examples/pyscf_prism_examples/08_si_soc_nevpt2/08_si_soc_nevpt2.py ****
+import numpy as np
+import math
+from pyscf import gto, scf, mcscf
+import prism.interface
+import prism.nevpt
+
+# Specify geometry and molecular information
+mol = gto.Mole()
+mol.atom = [
+            ['Zn', (0.0, 0.0, 0.0)],
+            ['H', (0.0,  0,  1.595 )]]
+mol.basis = 'def2-tzvp'
+mol.symmetry = False
+mol.spin = 1
+mol.verbose = 4
+mol.build()
+
+# Use DFT (BP86) to compute guess orbitals
+mf = scf.RKS(mol).x2c() # Include scalar relativistic effects
+mf.xc = "bp86"
+ehf = mf.scf()
+mf.analyze()
+
+# Run SA-CASSCF calculation
+n_states = 3
+weights = np.ones(n_states)/n_states
+mc = mcscf.CASSCF(mf, 5, 3).state_average_(weights)
+emc = mc.mc1step()[0]
+mc.analyze()
+
+# Run QD-NEVPT2 calculation without spin-orbit coupling
+interface = prism.interface.PYSCF(mf, mc, backend = 'opt_einsum')
+nevpt = prism.nevpt.NEVPT(interface)
+nevpt.method = "nevpt2"
+nevpt.method_type = "qd"
+nevpt.verbose = 4
+nevpt.kernel()
+
+# Run QD-NEVPT2 calculation with state-interaction treatment of spin-orbit coupling
+nevpt = prism.nevpt.NEVPT(interface)
+nevpt.method = "nevpt2"
+nevpt.method_type = "qd"
+nevpt.soc = "DKH1" # Possible methods: Breit-Pauli (BP), DKH1 (x2c-1)
+nevpt.verbose = 4
+nevpt.gtensor = True # Compute magnetic properties (g-tensor)
+nevpt.kernel()
+#INFO: ******************** input file end ********************
+
+
+System: uname_result(system='Linux', node='cpn-b02-31-01.core.ccr.buffalo.edu', release='6.8.0-124-generic', version='#124-Ubuntu SMP PREEMPT_DYNAMIC Tue May 26 13:00:45 UTC 2026', machine='x86_64')  Threads 12
+Python 3.13.14 | packaged by Anaconda, Inc. | (main, Jun 17 2026, 20:12:46) [GCC 14.3.0]
+numpy 2.4.6  scipy 1.18.0  h5py 3.16.0
+Date: Tue Jul  7 11:26:16 2026
+PySCF version 2.13.1
+PySCF path  /projects/academic/cyberwksp21/SOFTWARE_2026/conda/miniconda3/envs/pyscf/lib/python3.13/site-packages/pyscf
+
+[CONFIG] conf_file None
+[INPUT] verbose = 4
+[INPUT] num. atoms = 2
+[INPUT] num. electrons = 31
+[INPUT] charge = 0
+[INPUT] spin (= nelec alpha-beta = 2S) = 1
+[INPUT] symmetry False subgroup None
+[INPUT] Mole.unit = angstrom
+[INPUT] Symbol           X                Y                Z      unit          X                Y                Z       unit  Magmom
+[INPUT]  1 Zn     0.000000000000   0.000000000000   0.000000000000 AA    0.000000000000   0.000000000000   0.000000000000 Bohr   0.0
+[INPUT]  2 H      0.000000000000   0.000000000000   1.595000000000 AA    0.000000000000   0.000000000000   3.014113168681 Bohr   0.0
+
+nuclear repulsion = 9.95317638094044
+number of shells = 20
+number of NR pGTOs = 103
+number of NR cGTOs = 54
+basis = def2-tzvp
+ecp = {}
+CPU time:         2.11
+
+
+******** <class 'pyscf.x2c.sfx2c1e.sfX2C1eROKS'> ********
+method = sfX2C1eROKS
+initial guess = minao
+damping factor = 0
+level_shift factor = 0
+DIIS = <class 'pyscf.scf.diis.CDIIS'>
+diis_start_cycle = 1
+diis_space = 8
+diis_damp = 0
+SCF conv_tol = 1e-09
+SCF conv_tol_grad = None
+SCF max_cycles = 50
+direct_scf = True
+direct_scf_tol = 1e-13
+chkfile to save SCF result = /scratch/25175018/tmpx6qylsu_
+max_memory 4000 MB (current use 98 MB)
+num. doubly occ = 15  num. singly occ = 1
+XC library pyscf.dft.libxc version 7.0.0
+    S. Lehtola, C. Steigemann, M. J.T. Oliveira, and M. A.L. Marques.,  SoftwareX 7, 1–5 (2018)
+XC functionals = bp86
+    A. D. Becke.,  Phys. Rev. A 38, 3098 (1988)
+    J. P. Perdew.,  Phys. Rev. B 33, 8822 (1986)
+radial grids: 
+Treutler-Ahlrichs [JCP 102, 346 (1995); DOI:10.1063/1.469408] (M4) radial grids
+
+becke partition: Becke, JCP 88, 2547 (1988); DOI:10.1063/1.454033
+pruning grids: <function nwchem_prune at 0x875e38e4c20>
+grids dens level: 3
+symmetrized grids: False
+atomic radii adjust function: <function treutler_atomic_radii_adjust at 0x875e38e4b80>
+small_rho_cutoff = 0
+
+
+******** <class 'pyscf.x2c.sfx2c1e.SpinFreeX2CHelper'> ********
+approx = 1e
+xuncontract = 1
+Set gradient conv threshold to 3.16228e-05
+tot grids = 30448
+init E= -1792.9663240906
+  HOMO = -0.142893555594965  LUMO = -0.0483808573027281
+cycle= 1 E= -1793.31107909131  delta_E= -0.345  |g|= 0.836  |ddm|= 0.846
+  HOMO = -0.175601784115361  LUMO = -0.080997141445684
+cycle= 2 E= -1793.0545277846  delta_E= 0.257  |g|= 2.04  |ddm|= 0.845
+  HOMO = -0.156713951013705  LUMO = -0.0587438717700048
+cycle= 3 E= -1793.37737285755  delta_E= -0.323  |g|= 0.155  |ddm|= 0.475
+  HOMO = -0.148613378019618  LUMO = -0.0509330559691683
+cycle= 4 E= -1793.38063946182  delta_E= -0.00327  |g|= 0.0245  |ddm|= 0.125
+  HOMO = -0.148732936799027  LUMO = -0.0515250417124197
+cycle= 5 E= -1793.3809198474  delta_E= -0.00028  |g|= 0.00879  |ddm|= 0.0333
+  HOMO = -0.149198876407024  LUMO = -0.0520158006795364
+cycle= 6 E= -1793.38092862365  delta_E= -8.78e-06  |g|= 0.000475  |ddm|= 0.00392
+  HOMO = -0.149203130982381  LUMO = -0.0520060956071067
+cycle= 7 E= -1793.38092873566  delta_E= -1.12e-07  |g|= 0.000151  |ddm|= 0.000794
+  HOMO = -0.149182051963579  LUMO = -0.0519971627313963
+cycle= 8 E= -1793.38092875048  delta_E= -1.48e-08  |g|= 1.7e-05  |ddm|= 0.000251
+  HOMO = -0.149183318607324  LUMO = -0.0519986719582917
+cycle= 9 E= -1793.38092875068  delta_E= -2.08e-10  |g|= 1.2e-06  |ddm|= 4.15e-05
+  HOMO = -0.149183434859482  LUMO = -0.051998634672618
+Extra cycle  E= -1793.38092875068  delta_E= 6.82e-13  |g|= 1.79e-06  |ddm|= 1.97e-06
+converged SCF energy = -1793.38092875068
+**** SCF Summaries ****
+Total Energy =                       -1793.380928750684006
+Nuclear Repulsion Energy =               9.953176380940441
+One-electron Energy =                -2516.601844215761957
+Two-electron Coulomb Energy =          785.095489331378076
+DFT Exchange-Correlation Energy =      -71.827750247240544
+**** MO energy ****
+                Roothaan           | alpha              | beta
+MO #1   energy= -349.443635256864  | -349.444011931239  | -349.44325858249   occ= 2
+MO #2   energy= -42.5700858468779  | -42.5706148734038  | -42.5695568203518  occ= 2
+MO #3   energy= -37.0986261501708  | -37.0989437820762  | -37.0983085182656  occ= 2
+MO #4   energy= -37.09862615016    | -37.0989437820654  | -37.0983085182548  occ= 2
+MO #5   energy= -37.0971566476286  | -37.0981256141979  | -37.0961876810591  occ= 2
+MO #6   energy= -4.7583868646913   | -4.7594879327915   | -4.75728579660871  occ= 2
+MO #7   energy= -3.1064706193913   | -3.10756861903629  | -3.1053726197463   occ= 2
+MO #8   energy= -3.10647061938606  | -3.10756861903107  | -3.10537261974106  occ= 2
+MO #9   energy= -3.10291064381186  | -3.10424616275484  | -3.10157512486972  occ= 2
+MO #10  energy= -0.420505975148961 | -0.425027381063654 | -0.41598456841305  occ= 2
+MO #11  energy= -0.409655698216115 | -0.411436917167077 | -0.407874479265146 occ= 2
+MO #12  energy= -0.409655694090215 | -0.411436912921471 | -0.407874475258956 occ= 2
+MO #13  energy= -0.407208232026034 | -0.40948663230828  | -0.40492983174379  occ= 2
+MO #14  energy= -0.407208232023587 | -0.409486632305754 | -0.40492983174143  occ= 2
+MO #15  energy= -0.303865068636461 | -0.313523866819626 | -0.294206271039707 occ= 2
+MO #16  energy= -0.149183434859482 | -0.171031268325022 | -0.12733561363466  occ= 1
+MO #17  energy= -0.051998634672618 | -0.0593554264883283 | -0.0446418428569252 occ= 0
+MO #18  energy= -0.0519986346649449 | -0.0593554264805907 | -0.0446418428492859 occ= 0
+MO #19  energy= 0.0634903859840739 | 0.054909802339674  | 0.0720709717628353 occ= 0
+MO #20  energy= 0.0959726687143565 | 0.0906733314302927 | 0.101272006070287  occ= 0
+MO #21  energy= 0.164360888682384  | 0.150283811969169  | 0.178437972388709  occ= 0
+MO #22  energy= 0.171340868026373  | 0.166852143988598  | 0.17582959206413   occ= 0
+MO #23  energy= 0.171340868040269  | 0.166852144002257  | 0.175829592078253  occ= 0
+MO #24  energy= 0.20503775871901   | 0.192465184322931  | 0.217610333115085  occ= 0
+MO #25  energy= 0.205037758723325  | 0.192465184326563  | 0.217610333120103  occ= 0
+MO #26  energy= 0.221207426541353  | 0.214158307111078  | 0.22825654597162   occ= 0
+MO #27  energy= 0.221207458006443  | 0.214158371141638  | 0.228256544871238  occ= 0
+MO #28  energy= 0.328192836537207  | 0.316152252090144  | 0.340233423503584  occ= 0
+MO #29  energy= 0.427113925865595  | 0.414518272619571  | 0.439709578915037  occ= 0
+MO #30  energy= 1.10817239006947   | 1.09806142037885   | 1.1182833597601    occ= 0
+MO #31  energy= 1.10817239008361   | 1.09806142039308   | 1.11828335977413   occ= 0
+MO #32  energy= 1.12959501700738   | 1.12331275829651   | 1.13587727571826   occ= 0
+MO #33  energy= 1.12959505765221   | 1.12331281335143   | 1.13587730195299   occ= 0
+MO #34  energy= 1.2019008441456    | 1.18834458148448   | 1.21545710783546   occ= 0
+MO #35  energy= 1.51656373644725   | 1.49627157065164   | 1.53685590224288   occ= 0
+MO #36  energy= 1.51656373646122   | 1.4962715706656    | 1.53685590225686   occ= 0
+MO #37  energy= 1.84387486412676   | 1.82738089149328   | 1.86036883691845   occ= 0
+MO #38  energy= 2.16241364098201   | 2.15887262843068   | 2.16595465353332   occ= 0
+MO #39  energy= 2.1624136409916    | 2.15887262844029   | 2.16595465354291   occ= 0
+MO #40  energy= 2.17851472741039   | 2.16450082571283   | 2.19252862856475   occ= 0
+MO #41  energy= 2.58728291325798   | 2.56998612410829   | 2.60457970242715   occ= 0
+MO #42  energy= 3.12430013235049   | 3.12081892645823   | 3.12778133805828   occ= 0
+MO #43  energy= 4.62793796510955   | 4.62552457030983   | 4.63035135990927   occ= 0
+MO #44  energy= 4.62793813761945   | 4.62552474274001   | 4.6303515324989    occ= 0
+MO #45  energy= 4.63955172253683   | 4.63568953396665   | 4.64341391110696   occ= 0
+MO #46  energy= 4.63955172254814   | 4.63568953397802   | 4.64341391111827   occ= 0
+MO #47  energy= 4.74921969195204   | 4.74343383779209   | 4.7550055461347    occ= 0
+MO #48  energy= 6.37468176450125   | 6.37420742889516   | 6.37515610010733   occ= 0
+MO #49  energy= 6.374681764503     | 6.37420742889691   | 6.37515610010908   occ= 0
+MO #50  energy= 6.37738100561452   | 6.37685107581593   | 6.37791093541312   occ= 0
+MO #51  energy= 6.37738119855639   | 6.37685126659138   | 6.37791113052143   occ= 0
+MO #52  energy= 6.38008066789007   | 6.37900464495791   | 6.38115669082221   occ= 0
+MO #53  energy= 6.38008066791104   | 6.37900464497888   | 6.38115669084319   occ= 0
+MO #54  energy= 6.42804956599328   | 6.42652452447526   | 6.42957460751228   occ= 0
+ ** Mulliken pop on meta-lowdin orthogonal AOs  **
+ ** Mulliken pop  **
+pop of  0 Zn 1s           2.00000
+pop of  0 Zn 2s           1.99999
+pop of  0 Zn 3s           1.99992
+pop of  0 Zn 4s           1.47385
+pop of  0 Zn 5s           0.01548
+pop of  0 Zn 6s           0.00030
+pop of  0 Zn 2px          2.00000
+pop of  0 Zn 2py          2.00000
+pop of  0 Zn 2pz          2.00000
+pop of  0 Zn 3px          1.99993
+pop of  0 Zn 3py          1.99993
+pop of  0 Zn 3pz          1.99992
+pop of  0 Zn 4px          0.00001
+pop of  0 Zn 4py          0.00001
+pop of  0 Zn 4pz          0.11247
+pop of  0 Zn 5px          0.00002
+pop of  0 Zn 5py          0.00002
+pop of  0 Zn 5pz          0.00546
+pop of  0 Zn 6px          0.00005
+pop of  0 Zn 6py          0.00005
+pop of  0 Zn 6pz          0.00033
+pop of  0 Zn 3dxy         1.99667
+pop of  0 Zn 3dyz         1.99585
+pop of  0 Zn 3dz^2        1.96978
+pop of  0 Zn 3dxz         1.99585
+pop of  0 Zn 3dx2-y2      1.99667
+pop of  0 Zn 4dxy         0.00096
+pop of  0 Zn 4dyz         0.00114
+pop of  0 Zn 4dz^2        0.00368
+pop of  0 Zn 4dxz         0.00114
+pop of  0 Zn 4dx2-y2      0.00096
+pop of  0 Zn 5dxy         0.00236
+pop of  0 Zn 5dyz         0.00274
+pop of  0 Zn 5dz^2        0.00842
+pop of  0 Zn 5dxz         0.00274
+pop of  0 Zn 5dx2-y2      0.00236
+pop of  0 Zn 6dxy         0.00001
+pop of  0 Zn 6dyz         0.00002
+pop of  0 Zn 6dz^2        0.00238
+pop of  0 Zn 6dxz         0.00002
+pop of  0 Zn 6dx2-y2      0.00001
+pop of  0 Zn 4f-3         0.00000
+pop of  0 Zn 4f-2         0.00000
+pop of  0 Zn 4f-1         0.00000
+pop of  0 Zn 4f+0         0.00000
+pop of  0 Zn 4f+1         0.00000
+pop of  0 Zn 4f+2         0.00000
+pop of  0 Zn 4f+3         0.00000
+pop of  1 H 1s            1.35975
+pop of  1 H 2s            0.03065
+pop of  1 H 3s            0.01061
+pop of  1 H 2px           0.00024
+pop of  1 H 2py           0.00024
+pop of  1 H 2pz           0.00701
+ ** Mulliken atomic charges  **
+charge of    0Zn =      0.40850
+charge of    1H =     -0.40850
+Dipole moment(X, Y, Z, Debye):  0.00000, -0.00000, -0.31178
+
+******** <class 'pyscf.mcscf.addons.StateAverageCASSCF'> ********
+CAS (2e+1e, 5o), ncore = 14, nvir = 35
+max_cycle_macro = 50
+max_cycle_micro = 4
+conv_tol = 1e-07
+conv_tol_grad = None
+orbital rotation max_stepsize = 0.02
+orbital rotation threshold for CI restart = 0.01
+augmented hessian ah_max_cycle = 30
+augmented hessian ah_conv_tol = 1e-12
+augmented hessian ah_linear dependence = 1e-14
+augmented hessian ah_level shift = 1e-08
+augmented hessian ah_start_tol = 2.5
+augmented hessian ah_start_cycle = 3
+augmented hessian ah_grad_trust_region = 3
+kf_trust_region = 3
+kf_interval = 4
+ci_response_space = 4
+ci_grad_trust_region = 3
+with_dep4 0
+natorb = False
+canonicalization = True
+sorting_mo_energy = False
+ao2mo_level = 2
+chkfile = /scratch/25175018/tmpx6qylsu_
+max_memory 4000 MB (current use 161 MB)
+internal_rotation = False
+******** <class 'pyscf.mcscf.addons.StateAverageFCISolver'> ********
+max. cycles = 50
+conv_tol = 1e-08
+davidson only = False
+linear dependence = 1e-12
+level shift = 0.001
+max iter space = 12
+max_memory 4000 MB
+nroots = 3
+pspace_size = 400
+spin = None
+State-average over 3 states with weights [0.33333333 0.33333333 0.33333333]
+CASCI E = -1791.42167092271  S^2 = 0.7500000
+Set conv_tol_grad to 0.000316228
+macro iter   1 ( 21 JK    4 micro), CASSCF E = -1791.46257815987  dE = -4.09072372e-02  S^2 = 0.7500000
+               |grad[o]|=0.526  |ddm|=0.0326  |maxRot[o]|=0.311
+macro iter   2 ( 19 JK    4 micro), CASSCF E = -1791.47066856937  dE = -8.09040950e-03  S^2 = 0.7500000
+               |grad[o]|=0.177  |ddm|=0.016  |maxRot[o]|= 0.25
+macro iter   3 ( 13 JK    4 micro), CASSCF E = -1791.47090143266  dE = -2.32863292e-04  S^2 = 0.7500000
+               |grad[o]|=0.0062  |ddm|=0.00258  |maxRot[o]|=0.0471
+macro iter   4 ( 10 JK    3 micro), CASSCF E = -1791.47091102612  dE = -9.59346107e-06  S^2 = 0.7500000
+               |grad[o]|=0.00121  |ddm|=0.000685  |maxRot[o]|=0.0109
+macro iter   5 (  4 JK    1 micro), CASSCF E = -1791.47091104666  dE = -2.05338893e-08  S^2 = 0.7500000
+               |grad[o]|=6.46e-05  |ddm|=4.25e-05  |maxRot[o]|=0.000471
+1-step CASSCF converged in   5 macro ( 67 JK  16 micro) steps
+CASSCF canonicalization
+Density matrix diagonal elements [1.89624812 0.40148557 0.33713628 0.33713628 0.02799374]
+CASSCF energy = -1791.47091104666
+CASCI E = -1791.47091104666  E(CI) = -2.06221213749859  S^2 = 0.7500000
+CASCI state-averaged energy = -1791.47091104666
+CASCI energy for each state
+  State 0 weight 0.333333  E = -1791.53802305888 S^2 = 0.7500000
+  State 1 weight 0.333333  E = -1791.43735504055 S^2 = 0.7500000
+  State 2 weight 0.333333  E = -1791.43735504054 S^2 = 0.7500000
+Natural occ [1.9137223  0.38633801 0.33713628 0.33713628 0.02566713]
+Natural orbital (expansion on meta-Lowdin AOs) in CAS space
+               #1        #2        #3        #4        #5       
+0 Zn 1s         -0.00002  -0.00007  -0.00000   0.00000   0.00010
+0 Zn 2s          0.00000   0.00017   0.00000  -0.00000  -0.00023
+0 Zn 3s         -0.00067  -0.00055  -0.00000  -0.00000   0.00056
+0 Zn 4s         -0.65020  -0.72832  -0.00000   0.00000   0.20821
+0 Zn 5s          0.03976  -0.08524   0.00000   0.00000  -0.12631
+0 Zn 6s         -0.00812   0.01683   0.00000  -0.00000   0.00553
+0 Zn 2px         0.00000  -0.00000  -0.00013   0.00001   0.00000
+0 Zn 2py         0.00000   0.00000  -0.00001  -0.00013   0.00000
+0 Zn 2pz        -0.00007   0.00011   0.00000   0.00000   0.00006
+0 Zn 3px         0.00000  -0.00000   0.00039  -0.00002  -0.00000
+0 Zn 3py         0.00000   0.00000   0.00002   0.00039   0.00000
+0 Zn 3pz        -0.00254   0.00098   0.00000  -0.00000  -0.00216
+0 Zn 4px         0.00000   0.00000  -0.99122   0.04518  -0.00000
+0 Zn 4py        -0.00000   0.00000  -0.04518  -0.99122   0.00000
+0 Zn 4pz        -0.08421   0.29063  -0.00000   0.00000   0.72482
+0 Zn 5px        -0.00000   0.00000  -0.09198   0.00419   0.00000
+0 Zn 5py        -0.00000  -0.00000  -0.00419  -0.09198  -0.00000
+0 Zn 5pz         0.04284  -0.02928  -0.00000   0.00000  -0.02242
+0 Zn 6px         0.00000  -0.00000   0.03072  -0.00140  -0.00000
+0 Zn 6py        -0.00000   0.00000   0.00140   0.03072   0.00000
+0 Zn 6pz        -0.00930  -0.00579   0.00000  -0.00000  -0.02451
+0 Zn 3dxy       -0.00000  -0.00000  -0.00000   0.00000   0.00000
+0 Zn 3dyz       -0.00000   0.00000   0.00006   0.00136   0.00000
+0 Zn 3dz^2      -0.00596   0.06366   0.00000  -0.00000  -0.03864
+0 Zn 3dxz        0.00000  -0.00000   0.00136  -0.00006  -0.00000
+0 Zn 3dx2-y2    -0.00000  -0.00000   0.00000  -0.00000   0.00000
+0 Zn 4dxy       -0.00000   0.00000   0.00000   0.00000   0.00000
+0 Zn 4dyz       -0.00000  -0.00000  -0.00066  -0.01450  -0.00000
+0 Zn 4dz^2       0.00028   0.04569  -0.00000   0.00000   0.14614
+0 Zn 4dxz        0.00000  -0.00000  -0.01450   0.00066  -0.00000
+0 Zn 4dx2-y2     0.00000  -0.00000   0.00000   0.00000  -0.00000
+0 Zn 5dxy        0.00000   0.00000   0.00000   0.00000   0.00000
+0 Zn 5dyz        0.00000   0.00000  -0.00090  -0.01969   0.00000
+0 Zn 5dz^2      -0.01278   0.06926  -0.00000   0.00000   0.17610
+0 Zn 5dxz        0.00000   0.00000  -0.01969   0.00090  -0.00000
+0 Zn 5dx2-y2     0.00000  -0.00000   0.00000   0.00000  -0.00000
+0 Zn 6dxy        0.00000  -0.00000   0.00000   0.00000   0.00000
+0 Zn 6dyz       -0.00000  -0.00000  -0.00068  -0.01493   0.00000
+0 Zn 6dz^2      -0.01616   0.04737  -0.00000   0.00000   0.07279
+0 Zn 6dxz        0.00000   0.00000  -0.01493   0.00068  -0.00000
+0 Zn 6dx2-y2     0.00000   0.00000   0.00000   0.00000   0.00000
+0 Zn 4f-3       -0.00000   0.00000   0.00000  -0.00000   0.00000
+0 Zn 4f-2       -0.00000  -0.00000   0.00000   0.00000  -0.00000
+0 Zn 4f-1        0.00000  -0.00000  -0.00001  -0.00016  -0.00000
+0 Zn 4f+0        0.00100   0.00076  -0.00000   0.00000   0.00852
+0 Zn 4f+1       -0.00000   0.00000  -0.00016   0.00001  -0.00000
+0 Zn 4f+2       -0.00000  -0.00000  -0.00000  -0.00000  -0.00000
+0 Zn 4f+3       -0.00000   0.00000   0.00000   0.00000   0.00000
+1 H 1s           0.75054  -0.57986  -0.00000   0.00000   0.29506
+1 H 2s          -0.01604   0.12556  -0.00000   0.00000   0.48026
+1 H 3s          -0.02828   0.08580   0.00000  -0.00000   0.17434
+1 H 2px         -0.00000   0.00000   0.07200  -0.00328   0.00000
+1 H 2py          0.00000  -0.00000   0.00328   0.07200  -0.00000
+1 H 2pz         -0.04185   0.06401  -0.00000  -0.00000   0.08276
+<mo_coeff-mcscf|mo_coeff-hf>  1      1        0.99999993
+<mo_coeff-mcscf|mo_coeff-hf>  2      2        0.99999260
+<mo_coeff-mcscf|mo_coeff-hf>  3      3        0.99997830
+<mo_coeff-mcscf|mo_coeff-hf>  4      4        0.99997830
+<mo_coeff-mcscf|mo_coeff-hf>  5      5        0.99999869
+<mo_coeff-mcscf|mo_coeff-hf>  6      6        0.99998470
+<mo_coeff-mcscf|mo_coeff-hf>  7      9        0.99997650
+<mo_coeff-mcscf|mo_coeff-hf>  8      7        0.99097455
+<mo_coeff-mcscf|mo_coeff-hf>  9      8        0.99097455
+<mo_coeff-mcscf|mo_coeff-hf>  10     10       0.95948709
+<mo_coeff-mcscf|mo_coeff-hf>  11     11       0.92995437
+<mo_coeff-mcscf|mo_coeff-hf>  12     12       0.92995437
+<mo_coeff-mcscf|mo_coeff-hf>  13     13       0.96992914
+<mo_coeff-mcscf|mo_coeff-hf>  14     14       0.96992914
+<mo_coeff-mcscf|mo_coeff-hf>  15     15       0.96136939
+<mo_coeff-mcscf|mo_coeff-hf>  16     16       0.99465912
+<mo_coeff-mcscf|mo_coeff-hf>  17     17       0.99879470
+<mo_coeff-mcscf|mo_coeff-hf>  18     18       0.99879470
+<mo_coeff-mcscf|mo_coeff-hf>  19     19       0.75135489
+<mo_coeff-mcscf|mo_coeff-hf>  19     29       0.53319584
+<mo_coeff-mcscf|mo_coeff-hf>  20     20       0.95979172
+<mo_coeff-mcscf|mo_coeff-hf>  21     19       0.40013030
+<mo_coeff-mcscf|mo_coeff-hf>  21     21       0.84668881
+<mo_coeff-mcscf|mo_coeff-hf>  22     22       0.99410262
+<mo_coeff-mcscf|mo_coeff-hf>  23     23       0.99410262
+<mo_coeff-mcscf|mo_coeff-hf>  24     24       0.99464391
+<mo_coeff-mcscf|mo_coeff-hf>  25     25       0.99464391
+<mo_coeff-mcscf|mo_coeff-hf>  26     26       0.71485534
+<mo_coeff-mcscf|mo_coeff-hf>  26     27      -0.69673780
+<mo_coeff-mcscf|mo_coeff-hf>  27     26       0.69673780
+<mo_coeff-mcscf|mo_coeff-hf>  27     27       0.71485534
+<mo_coeff-mcscf|mo_coeff-hf>  28     19       0.41480711
+<mo_coeff-mcscf|mo_coeff-hf>  28     21      -0.48625308
+<mo_coeff-mcscf|mo_coeff-hf>  28     28       0.60370650
+<mo_coeff-mcscf|mo_coeff-hf>  28     29      -0.44643331
+<mo_coeff-mcscf|mo_coeff-hf>  29     28       0.67253005
+<mo_coeff-mcscf|mo_coeff-hf>  29     29       0.70222873
+<mo_coeff-mcscf|mo_coeff-hf>  30     30       0.99789457
+<mo_coeff-mcscf|mo_coeff-hf>  31     31       0.99789457
+<mo_coeff-mcscf|mo_coeff-hf>  32     33       0.97952801
+<mo_coeff-mcscf|mo_coeff-hf>  33     32       0.97952801
+<mo_coeff-mcscf|mo_coeff-hf>  34     34       0.99761130
+<mo_coeff-mcscf|mo_coeff-hf>  35     35       0.99946801
+<mo_coeff-mcscf|mo_coeff-hf>  36     36       0.99946801
+<mo_coeff-mcscf|mo_coeff-hf>  37     37       0.98992988
+<mo_coeff-mcscf|mo_coeff-hf>  38     40       0.97015288
+<mo_coeff-mcscf|mo_coeff-hf>  39     38       0.99892208
+<mo_coeff-mcscf|mo_coeff-hf>  40     39       0.99892208
+<mo_coeff-mcscf|mo_coeff-hf>  41     41       0.97876840
+<mo_coeff-mcscf|mo_coeff-hf>  42     42       0.99894791
+<mo_coeff-mcscf|mo_coeff-hf>  43     44       0.95775874
+<mo_coeff-mcscf|mo_coeff-hf>  44     43       0.95775874
+<mo_coeff-mcscf|mo_coeff-hf>  45     45       0.99807404
+<mo_coeff-mcscf|mo_coeff-hf>  46     46       0.99807404
+<mo_coeff-mcscf|mo_coeff-hf>  47     47       0.99916162
+<mo_coeff-mcscf|mo_coeff-hf>  48     48       0.99989707
+<mo_coeff-mcscf|mo_coeff-hf>  49     49       0.99989707
+<mo_coeff-mcscf|mo_coeff-hf>  50     50       0.64585558
+<mo_coeff-mcscf|mo_coeff-hf>  50     51       0.76345413
+<mo_coeff-mcscf|mo_coeff-hf>  51     50       0.76345413
+<mo_coeff-mcscf|mo_coeff-hf>  51     51      -0.64585558
+<mo_coeff-mcscf|mo_coeff-hf>  52     52       0.99996047
+<mo_coeff-mcscf|mo_coeff-hf>  53     53       0.99996047
+<mo_coeff-mcscf|mo_coeff-hf>  54     54       0.99998900
+** Largest CI components **
+  [alpha occ-orbitals] [beta occ-orbitals]  state 0   CI coefficient
+  [0 1]                [0]                             0.974182789771
+  [0 1]                [1]                            -0.122833819630
+  [alpha occ-orbitals] [beta occ-orbitals]  state 1   CI coefficient
+  [0 1]                [2]                            -0.135814167556
+  [0 2]                [0]                             0.951952365529
+  [0 2]                [1]                            -0.174604742531
+  [1 2]                [1]                            -0.136022610257
+  [alpha occ-orbitals] [beta occ-orbitals]  state 2   CI coefficient
+  [0 1]                [3]                             0.135814167554
+  [0 3]                [0]                            -0.951952365529
+  [0 3]                [1]                             0.174604742530
+  [1 3]                [1]                             0.136022610256
+ ** Mulliken pop on meta-lowdin orthogonal AOs  **
+ ** Mulliken pop  **
+pop of  0 Zn 1s           2.00000
+pop of  0 Zn 2s           1.99999
+pop of  0 Zn 3s           1.99996
+pop of  0 Zn 4s           1.02023
+pop of  0 Zn 5s           0.00625
+pop of  0 Zn 6s           0.00028
+pop of  0 Zn 2px          2.00000
+pop of  0 Zn 2py          2.00000
+pop of  0 Zn 2pz          2.00000
+pop of  0 Zn 3px          1.99999
+pop of  0 Zn 3py          1.99999
+pop of  0 Zn 3pz          1.99997
+pop of  0 Zn 4px          0.33194
+pop of  0 Zn 4py          0.33194
+pop of  0 Zn 4pz          0.05984
+pop of  0 Zn 5px          0.00288
+pop of  0 Zn 5py          0.00288
+pop of  0 Zn 5pz          0.00386
+pop of  0 Zn 6px          0.00032
+pop of  0 Zn 6py          0.00032
+pop of  0 Zn 6pz          0.00022
+pop of  0 Zn 3dxy         1.99997
+pop of  0 Zn 3dyz         1.99992
+pop of  0 Zn 3dz^2        1.99033
+pop of  0 Zn 3dxz         1.99992
+pop of  0 Zn 3dx2-y2      1.99997
+pop of  0 Zn 4dxy         0.00000
+pop of  0 Zn 4dyz         0.00007
+pop of  0 Zn 4dz^2        0.00139
+pop of  0 Zn 4dxz         0.00007
+pop of  0 Zn 4dx2-y2      0.00000
+pop of  0 Zn 5dxy         0.00000
+pop of  0 Zn 5dyz         0.00015
+pop of  0 Zn 5dz^2        0.00299
+pop of  0 Zn 5dxz         0.00015
+pop of  0 Zn 5dx2-y2      0.00000
+pop of  0 Zn 6dxy         0.00002
+pop of  0 Zn 6dyz         0.00008
+pop of  0 Zn 6dz^2        0.00156
+pop of  0 Zn 6dxz         0.00008
+pop of  0 Zn 6dx2-y2      0.00002
+pop of  0 Zn 4f-3         0.00000
+pop of  0 Zn 4f-2         0.00000
+pop of  0 Zn 4f-1         0.00001
+pop of  0 Zn 4f+0         0.00001
+pop of  0 Zn 4f+1         0.00001
+pop of  0 Zn 4f+2         0.00000
+pop of  0 Zn 4f+3         0.00000
+pop of  1 H 1s            1.21581
+pop of  1 H 2s            0.01265
+pop of  1 H 3s            0.00526
+pop of  1 H 2px           0.00177
+pop of  1 H 2py           0.00177
+pop of  1 H 2pz           0.00513
+ ** Mulliken atomic charges  **
+charge of    0Zn =      0.24238
+charge of    1H =     -0.24238
+Mulliken spin population analysis on meta-Lowdin AOs:
+ ** Mulliken pop on meta-lowdin orthogonal AOs  **
+ ** Mulliken pop  **
+pop of  0 Zn 1s           0.00000
+pop of  0 Zn 2s           0.00000
+pop of  0 Zn 3s           0.00000
+pop of  0 Zn 4s           0.28704
+pop of  0 Zn 5s           0.00245
+pop of  0 Zn 6s           0.00007
+pop of  0 Zn 2px          0.00000
+pop of  0 Zn 2py          0.00000
+pop of  0 Zn 2pz          0.00000
+pop of  0 Zn 3px          0.00000
+pop of  0 Zn 3py          0.00000
+pop of  0 Zn 3pz         -0.00000
+pop of  0 Zn 4px          0.31472
+pop of  0 Zn 4py          0.31472
+pop of  0 Zn 4pz          0.03800
+pop of  0 Zn 5px          0.00271
+pop of  0 Zn 5py          0.00271
+pop of  0 Zn 5pz          0.00009
+pop of  0 Zn 6px          0.00030
+pop of  0 Zn 6py          0.00030
+pop of  0 Zn 6pz          0.00003
+pop of  0 Zn 3dxy         0.00000
+pop of  0 Zn 3dyz         0.00000
+pop of  0 Zn 3dz^2        0.00115
+pop of  0 Zn 3dxz         0.00000
+pop of  0 Zn 3dx2-y2      0.00000
+pop of  0 Zn 4dxy         0.00000
+pop of  0 Zn 4dyz         0.00007
+pop of  0 Zn 4dz^2        0.00118
+pop of  0 Zn 4dxz         0.00007
+pop of  0 Zn 4dx2-y2     -0.00000
+pop of  0 Zn 5dxy         0.00000
+pop of  0 Zn 5dyz         0.00012
+pop of  0 Zn 5dz^2        0.00227
+pop of  0 Zn 5dxz         0.00012
+pop of  0 Zn 5dx2-y2      0.00000
+pop of  0 Zn 6dxy        -0.00000
+pop of  0 Zn 6dyz         0.00007
+pop of  0 Zn 6dz^2        0.00082
+pop of  0 Zn 6dxz         0.00007
+pop of  0 Zn 6dx2-y2     -0.00000
+pop of  0 Zn 4f-3         0.00000
+pop of  0 Zn 4f-2         0.00000
+pop of  0 Zn 4f-1         0.00000
+pop of  0 Zn 4f+0         0.00000
+pop of  0 Zn 4f+1         0.00000
+pop of  0 Zn 4f+2         0.00000
+pop of  0 Zn 4f+3         0.00000
+pop of  1 H 1s            0.01403
+pop of  1 H 2s            0.00940
+pop of  1 H 3s            0.00298
+pop of  1 H 2px           0.00166
+pop of  1 H 2py           0.00166
+pop of  1 H 2pz           0.00118
+ ** Mulliken atomic charges  **
+charge of    0Zn =     29.03090
+charge of    1H =      0.96910
+spop of 0 Zn 1s         0.00000
+spop of 0 Zn 2s         0.00000
+spop of 0 Zn 3s         0.00000
+spop of 0 Zn 4s         0.28704
+spop of 0 Zn 5s         0.00245
+spop of 0 Zn 6s         0.00007
+spop of 0 Zn 2px        0.00000
+spop of 0 Zn 2py        0.00000
+spop of 0 Zn 2pz        0.00000
+spop of 0 Zn 3px        0.00000
+spop of 0 Zn 3py        0.00000
+spop of 0 Zn 3pz       -0.00000
+spop of 0 Zn 4px        0.31472
+spop of 0 Zn 4py        0.31472
+spop of 0 Zn 4pz        0.03800
+spop of 0 Zn 5px        0.00271
+spop of 0 Zn 5py        0.00271
+spop of 0 Zn 5pz        0.00009
+spop of 0 Zn 6px        0.00030
+spop of 0 Zn 6py        0.00030
+spop of 0 Zn 6pz        0.00003
+spop of 0 Zn 3dxy       0.00000
+spop of 0 Zn 3dyz       0.00000
+spop of 0 Zn 3dz^2      0.00115
+spop of 0 Zn 3dxz       0.00000
+spop of 0 Zn 3dx2-y2    0.00000
+spop of 0 Zn 4dxy       0.00000
+spop of 0 Zn 4dyz       0.00007
+spop of 0 Zn 4dz^2      0.00118
+spop of 0 Zn 4dxz       0.00007
+spop of 0 Zn 4dx2-y2   -0.00000
+spop of 0 Zn 5dxy       0.00000
+spop of 0 Zn 5dyz       0.00012
+spop of 0 Zn 5dz^2      0.00227
+spop of 0 Zn 5dxz       0.00012
+spop of 0 Zn 5dx2-y2    0.00000
+spop of 0 Zn 6dxy      -0.00000
+spop of 0 Zn 6dyz       0.00007
+spop of 0 Zn 6dz^2      0.00082
+spop of 0 Zn 6dxz       0.00007
+spop of 0 Zn 6dx2-y2   -0.00000
+spop of 0 Zn 4f-3       0.00000
+spop of 0 Zn 4f-2       0.00000
+spop of 0 Zn 4f-1       0.00000
+spop of 0 Zn 4f+0       0.00000
+spop of 0 Zn 4f+1       0.00000
+spop of 0 Zn 4f+2       0.00000
+spop of 0 Zn 4f+3       0.00000
+spop of 1 H 1s          0.01403
+spop of 1 H 2s          0.00940
+spop of 1 H 3s          0.00298
+spop of 1 H 2px         0.00166
+spop of 1 H 2py         0.00166
+spop of 1 H 2pz         0.00118
+Mulliken atomic spins:
+spin of  0Zn =      0.96910
+spin of  1H =      0.03090
+
+
+------------------------------------------------------------------------------
+
+            PRISM: Open-Source implementation of ab initio methods
+                    for excited states and spectroscopy
+
+                               Version 0.9
+
+                   Copyright (C) 2026 Prism Developers
+                   Contributors: Nicholas Yiching Chiang
+                                 Carlos E. V. de Moura
+                                 Nishshanka M. Lakshan
+                                 Rajat S. Majumder
+                                 Ilia M. Mazin
+                                 Donna H. Odhiambo
+                                 Bryce Pickett
+                                 James D. Serna
+                                 Alexander Yu. Sokolov
+
+            Unless required by applicable law or agreed to in
+            writing, software distributed under the GNU General
+            Public License v3.0 and is distributed on an "AS IS"
+            BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+            either express or implied.
+
+            See the License for the specific language governing
+            permissions and limitations.
+
+            Available at https://github.com/sokolov-group/prism
+
+------------------------------------------------------------------------------
+
+Importing Pyscf objects...
+
+Collecting reference wavefunction information...
+Reference wavefunction: sa-casscf
+Canonicalizing molecular orbitals using reference wavefunction manifold...
+
+Summary of reference wavefunction manifold:
+Total number of reference states: 3
+  State       S^2        S      (2S+1)        E(total)              E(CAS)
+-----------------------------------------------------------------------------------
+    1       0.75000     0.5        2    -1791.538023058883      -2.129324149724
+    2       0.75000     0.5        2    -1791.437355040549      -2.028656131390
+    3       0.75000     0.5        2    -1791.437355040542      -2.028656131383
+-----------------------------------------------------------------------------------
+
+Initializing fully internally contracted NEVPT...
+
+Computing NEVPT energies...
+
+Method:                                            nevpt2
+Method type:                                       qd
+Nuclear repulsion energy:                          9.953176380940
+Number of electrons:                               31
+Number of basis functions:                         54
+Reference wavefunction type:                       sa-casscf
+Number of reference states:                        3
+Number of reference microstates:                   3
+Number of frozen orbitals:                         0
+Number of core orbitals:                           14
+Number of active orbitals:                         5
+Number of external orbitals:                       35
+Number of active electrons:                        [(2, 1), (2, 1), (2, 1)]
+Spin–orbit coupling:                               None
+G-tensor:                                          False
+Reference density fitting?                         False
+Correlation density fitting?                       False
+Temporary directory path:                          /scratch/25175018
+
+Internal contraction:                              Full (= Partial)
+Compute singles amplitudes?                        False
+Overlap truncation parameter (singles):            1.00e-08
+Overlap truncation parameter (doubles):            1.00e-08
+
+Einsum Backend:                                    opt_einsum
+
+Transforming integrals to MO basis...
+Correlation energy [0]:                           -0.587131021571
+
+Computing energy of state #1...
+Reference state active-space energy:              -2.129324149724
+Reference state spin multiplicity:                 2
+Number of active electrons:                        [(2, 1)]
+Correlation energy [0']:                          -0.009063963788
+Correlation energy [+1']:                         -0.001685492381
+Correlation energy [-1']:                         -0.005827231340
+Correlation energy [+1]:                          -0.025657491769
+Correlation energy [-1]:                          -0.026076328505
+Correlation energy [+2]:                          -0.000556949095
+Correlation energy [-2]:                          -0.008287934632
+Correlation energy [0]:                           -0.587131021571
+SA-CASSCF reference state total energy:        -1791.538023058883
+NEVPT2 correlation energy:                        -0.664286413082
+Total NEVPT2 energy:                           -1792.202309471965
+
+Computing energy of state #2...
+Reference state active-space energy:              -2.028656131390
+Reference state spin multiplicity:                 2
+Number of active electrons:                        [(2, 1)]
+Correlation energy [0']:                          -0.008274133554
+Correlation energy [+1']:                         -0.001171975097
+Correlation energy [-1']:                         -0.006385129305
+Correlation energy [+1]:                          -0.027383654088
+Correlation energy [-1]:                          -0.023230068115
+Correlation energy [+2]:                          -0.000622371361
+Correlation energy [-2]:                          -0.006724668989
+Correlation energy [0]:                           -0.587131021571
+SA-CASSCF reference state total energy:        -1791.437355040549
+NEVPT2 correlation energy:                        -0.660923022080
+Total NEVPT2 energy:                           -1792.098278062629
+
+Computing energy of state #3...
+Reference state active-space energy:              -2.028656131383
+Reference state spin multiplicity:                 2
+Number of active electrons:                        [(2, 1)]
+Correlation energy [0']:                          -0.008274133554
+Correlation energy [+1']:                         -0.001171975097
+Correlation energy [-1']:                         -0.006385129305
+Correlation energy [+1]:                          -0.027383654088
+Correlation energy [-1]:                          -0.023230068115
+Correlation energy [+2]:                          -0.000622371361
+Correlation energy [-2]:                          -0.006724668989
+Correlation energy [0]:                           -0.587131021571
+SA-CASSCF reference state total energy:        -1791.437355040542
+NEVPT2 correlation energy:                        -0.660923022080
+Total NEVPT2 energy:                           -1792.098278062621
+
+Computing the QD-NEVPT2 effective Hamiltonian...
+
+Summary of results for the QD-NEVPT2 calculation with the SA-CASSCF reference:
+------------------------------------------------------------------------------------------------------------------
+  State    Degen.        E(total)            dE(a.u.)        dE(eV)      dE(nm)       dE(cm-1)      Osc Str.  
+------------------------------------------------------------------------------------------------------------------
+    1        2        -1792.202309471965     0.00000000       0.0000                      0.0000               
+    2        2        -1792.098278062629     0.10403141       2.8308     437.9769     22832.2552     0.05295243
+    3        2        -1792.098278062621     0.10403141       2.8308     437.9769     22832.2552     0.05295243
+----------------------------------------------------------------------------------------------------------------
+> CPU time for total NEVPT2 calculation     50.91 sec, wall time      4.89 sec
+Initializing fully internally contracted NEVPT...
+
+Computing NEVPT energies...
+
+Method:                                            nevpt2
+Method type:                                       qd
+Nuclear repulsion energy:                          9.953176380940
+Number of electrons:                               31
+Number of basis functions:                         54
+Reference wavefunction type:                       sa-casscf
+Number of reference states:                        3
+Number of reference microstates:                   3
+Number of frozen orbitals:                         0
+Number of core orbitals:                           14
+Number of active orbitals:                         5
+Number of external orbitals:                       35
+Number of active electrons:                        [(2, 1), (2, 1), (2, 1)]
+Spin–orbit coupling:                               dkh1
+G-tensor:                                          True
+G-tensor origin:                                   charge
+G-tensor target state:                             1
+Reference density fitting?                         False
+Correlation density fitting?                       False
+Temporary directory path:                          /scratch/25175018
+
+Internal contraction:                              Full (= Partial)
+Compute singles amplitudes?                        False
+Overlap truncation parameter (singles):            1.00e-08
+Overlap truncation parameter (doubles):            1.00e-08
+
+Einsum Backend:                                    opt_einsum
+
+Transforming integrals to MO basis...
+Correlation energy [0]:                           -0.587131021571
+
+Computing energy of state #1...
+Reference state active-space energy:              -2.129324149724
+Reference state spin multiplicity:                 2
+Number of active electrons:                        [(2, 1)]
+Correlation energy [0']:                          -0.009063963788
+Correlation energy [+1']:                         -0.001685492381
+Correlation energy [-1']:                         -0.005827231340
+Correlation energy [+1]:                          -0.025657491769
+Correlation energy [-1]:                          -0.026076328505
+Correlation energy [+2]:                          -0.000556949095
+Correlation energy [-2]:                          -0.008287934632
+Correlation energy [0]:                           -0.587131021571
+SA-CASSCF reference state total energy:        -1791.538023058883
+NEVPT2 correlation energy:                        -0.664286413082
+Total NEVPT2 energy:                           -1792.202309471965
+
+Computing energy of state #2...
+Reference state active-space energy:              -2.028656131390
+Reference state spin multiplicity:                 2
+Number of active electrons:                        [(2, 1)]
+Correlation energy [0']:                          -0.008274133554
+Correlation energy [+1']:                         -0.001171975097
+Correlation energy [-1']:                         -0.006385129305
+Correlation energy [+1]:                          -0.027383654088
+Correlation energy [-1]:                          -0.023230068115
+Correlation energy [+2]:                          -0.000622371361
+Correlation energy [-2]:                          -0.006724668989
+Correlation energy [0]:                           -0.587131021571
+SA-CASSCF reference state total energy:        -1791.437355040549
+NEVPT2 correlation energy:                        -0.660923022080
+Total NEVPT2 energy:                           -1792.098278062629
+
+Computing energy of state #3...
+Reference state active-space energy:              -2.028656131383
+Reference state spin multiplicity:                 2
+Number of active electrons:                        [(2, 1)]
+Correlation energy [0']:                          -0.008274133554
+Correlation energy [+1']:                         -0.001171975097
+Correlation energy [-1']:                         -0.006385129305
+Correlation energy [+1]:                          -0.027383654088
+Correlation energy [-1]:                          -0.023230068115
+Correlation energy [+2]:                          -0.000622371361
+Correlation energy [-2]:                          -0.006724668989
+Correlation energy [0]:                           -0.587131021571
+SA-CASSCF reference state total energy:        -1791.437355040542
+NEVPT2 correlation energy:                        -0.660923022080
+Total NEVPT2 energy:                           -1792.098278062621
+
+Computing the QD-NEVPT2 effective Hamiltonian...
+
+Initializing state-interaction spin–orbit coupling program...
+Performing state-interaction spin–orbit coupling calculation within spin-free framework...
+
+Note that SOC Hamiltionian is sf-X2C-1e+so-DKH1 instead of usual DKH. 
+
+Calculating Wigner 1-RDM...
+Cutting basis functions into 2 batches, need to calculate 16 integrals batches.
+Time elapsed for 1th batch in 8 batches is 11.1654, cumulates time is 11.1654.
+Time elapsed for 2th batch in 8 batches is 2.78637, cumulates time is 13.9519.
+Time elapsed for 3th batch in 8 batches is 2.78366, cumulates time is 16.7356.
+Time elapsed for 4th batch in 8 batches is 0.774693, cumulates time is 17.5104.
+Time elapsed for 5th batch in 8 batches is 2.56006, cumulates time is 20.0705.
+Time elapsed for 6th batch in 8 batches is 0.752081, cumulates time is 20.8226.
+Time elapsed for 7th batch in 8 batches is 0.757621, cumulates time is 21.5803.
+Time elapsed for 8th batch in 8 batches is 0.275261, cumulates time is 21.8556.
+Time elapsed for 9th batch in 8 batches is 2.54646, cumulates time is 24.4021.
+Time elapsed for 10th batch in 8 batches is 0.757982, cumulates time is 25.1601.
+Time elapsed for 11th batch in 8 batches is 0.762579, cumulates time is 25.9228.
+Time elapsed for 12th batch in 8 batches is 0.244947, cumulates time is 26.1678.
+Time elapsed for 13th batch in 8 batches is 0.763075, cumulates time is 26.9309.
+Time elapsed for 14th batch in 8 batches is 0.301405, cumulates time is 27.2323.
+Time elapsed for 15th batch in 8 batches is 0.322589, cumulates time is 27.555.
+Time elapsed for 16th batch in 8 batches is 0.133751, cumulates time is 27.6888.
+Two electron part of SOC integral is done
+> CPU time for total None calculation     35.09 sec, wall time      7.01 sec
+Calculating magnetic dipole moment...
+Coordinate system origin (charge, Bohr) = [0.         0.         0.09722946]
+
+Calculating g-tensor...
+
+Target State index = 1
+Micro state index: 1 to 2
+Calculating g-tensor for multiplicity = 2
+
+Summary of results for the DKH1-QD-NEVPT2 calculation with the SA-CASSCF reference:
+------------------------------------------------------------------------------------------------------------------
+  State    Degen.        E(total)            dE(a.u.)        dE(eV)      dE(nm)       dE(cm-1)      Osc Str.  
+------------------------------------------------------------------------------------------------------------------
+    1        1        -1792.202314786894     0.00000000       0.0000                      0.0000               
+    2        1        -1792.202314786893     0.00000000       0.0000                      0.0000               
+    3        1        -1792.098895645952     0.10341914       2.8142     440.5698     22697.8778     0.05264188
+    4        1        -1792.098895645951     0.10341914       2.8142     440.5698     22697.8778     0.05264188
+    5        1        -1792.097655164371     0.10465962       2.8479     435.3480     22970.1321     0.05326945
+    6        1        -1792.097655164370     0.10465962       2.8479     435.3480     22970.1321     0.05326945
+----------------------------------------------------------------------------------------------------------------
+
+Magnetic g-tensor principal axes:
+[[ 0.13547   0.990781  0.      ]
+ [-0.990781  0.13547  -0.      ]
+ [-0.       -0.        1.      ]]
+
+Magnetic g-factors (ge = 2.002319):
+      1.985702,       1.985702,       2.002216
+     -0.016617,      -0.016617,      -0.000103 (g-shift)
+       -16.617,        -16.617,         -0.103 (g-shift, ppt)
+> CPU time for total SOC-NEVPT2 calculation     65.91 sec, wall time     13.12 sec

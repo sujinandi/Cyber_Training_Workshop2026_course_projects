@@ -1,0 +1,187 @@
+#INFO: **** input file is /vscratch/grp-cyberwksp21/sbakenhaster/tues_7_7/cybertraining_examples/pyscf_prism_examples/project/c5h6/pcm/tda_tddft_rsh.py ****
+import numpy as np
+from pyscf import gto, dft, adc, tddft
+from pyscf.tools import cubegen
+from pyscf.tools import molden
+
+# Specify geometry and molecular information
+mol = gto.Mole()
+mol.atom = '/vscratch/grp-cyberwksp21/sbakenhaster/tues_7_7/cybertraining_examples/pyscf_prism_examples/project/c5h6/c5h6.xyz'
+ #'/pirojects/academic/cyberwksp21/SOFTWARE_2026/pyscf_prism_examples/geometries/ethylene.xyz'
+mol.basis = 'aug-cc-pvdz'
+mol.verbose = 4
+mol.charge = 0
+mol.max_memory = 10000
+mol.build()
+
+# Run reference (ground-state) Hartree-Fock calculation
+mf = dft.RKS(mol)
+mf.xc = "b3lyp"
+mf.kernel()
+
+# Run time-dependent DFT calculation in the Tamm-Dancoff approximation (CIS)
+#mytd = tddft.TDA(mf)
+mytd = tddft.TDA(mf).PCM().run()
+td.with_solvent.equilibrium_solvation = True
+td.with_solvent_eps = 4.00
+mytd.nstates = 10
+mytd.singlet = True
+mytd.kernel()
+
+# Analyze the results
+mytd.analyze()
+
+# Compute natural transition orbitals
+for i in range(mytd.nstates):
+    weights, nto = mytd.get_nto(state=i+1, verbose=4)
+    molden.from_mo(mol, 'nto-tda-%s.molden' % str(i+1), nto)
+
+# Function for calculating TDA density matrix
+def tda_density_matrix(td, state_id):
+    '''
+    Taking the TDA amplitudes as the CIS coefficients, calculate the density
+    matrix (in AO basis) of the excited states
+    '''
+    cis_t1 = td.xy[state_id][0]
+    dm_oo =-np.einsum('ia,ka->ik', cis_t1.conj(), cis_t1)
+    dm_vv = np.einsum('ia,ic->ac', cis_t1, cis_t1.conj())
+
+    # The ground state density matrix in mo_basis
+    mf = td._scf
+    dm = np.diag(mf.mo_occ)
+
+    # Add CIS contribution
+    nocc = cis_t1.shape[0]
+    # Note that dm_oo and dm_vv correspond to spin-up contribution. "*2" to
+    # include the spin-down contribution
+    dm[:nocc,:nocc] += dm_oo * 2
+    dm[nocc:,nocc:] += dm_vv * 2
+
+    # Transform density matrix to AO basis
+    mo = mf.mo_coeff
+    dm = np.einsum('pi,ij,qj->pq', mo, dm, mo.conj())
+    return dm
+
+# Density matrix for the 3rd excited state
+dm = tda_density_matrix(mytd, 2)
+
+# Write to cube format
+from pyscf.tools import cubegen
+cubegen.density(mol, 'tda_density.cube', dm)
+
+# Write the density difference between excited state and ground state
+cubegen.density(mol, 'density_diff.cube', dm - mf.make_rdm1())
+
+# Run full time-dependent SCF calculation (RPA)
+mytd = tddft.TDDFT(mf)
+mytd.nstates = 10
+mytd.singlet = True
+mytd.kernel()
+
+# Analyze the results
+mytd.analyze()
+
+# Compute natural transition orbitals
+for i in range(mytd.nstates):
+    weights, nto = mytd.get_nto(state=i+1, verbose=4)
+    molden.from_mo(mol, 'nto-rpa-%s.molden' % str(i+1), nto)
+
+#INFO: ******************** input file end ********************
+
+
+System: uname_result(system='Linux', node='cpn-c02-06.core.ccr.buffalo.edu', release='6.8.0-124-generic', version='#124-Ubuntu SMP PREEMPT_DYNAMIC Tue May 26 13:00:45 UTC 2026', machine='x86_64')  Threads 4
+Python 3.13.14 | packaged by Anaconda, Inc. | (main, Jun 17 2026, 20:12:46) [GCC 14.3.0]
+numpy 1.26.4  scipy 1.14.1  h5py 3.16.0
+Date: Sat Jul 18 00:36:00 2026
+PySCF version 2.13.1
+PySCF path  /projects/academic/cyberwksp21/SOFTWARE_2026/conda/miniconda3/envs/pyscf/lib/python3.13/site-packages/pyscf
+
+[CONFIG] conf_file None
+[INPUT] verbose = 4
+[INPUT] num. atoms = 11
+[INPUT] num. electrons = 36
+[INPUT] charge = 0
+[INPUT] spin (= nelec alpha-beta = 2S) = 0
+[INPUT] symmetry False subgroup None
+[INPUT] Mole.unit = angstrom
+[INPUT] Symbol           X                Y                Z      unit          X                Y                Z       unit  Magmom
+[INPUT]  1 C      0.276788426869  -1.177141266445   0.000016817118 AA    0.523054321231  -2.224474603504   0.000031779748 Bohr   0.0
+[INPUT]  2 C     -0.996917532470  -0.734912599439  -0.000014915012 AA   -1.883901105146  -1.388783538433  -0.000028185288 Bohr   0.0
+[INPUT]  3 C     -0.996851914017   0.735004518125  -0.000011825897 AA   -1.883777104241   1.388957239573  -0.000022347707 Bohr   0.0
+[INPUT]  4 C      0.276893282426   1.177118959015   0.000021459963 AA    0.523252469517   2.224432448571   0.000040553454 Bohr   0.0
+[INPUT]  5 C      1.209353340827  -0.000052641936   0.000054082816 AA    2.285346601990  -0.000099478842   0.000102201710 Bohr   0.0
+[INPUT]  6 H      0.604725299119  -2.214489483191   0.000022313629 AA    1.142765195931  -4.184778628960   0.000042166648 Bohr   0.0
+[INPUT]  7 H     -1.892442935619  -1.354305178448  -0.000036373042 AA   -3.576198854687  -2.559265876346  -0.000068735089 Bohr   0.0
+[INPUT]  8 H     -1.892322673987   1.354476116701  -0.000030886958 AA   -3.575971593139   2.559588902830  -0.000058367891 Bohr   0.0
+[INPUT]  9 H      0.604924097871   2.214437289619   0.000031068776 AA    1.143140871126   4.184679997405   0.000058711477 Bohr   0.0
+[INPUT] 10 H      1.869436927879  -0.000083345104   0.882971812491 AA    3.532723800840  -0.000157499421   1.668574901319 Bohr   0.0
+[INPUT] 11 H      1.869549973205  -0.000079826870  -0.882775998780 AA    3.532937425545  -0.000150850921  -1.668204867034 Bohr   0.0
+
+nuclear repulsion = 156.534641429742
+number of shells = 70
+number of NR pGTOs = 241
+number of NR cGTOs = 169
+basis = aug-cc-pvdz
+ecp = {}
+CPU time:         1.40
+
+
+******** <class 'pyscf.dft.rks.RKS'> ********
+method = RKS
+initial guess = minao
+damping factor = 0
+level_shift factor = 0
+DIIS = <class 'pyscf.scf.diis.CDIIS'>
+diis_start_cycle = 1
+diis_space = 8
+diis_damp = 0
+SCF conv_tol = 1e-09
+SCF conv_tol_grad = None
+SCF max_cycles = 50
+direct_scf = True
+direct_scf_tol = 1e-13
+chkfile to save SCF result = /scratch/25297690/tmpd1xmlm1w
+max_memory 10000 MB (current use 97 MB)
+XC library pyscf.dft.libxc version 7.0.0
+    S. Lehtola, C. Steigemann, M. J.T. Oliveira, and M. A.L. Marques.,  SoftwareX 7, 1–5 (2018)
+XC functionals = b3lyp
+    P. J. Stephens, F. J. Devlin, C. F. Chabalowski, and M. J. Frisch.,  J. Phys. Chem. 98, 11623 (1994)
+radial grids: 
+Treutler-Ahlrichs [JCP 102, 346 (1995); DOI:10.1063/1.469408] (M4) radial grids
+
+becke partition: Becke, JCP 88, 2547 (1988); DOI:10.1063/1.454033
+pruning grids: <function nwchem_prune at 0x8234e83e0c0>
+grids dens level: 3
+symmetrized grids: False
+atomic radii adjust function: <function treutler_atomic_radii_adjust at 0x8234e83e020>
+small_rho_cutoff = 0
+Set gradient conv threshold to 3.16228e-05
+Initial guess from minao.
+tot grids = 129440
+init E= -194.744239984391
+  HOMO = -0.269958491721017  LUMO = -0.105249969538057
+cycle= 1 E= -194.081281905729  delta_E= 0.663  |g|= 0.379  |ddm|= 9.23
+  HOMO = -0.156128758018136  LUMO = -0.00013296341009994
+cycle= 2 E= -194.055328757195  delta_E= 0.026  |g|= 0.494  |ddm|= 2.84
+  HOMO = -0.22583502380172  LUMO = -0.0295274951767031
+cycle= 3 E= -194.123575633064  delta_E= -0.0682  |g|= 0.0299  |ddm|= 1.16
+  HOMO = -0.226399032362417  LUMO = -0.0293329213080198
+cycle= 4 E= -194.123673919944  delta_E= -9.83e-05  |g|= 0.0217  |ddm|= 0.0886
+  HOMO = -0.225690672292089  LUMO = -0.0288341564909502
+cycle= 5 E= -194.123777331788  delta_E= -0.000103  |g|= 0.00945  |ddm|= 0.0542
+  HOMO = -0.225614823023075  LUMO = -0.0287493793618143
+cycle= 6 E= -194.12380152031  delta_E= -2.42e-05  |g|= 0.000371  |ddm|= 0.0203
+  HOMO = -0.225652029487394  LUMO = -0.0287706473844129
+cycle= 7 E= -194.123801548271  delta_E= -2.8e-08  |g|= 0.000178  |ddm|= 0.00113
+  HOMO = -0.225649499993997  LUMO = -0.0287706008245818
+cycle= 8 E= -194.123801556364  delta_E= -8.09e-09  |g|= 1.11e-05  |ddm|= 0.00044
+  HOMO = -0.225648813990496  LUMO = -0.0287697234647637
+cycle= 9 E= -194.12380155641  delta_E= -4.54e-11  |g|= 1.44e-06  |ddm|= 5.06e-05
+  HOMO = -0.225648718151281  LUMO = -0.0287694945053625
+Extra cycle  E= -194.123801556411  delta_E= -8.53e-13  |g|= 1.05e-06  |ddm|= 7.11e-06
+converged SCF energy = -194.123801556411
+Traceback (most recent call last):
+  File "/vscratch/grp-cyberwksp21/sbakenhaster/tues_7_7/cybertraining_examples/pyscf_prism_examples/project/c5h6/pcm/tda_tddft_rsh.py", line 23, in <module>
+    mytd = tddft.TDA(mf).PCM().run()
+           ^^^^^^^^^^^^^^^^^
+AttributeError: 'TDA' object has no attribute 'PCM'

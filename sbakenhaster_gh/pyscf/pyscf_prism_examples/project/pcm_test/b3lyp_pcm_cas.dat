@@ -1,0 +1,2512 @@
+#INFO: **** input file is /vscratch/grp-cyberwksp21/sbakenhaster/tues_7_7/cybertraining_examples/pyscf_prism_examples/project/pcm_test/b3lyp_pcm_cas.py ****
+import numpy as np
+from pyscf import gto, scf, mcscf, mp, tdscf
+from pyscf import lib
+from pyscf.tools import cubegen
+from pyscf.tools import molden
+import prism.interface
+import prism.nevpt
+
+# Specify geometry and molecular information
+mol = gto.Mole()
+mol.atom = '/projects/academic/cyberwksp21/SOFTWARE_2026/pyscf_prism_examples/geometries/ethylene.xyz'
+mol.basis = 'aug-cc-pvdz'
+mol.verbose = 4
+mol.charge = 0
+mol.max_memory = 100000
+mol.build()
+
+# Run reference Hartree-Fock calculation
+mf = scf.RKS(mol).density_fit("aug-cc-pvdz-jkfit").PCM()
+mf.with_solvent.method = 'IEF-PCM'
+mf.with_solvent.eps = 4.00
+mf.xc = 'b3lyp'
+mf.conv_tol = 1e-8
+mf.kernel()
+
+# Run state-avereged CASSCF calculation for singlet states
+n_states = 5
+weights = np.ones(n_states)/n_states
+mc = mcscf.CASSCF(mf, 6, 6).state_average_(weights).density_fit('aug-cc-pvdz-jkfit').PCM()
+mc.with_solvent.method = 'IEF-PCM'
+mc.with_solvent.eps = 4.00
+mc.max_cycle_macro = 200 
+mc.fix_spin_(ss=0) # Singlet states only
+emc = mc.mc1step()[0]
+
+mo_mc = mc.mo_coeff.copy()
+
+#  Run CASCI calculation using SA-CASSCF orbitals to compute relative energies and wavefunctions for each state
+mc = mcscf.CASCI(mf, 6, 6).density_fit('aug-cc-pvdz-jkfit').PCM()
+mc.with_solvent.method = 'IEF-PCM'
+mc.with_solvent.eps = 4.00
+mc.fix_spin_(ss=0) # Singlet states only
+mc.fcisolver.nroots = n_states
+emc = mc.casci(mo_mc)[0]
+
+for state in range(n_states):
+    print("State #%d, dE = " % (state + 1), (emc[state] - emc[0]) * 27.2114, "eV")
+
+# Analyze results#
+mc.analyze()
+#INFO: ******************** input file end ********************
+
+
+System: uname_result(system='Linux', node='cpn-c02-05.core.ccr.buffalo.edu', release='6.8.0-124-generic', version='#124-Ubuntu SMP PREEMPT_DYNAMIC Tue May 26 13:00:45 UTC 2026', machine='x86_64')  Threads 4
+Python 3.13.14 | packaged by Anaconda, Inc. | (main, Jun 17 2026, 20:12:46) [GCC 14.3.0]
+numpy 1.26.4  scipy 1.14.1  h5py 3.16.0
+Date: Thu Jul 16 13:32:27 2026
+PySCF version 2.13.1
+PySCF path  /projects/academic/cyberwksp21/SOFTWARE_2026/conda/miniconda3/envs/pyscf/lib/python3.13/site-packages/pyscf
+
+[CONFIG] conf_file None
+[INPUT] verbose = 4
+[INPUT] num. atoms = 6
+[INPUT] num. electrons = 16
+[INPUT] charge = 0
+[INPUT] spin (= nelec alpha-beta = 2S) = 0
+[INPUT] symmetry False subgroup None
+[INPUT] Mole.unit = angstrom
+[INPUT] Symbol           X                Y                Z      unit          X                Y                Z       unit  Magmom
+[INPUT]  1 C      0.000000000000   0.666903960000   0.000000000000 AA    0.000000000000   1.260265835788   0.000000000000 Bohr   0.0
+[INPUT]  2 C      0.000000000000  -0.666903960000   0.000000000000 AA    0.000000000000  -1.260265835788   0.000000000000 Bohr   0.0
+[INPUT]  3 H      0.000000000000   1.229521950000   0.922290640000 AA    0.000000000000   2.323459749641   1.742876716850 Bohr   0.0
+[INPUT]  4 H      0.000000000000  -1.229521950000   0.922290640000 AA    0.000000000000  -2.323459749641   1.742876716850 Bohr   0.0
+[INPUT]  5 H      0.000000000000   1.229521950000  -0.922290640000 AA    0.000000000000   2.323459749641  -1.742876716850 Bohr   0.0
+[INPUT]  6 H      0.000000000000  -1.229521950000  -0.922290640000 AA    0.000000000000  -2.323459749641  -1.742876716850 Bohr   0.0
+
+nuclear repulsion = 33.4093139565633
+number of shells = 36
+number of NR pGTOs = 114
+number of NR cGTOs = 82
+basis = aug-cc-pvdz
+ecp = {}
+CPU time:         0.98
+
+
+******** <class 'pyscf.solvent._attach_solvent.PCMDFRKS'> ********
+method = PCMDFRKS
+initial guess = minao
+damping factor = 0
+level_shift factor = 0
+DIIS = <class 'pyscf.scf.diis.CDIIS'>
+diis_start_cycle = 1
+diis_space = 8
+diis_damp = 0
+SCF conv_tol = 1e-08
+SCF conv_tol_grad = None
+SCF max_cycles = 50
+direct_scf = False
+chkfile to save SCF result = /scratch/25278441/tmp41n0zw3v
+max_memory 100000 MB (current use 106 MB)
+XC library pyscf.dft.libxc version 7.0.0
+    S. Lehtola, C. Steigemann, M. J.T. Oliveira, and M. A.L. Marques.,  SoftwareX 7, 1–5 (2018)
+XC functionals = b3lyp
+    P. J. Stephens, F. J. Devlin, C. F. Chabalowski, and M. J. Frisch.,  J. Phys. Chem. 98, 11623 (1994)
+radial grids: 
+Treutler-Ahlrichs [JCP 102, 346 (1995); DOI:10.1063/1.469408] (M4) radial grids
+
+becke partition: Becke, JCP 88, 2547 (1988); DOI:10.1063/1.454033
+pruning grids: <function nwchem_prune at 0xb3825b71f80>
+grids dens level: 3
+symmetrized grids: False
+atomic radii adjust function: <function treutler_atomic_radii_adjust at 0xb3825b71ee0>
+small_rho_cutoff = 0
+******** <class 'pyscf.solvent.pcm.PCM'> (In testing) ********
+
+WARN: PCM is an experimental feature. It is still in testing.
+Features and APIs may be changed in the future.
+
+lebedev_order = 29 (302 grids per sphere)
+eps = 4.0
+frozen = False
+Set gradient conv threshold to 0.0001
+Initial guess from minao.
+tot grids = 67472
+******** <class 'pyscf.df.df.DF'> ********
+auxbasis = aug-cc-pvdz-jkfit
+max_memory = 100000
+PCM E_diel = -0.000143300068727402
+Solvent Energy = -0.000143300068727402
+init E= -78.5925583517042
+  HOMO = -0.320140798193154  LUMO = -0.0797263435308935
+PCM E_diel = -0.00217247592967879
+Solvent Energy = -0.00217247592967879
+cycle= 1 E= -78.5777988551402  delta_E= 0.0148  |g|= 0.27  |ddm|= 4.97
+  HOMO = -0.221487752229934  LUMO = 0.00636625413080472
+PCM E_diel = -0.000694920180208539
+Solvent Energy = -0.000694920180208539
+cycle= 2 E= -78.5735104916768  delta_E= 0.00429  |g|=  0.3  |ddm|= 1.26
+  HOMO = -0.28006851550062  LUMO = -0.0111044286832915
+PCM E_diel = -0.00137998237726028
+Solvent Energy = -0.00137998237726028
+cycle= 3 E= -78.5993461295666  delta_E= -0.0258  |g|= 0.00356  |ddm|=  0.5
+  HOMO = -0.27955097200689  LUMO = -0.0106698677015991
+PCM E_diel = -0.00137729954231064
+Solvent Energy = -0.00137729954231064
+cycle= 4 E= -78.5993510160989  delta_E= -4.89e-06  |g|= 0.000224  |ddm|= 0.0238
+  HOMO = -0.279574376953106  LUMO = -0.010680284233112
+PCM E_diel = -0.00137884018509157
+Solvent Energy = -0.00137884018509157
+cycle= 5 E= -78.5993510347116  delta_E= -1.86e-08  |g|= 4.64e-05  |ddm|= 0.000874
+  HOMO = -0.279577350421674  LUMO = -0.0106873226389141
+PCM E_diel = -0.00137895564981754
+Solvent Energy = -0.00137895564981754
+cycle= 6 E= -78.5993510354235  delta_E= -7.12e-10  |g|= 5.14e-06  |ddm|= 0.000114
+  HOMO = -0.279576289072973  LUMO = -0.0106863746994019
+PCM E_diel = -0.00137897076460885
+Solvent Energy = -0.00137897076460885
+Extra cycle  E= -78.5993510354338  delta_E= -1.03e-11  |g|= 2.14e-06  |ddm|= 1.07e-05
+converged SCF energy = -78.5993510354338
+
+******** <class 'pyscf.solvent._attach_solvent.PCMStateAverageDFCASSCF'> ********
+CAS (3e+3e, 6o), ncore = 5, nvir = 71
+max_cycle_macro = 200
+max_cycle_micro = 4
+conv_tol = 1e-07
+conv_tol_grad = None
+orbital rotation max_stepsize = 0.02
+orbital rotation threshold for CI restart = 0.01
+augmented hessian ah_max_cycle = 30
+augmented hessian ah_conv_tol = 1e-12
+augmented hessian ah_linear dependence = 1e-14
+augmented hessian ah_level shift = 1e-08
+augmented hessian ah_start_tol = 2.5
+augmented hessian ah_start_cycle = 3
+augmented hessian ah_grad_trust_region = 3
+kf_trust_region = 3
+kf_interval = 4
+ci_response_space = 4
+ci_grad_trust_region = 3
+with_dep4 0
+natorb = False
+canonicalization = True
+sorting_mo_energy = False
+ao2mo_level = 2
+chkfile = /scratch/25278441/tmp41n0zw3v
+max_memory 100000 MB (current use 206 MB)
+internal_rotation = False
+******** <class 'pyscf.fci.addons.SpinPenaltyStateAverageFCISolver'> ********
+max. cycles = 50
+conv_tol = 1e-08
+davidson only = True
+linear dependence = 1e-12
+level shift = 0.001
+max iter space = 12
+max_memory 100000 MB
+nroots = 5
+pspace_size = 400
+spin = None
+State-average over 5 states with weights [0.2 0.2 0.2 0.2 0.2]
+DFCASCI/DFCASSCF: density fitting for JK matrix and 2e integral transformation
+******** <class 'pyscf.solvent.pcm.PCM'> (In testing) ********
+
+WARN: PCM is an experimental feature. It is still in testing.
+Features and APIs may be changed in the future.
+
+lebedev_order = 29 (302 grids per sphere)
+eps = 4.0
+frozen = False
+CASCI E = -77.7704030508396  S^2 = 0.0000000
+Removing duplication 0.0248417991875505, adding E(solvent) = -0.00137897076460885 to total energy:
+    E(CASSCF+solvent) = -77.7966238207917
+PCM E_diel = -0.00303168805706938
+Set conv_tol_grad to 0.000316228
+PCM E_diel = -0.00302662243825171
+PCM E_diel = -0.00302373590393716
+PCM E_diel = -0.00302225989793439
+macro iter   1 ( 21 JK    4 micro), CASSCF E = -77.3764428065974  dE =  3.93960244e-01  S^2 = 0.0000000
+               |grad[o]|= 0.26  |ddm|=0.00605  |maxRot[o]|=0.205
+Removing duplication 0.434428048954094, adding E(solvent) = -0.00302225989793439 to total energy:
+    E(CASSCF+solvent) = -77.8138931154494
+PCM E_diel = -0.0030214209868507
+PCM E_diel = -0.00332341440956499
+PCM E_diel = -0.00332267163673306
+PCM E_diel = -0.00332219828704811
+macro iter   2 ( 21 JK    4 micro), CASSCF E = -77.3851236217264  dE = -8.68081513e-03  S^2 = 0.0000000
+               |grad[o]|=0.0599  |ddm|=0.00267  |maxRot[o]|=0.0357
+Removing duplication 0.426828826136006, adding E(solvent) = -0.00332219828704811 to total energy:
+    E(CASSCF+solvent) = -77.8152746461495
+PCM E_diel = -0.00301907795182381
+PCM E_diel = -0.00344133067045265
+PCM E_diel = -0.00344082026113519
+PCM E_diel = -0.00344069262477485
+macro iter   3 ( 21 JK    4 micro), CASSCF E = -77.3820828837585  dE =  3.04073797e-03  S^2 = 0.0000000
+               |grad[o]|=0.0285  |ddm|=0.00118  |maxRot[o]|=0.015
+Removing duplication 0.430088530595272, adding E(solvent) = -0.00344069262477485 to total energy:
+    E(CASSCF+solvent) = -77.8156121069785
+PCM E_diel = -0.00301818921327004
+PCM E_diel = -0.00349140440849378
+PCM E_diel = -0.00349082297167362
+PCM E_diel = -0.00349096496159204
+macro iter   4 ( 21 JK    4 micro), CASSCF E = -77.3804495113443  dE =  1.63337241e-03  S^2 = 0.0000000
+               |grad[o]|=0.017  |ddm|=0.000783  |maxRot[o]|=0.00911
+Removing duplication 0.431805238545916, adding E(solvent) = -0.00349096496159204 to total energy:
+    E(CASSCF+solvent) = -77.8157457148518
+PCM E_diel = -0.00301766328839983
+PCM E_diel = -0.00352186574532796
+PCM E_diel = -0.00352120590330286
+PCM E_diel = -0.00352152591202672
+macro iter   5 ( 21 JK    4 micro), CASSCF E = -77.3793126747295  dE =  1.13683661e-03  S^2 = 0.0000000
+               |grad[o]|=0.0107  |ddm|=0.000655  |maxRot[o]|=0.00617
+Removing duplication 0.432981131151455, adding E(solvent) = -0.00352152591202672 to total energy:
+    E(CASSCF+solvent) = -77.815815331793
+PCM E_diel = -0.00301731489899782
+PCM E_diel = -0.00354257023678466
+PCM E_diel = -0.00354201390803327
+PCM E_diel = -0.00354229605590981
+macro iter   6 ( 21 JK    4 micro), CASSCF E = -77.3784469113477  dE =  8.65763382e-04  S^2 = 0.0000000
+               |grad[o]|=0.00682  |ddm|=0.000613  |maxRot[o]|=0.00428
+Removing duplication 0.433866848952273, adding E(solvent) = -0.00354229605590981 to total energy:
+    E(CASSCF+solvent) = -77.8158560563558
+PCM E_diel = -0.00301707676446012
+PCM E_diel = -0.00355686211350584
+PCM E_diel = -0.00355635957784765
+PCM E_diel = -0.00355668987863415
+macro iter   7 ( 21 JK    4 micro), CASSCF E = -77.3777919235498  dE =  6.54987798e-04  S^2 = 0.0000000
+               |grad[o]|=0.00441  |ddm|=0.000575  |maxRot[o]|=0.0379
+Removing duplication 0.434535337221525, adding E(solvent) = -0.00355668987863415 to total energy:
+    E(CASSCF+solvent) = -77.8158839506499
+PCM E_diel = -0.00301698703331281
+PCM E_diel = -0.00356679573471213
+PCM E_diel = -0.0035666328507302
+PCM E_diel = -0.00356695355849223
+macro iter   8 ( 21 JK    4 micro), CASSCF E = -77.3772873906264  dE =  5.04532923e-04  S^2 = 0.0000000
+               |grad[o]|=0.00296  |ddm|=0.00114  |maxRot[o]|=0.142
+Removing duplication 0.435112212629871, adding E(solvent) = -0.00356695355849223 to total energy:
+    E(CASSCF+solvent) = -77.8159665568148
+PCM E_diel = -0.00301865488218069
+PCM E_diel = -0.00356525778191338
+PCM E_diel = -0.0035666726022937
+PCM E_diel = -0.00356692731395815
+macro iter   9 ( 21 JK    4 micro), CASSCF E = -77.3774935041966  dE = -2.06113570e-04  S^2 = 0.0000000
+               |grad[o]|=0.00271  |ddm|=0.00296  |maxRot[o]|=0.139
+Removing duplication 0.435027190254183, adding E(solvent) = -0.00356692731395815 to total energy:
+    E(CASSCF+solvent) = -77.8160876217647
+PCM E_diel = -0.00302306194705973
+PCM E_diel = -0.00353036799179529
+PCM E_diel = -0.00352917718812982
+PCM E_diel = -0.00353047917128328
+macro iter  10 ( 21 JK    4 micro), CASSCF E = -77.3809316877922  dE = -3.43818360e-03  S^2 = 0.0000000
+               |grad[o]|=0.0042  |ddm|=0.00171  |maxRot[o]|=0.0368
+Removing duplication 0.431631098116493, adding E(solvent) = -0.00353047917128328 to total energy:
+    E(CASSCF+solvent) = -77.8160932650799
+PCM E_diel = -0.00302434835577099
+PCM E_diel = -0.00353183124010774
+PCM E_diel = -0.00353059631304209
+PCM E_diel = -0.00353208411262249
+macro iter  11 ( 21 JK    4 micro), CASSCF E = -77.3808801476418  dE =  5.15401503e-05  S^2 = 0.0000000
+               |grad[o]|=0.00341  |ddm|=0.00172  |maxRot[o]|=0.0107
+Removing duplication 0.431698302507753, adding E(solvent) = -0.00353208411262249 to total energy:
+    E(CASSCF+solvent) = -77.8161105342622
+PCM E_diel = -0.0030255676182216
+PCM E_diel = -0.00352883830953586
+PCM E_diel = -0.00352756107291445
+PCM E_diel = -0.00352912176662603
+macro iter  12 ( 21 JK    4 micro), CASSCF E = -77.3811930731019  dE = -3.12925460e-04  S^2 = 0.0000000
+               |grad[o]|=0.00304  |ddm|=0.00167  |maxRot[o]|=0.011
+Removing duplication 0.431395757511343, adding E(solvent) = -0.00352912176662603 to total energy:
+    E(CASSCF+solvent) = -77.8161179523799
+PCM E_diel = -0.00302683002118277
+PCM E_diel = -0.00352518414691666
+PCM E_diel = -0.00352388672517532
+PCM E_diel = -0.00352545782077168
+macro iter  13 ( 21 JK    4 micro), CASSCF E = -77.3815550492547  dE = -3.61976153e-04  S^2 = 0.0000000
+               |grad[o]|=0.00285  |ddm|=0.00157  |maxRot[o]|=0.0108
+Removing duplication 0.431041939666798, adding E(solvent) = -0.00352545782077168 to total energy:
+    E(CASSCF+solvent) = -77.8161224467423
+PCM E_diel = -0.00302809456099452
+PCM E_diel = -0.00352149021987991
+PCM E_diel = -0.00352017595395808
+PCM E_diel = -0.00352175950273407
+macro iter  14 ( 21 JK    4 micro), CASSCF E = -77.3819116079092  dE = -3.56558654e-04  S^2 = 0.0000000
+               |grad[o]|=0.00274  |ddm|=0.00149  |maxRot[o]|=0.0105
+Removing duplication 0.430692338745088, adding E(solvent) = -0.00352175950273407 to total energy:
+    E(CASSCF+solvent) = -77.816125706157
+PCM E_diel = -0.00302936647944999
+PCM E_diel = -0.00351770149001752
+PCM E_diel = -0.00351637730904435
+PCM E_diel = -0.0035179649370872
+macro iter  15 ( 21 JK    4 micro), CASSCF E = -77.3822707606662  dE = -3.59152757e-04  S^2 = 0.0000000
+               |grad[o]|=0.00267  |ddm|=0.00143  |maxRot[o]|=0.0101
+Removing duplication 0.430339664352484, adding E(solvent) = -0.0035179649370872 to total energy:
+    E(CASSCF+solvent) = -77.8161283899558
+PCM E_diel = -0.00303064462794525
+PCM E_diel = -0.00351383938693631
+PCM E_diel = -0.00351249777413607
+PCM E_diel = -0.00351409581619699
+macro iter  16 ( 21 JK    4 micro), CASSCF E = -77.3826334991192  dE = -3.62738453e-04  S^2 = 0.0000000
+               |grad[o]|=0.00262  |ddm|=0.00138  |maxRot[o]|=0.00964
+Removing duplication 0.429983473894715, adding E(solvent) = -0.00351409581619699 to total energy:
+    E(CASSCF+solvent) = -77.8161310688301
+PCM E_diel = -0.00303192464432109
+PCM E_diel = -0.00350994295577176
+PCM E_diel = -0.00350859288879725
+PCM E_diel = -0.00351018645525067
+macro iter  17 ( 21 JK    4 micro), CASSCF E = -77.3829972818433  dE = -3.63782724e-04  S^2 = 0.0000000
+               |grad[o]|=0.00258  |ddm|=0.00134  |maxRot[o]|=0.00903
+Removing duplication 0.429626989350112, adding E(solvent) = -0.00351018645525067 to total energy:
+    E(CASSCF+solvent) = -77.8161344576486
+PCM E_diel = -0.0030331966686404
+PCM E_diel = -0.0035060229207916
+PCM E_diel = -0.00350465105616354
+PCM E_diel = -0.00350624924025787
+macro iter  18 ( 21 JK    4 micro), CASSCF E = -77.3833630158131  dE = -3.65733970e-04  S^2 = 0.0000000
+               |grad[o]|=0.00254  |ddm|=0.00131  |maxRot[o]|=0.0105
+Removing duplication 0.429270275008477, adding E(solvent) = -0.00350624924025787 to total energy:
+    E(CASSCF+solvent) = -77.8161395400619
+PCM E_diel = -0.0030344501130868
+PCM E_diel = -0.00350201167103375
+PCM E_diel = -0.00350061862800895
+PCM E_diel = -0.00350220862090204
+macro iter  19 ( 21 JK    4 micro), CASSCF E = -77.3837358868583  dE = -3.72871045e-04  S^2 = 0.0000000
+               |grad[o]|=0.00248  |ddm|=0.00129  |maxRot[o]|=0.0143
+Removing duplication 0.428909690726381, adding E(solvent) = -0.00350220862090204 to total energy:
+    E(CASSCF+solvent) = -77.8161477862056
+PCM E_diel = -0.00303566977238858
+PCM E_diel = -0.00349795531794848
+PCM E_diel = -0.00349651010464767
+PCM E_diel = -0.00349808895964749
+macro iter  20 ( 21 JK    4 micro), CASSCF E = -77.3841150140284  dE = -3.79127170e-04  S^2 = 0.0000000
+               |grad[o]|=0.00242  |ddm|=0.00126  |maxRot[o]|=0.0198
+Removing duplication 0.428547656854266, adding E(solvent) = -0.00349808895964749 to total energy:
+    E(CASSCF+solvent) = -77.8161607598423
+PCM E_diel = -0.0030368237886866
+PCM E_diel = -0.0034938471815002
+PCM E_diel = -0.00349237425795574
+PCM E_diel = -0.00349392210149174
+macro iter  21 ( 21 JK    4 micro), CASSCF E = -77.3844980729305  dE = -3.83058902e-04  S^2 = 0.0000000
+               |grad[o]|=0.00235  |ddm|=0.00125  |maxRot[o]|=0.0267
+Removing duplication 0.428188036109812, adding E(solvent) = -0.00349392210149174 to total energy:
+    E(CASSCF+solvent) = -77.8161800311418
+PCM E_diel = -0.00303787020163065
+PCM E_diel = -0.00348982245294081
+PCM E_diel = -0.00348842389196826
+PCM E_diel = -0.00348982747154979
+macro iter  22 ( 21 JK    4 micro), CASSCF E = -77.3848782191052  dE = -3.80146175e-04  S^2 = 0.0000000
+               |grad[o]|=0.00227  |ddm|=0.00125  |maxRot[o]|=0.0339
+Removing duplication 0.427837792405633, adding E(solvent) = -0.00348982747154979 to total energy:
+    E(CASSCF+solvent) = -77.8162058389824
+PCM E_diel = -0.00303875972426606
+PCM E_diel = -0.00348581724332052
+PCM E_diel = -0.00348443905354399
+PCM E_diel = -0.00348578164559687
+macro iter  23 ( 21 JK    4 micro), CASSCF E = -77.3852552350867  dE = -3.77015982e-04  S^2 = 0.0000000
+               |grad[o]|=0.00218  |ddm|=0.00124  |maxRot[o]|=0.036
+Removing duplication 0.427492126206291, adding E(solvent) = -0.00348578164559687 to total energy:
+    E(CASSCF+solvent) = -77.8162331429386
+PCM E_diel = -0.00303945118195076
+PCM E_diel = -0.0034818516872155
+PCM E_diel = -0.00348053600460095
+PCM E_diel = -0.00348180574126704
+macro iter  24 ( 21 JK    4 micro), CASSCF E = -77.3856205296650  dE = -3.65294578e-04  S^2 = 0.0000000
+               |grad[o]|=0.00212  |ddm|=0.00121  |maxRot[o]|=0.0312
+Removing duplication 0.427153334226123, adding E(solvent) = -0.00348180574126704 to total energy:
+    E(CASSCF+solvent) = -77.8162556696324
+PCM E_diel = -0.00303989596053826
+PCM E_diel = -0.00347815512734105
+PCM E_diel = -0.00347689818419187
+PCM E_diel = -0.00347810225196986
+macro iter  25 ( 21 JK    4 micro), CASSCF E = -77.3859553899201  dE = -3.34860255e-04  S^2 = 0.0000000
+               |grad[o]|=0.00208  |ddm|=0.00115  |maxRot[o]|=0.024
+Removing duplication 0.426838180002612, adding E(solvent) = -0.00347810225196986 to total energy:
+    E(CASSCF+solvent) = -77.8162716721747
+PCM E_diel = -0.00304019450729787
+PCM E_diel = -0.00347496606551735
+PCM E_diel = -0.00347377115219692
+PCM E_diel = -0.00347490634134182
+macro iter  26 ( 21 JK    4 micro), CASSCF E = -77.3862402382738  dE = -2.84848354e-04  S^2 = 0.0000000
+               |grad[o]|=0.00206  |ddm|=0.0011  |maxRot[o]|=0.0177
+Removing duplication 0.426567428969588, adding E(solvent) = -0.00347490634134182 to total energy:
+    E(CASSCF+solvent) = -77.8162825735848
+PCM E_diel = -0.00304040218382792
+PCM E_diel = -0.00347225517083746
+PCM E_diel = -0.00347110404941439
+PCM E_diel = -0.00347218077109314
+macro iter  27 ( 21 JK    4 micro), CASSCF E = -77.3864800300600  dE = -2.39791786e-04  S^2 = 0.0000000
+               |grad[o]|=0.00204  |ddm|=0.00107  |maxRot[o]|=0.0133
+Removing duplication 0.426337899029333, adding E(solvent) = -0.00347218077109314 to total energy:
+    E(CASSCF+solvent) = -77.8162901098604
+PCM E_diel = -0.00304054713366967
+PCM E_diel = -0.00346993493888208
+PCM E_diel = -0.00346883112821178
+PCM E_diel = -0.0034698656054563
+macro iter  28 ( 21 JK    4 micro), CASSCF E = -77.3866807317569  dE = -2.00701697e-04  S^2 = 0.0000000
+               |grad[o]|=0.00204  |ddm|=0.00104  |maxRot[o]|=0.0101
+Removing duplication 0.426144806403641, adding E(solvent) = -0.0034698656054563 to total energy:
+    E(CASSCF+solvent) = -77.8162954037659
+PCM E_diel = -0.00304064748070697
+PCM E_diel = -0.00346802878272715
+PCM E_diel = -0.00346695355951064
+PCM E_diel = -0.0034679491498157
+macro iter  29 ( 21 JK    4 micro), CASSCF E = -77.3868461702294  dE = -1.65438473e-04  S^2 = 0.0000000
+               |grad[o]|=0.00203  |ddm|=0.00102  |maxRot[o]|=0.00797
+Removing duplication 0.425985209382074, adding E(solvent) = -0.0034679491498157 to total energy:
+    E(CASSCF+solvent) = -77.8162993287613
+PCM E_diel = -0.00304071949806993
+PCM E_diel = -0.00346646364655118
+PCM E_diel = -0.0034654069788858
+PCM E_diel = -0.00346637408110305
+macro iter  30 ( 21 JK    4 micro), CASSCF E = -77.3869829693164  dE = -1.36799087e-04  S^2 = 0.0000000
+               |grad[o]|=0.00203  |ddm|=0.001  |maxRot[o]|=0.00629
+Removing duplication 0.425852940647197, adding E(solvent) = -0.00346637408110305 to total energy:
+    E(CASSCF+solvent) = -77.8163022840447
+PCM E_diel = -0.00304076820465298
+PCM E_diel = -0.00346521989634985
+PCM E_diel = -0.0034641758076136
+PCM E_diel = -0.00346512144019937
+macro iter  31 ( 21 JK    4 micro), CASSCF E = -77.3870920951783  dE = -1.09125862e-04  S^2 = 0.0000000
+               |grad[o]|=0.00203  |ddm|=0.000989  |maxRot[o]|=0.00496
+Removing duplication 0.425747336952555, adding E(solvent) = -0.00346512144019937 to total energy:
+    E(CASSCF+solvent) = -77.8163045535711
+PCM E_diel = -0.00304079987120433
+PCM E_diel = -0.00346424388159851
+PCM E_diel = -0.00346320973928795
+PCM E_diel = -0.00346414060289665
+macro iter  32 ( 21 JK    4 micro), CASSCF E = -77.3871780369489  dE = -8.59417706e-05  S^2 = 0.0000000
+               |grad[o]|=0.00203  |ddm|=0.000977  |maxRot[o]|=0.0039
+Removing duplication 0.425664137522285, adding E(solvent) = -0.00346414060289665 to total energy:
+    E(CASSCF+solvent) = -77.8163063150741
+PCM E_diel = -0.00304082228421701
+PCM E_diel = -0.00346349462422542
+PCM E_diel = -0.00346246772449755
+PCM E_diel = -0.00346338618750255
+macro iter  33 ( 21 JK    4 micro), CASSCF E = -77.3872445849424  dE = -6.65479935e-05  S^2 = 0.0000000
+               |grad[o]|=0.00203  |ddm|=0.000972  |maxRot[o]|=0.00307
+Removing duplication 0.425599743467168, adding E(solvent) = -0.00346338618750255 to total energy:
+    E(CASSCF+solvent) = -77.8163077145971
+PCM E_diel = -0.00304082508964452
+PCM E_diel = -0.00346292110580595
+PCM E_diel = -0.00346190562703314
+PCM E_diel = -0.0034628081413512
+macro iter  34 ( 21 JK    4 micro), CASSCF E = -77.3872965270728  dE = -5.19421304e-05  S^2 = 0.0000000
+               |grad[o]|=0.00203  |ddm|=0.000968  |maxRot[o]|=0.00274
+Removing duplication 0.425549708176644, adding E(solvent) = -0.0034628081413512 to total energy:
+    E(CASSCF+solvent) = -77.8163090433908
+PCM E_diel = -0.00304082899040143
+PCM E_diel = -0.00346246953957786
+PCM E_diel = -0.00346145767260447
+PCM E_diel = -0.00346235167374824
+macro iter  35 ( 21 JK    4 micro), CASSCF E = -77.3873379764029  dE = -4.14493301e-05  S^2 = 0.0000000
+               |grad[o]|=0.00204  |ddm|=0.000968  |maxRot[o]|=0.00223
+Removing duplication 0.425509814218489, adding E(solvent) = -0.00346235167374824 to total energy:
+    E(CASSCF+solvent) = -77.8163101422952
+PCM E_diel = -0.00304082487014724
+PCM E_diel = -0.00346211973875913
+PCM E_diel = -0.00346111041649923
+PCM E_diel = -0.00346200062043864
+macro iter  36 ( 21 JK    4 micro), CASSCF E = -77.3873700321379  dE = -3.20557350e-05  S^2 = 0.0000000
+               |grad[o]|=0.00204  |ddm|=0.000961  |maxRot[o]|=0.00175
+Removing duplication 0.425478960928092, adding E(solvent) = -0.00346200062043864 to total energy:
+    E(CASSCF+solvent) = -77.8163109936865
+PCM E_diel = -0.0030408217603895
+PCM E_diel = -0.00346185284727881
+PCM E_diel = -0.00346084583545608
+PCM E_diel = -0.00346173053583396
+macro iter  37 ( 21 JK    4 micro), CASSCF E = -77.3873947125943  dE = -2.46804564e-05  S^2 = 0.0000000
+               |grad[o]|=0.00204  |ddm|=0.000955  |maxRot[o]|=0.00137
+Removing duplication 0.425455221274336, adding E(solvent) = -0.00346173053583396 to total energy:
+    E(CASSCF+solvent) = -77.8163116644045
+PCM E_diel = -0.0030408121695456
+PCM E_diel = -0.00346165295920558
+PCM E_diel = -0.00346065170612033
+PCM E_diel = -0.00346153070992199
+macro iter  38 ( 21 JK    4 micro), CASSCF E = -77.3874126611892  dE = -1.79485949e-05  S^2 = 0.0000000
+               |grad[o]|=0.00204  |ddm|=0.000959  |maxRot[o]|=0.0012
+Removing duplication 0.425438102849251, adding E(solvent) = -0.00346153070992199 to total energy:
+    E(CASSCF+solvent) = -77.8163122947484
+PCM E_diel = -0.00304079946217284
+PCM E_diel = -0.00346150036915524
+PCM E_diel = -0.00346050312745935
+PCM E_diel = -0.00346137724202189
+macro iter  39 ( 21 JK    4 micro), CASSCF E = -77.3874267677033  dE = -1.41065141e-05  S^2 = 0.0000000
+               |grad[o]|=0.00204  |ddm|=0.000954  |maxRot[o]|=0.00108
+Removing duplication 0.425424728023568, adding E(solvent) = -0.00346137724202189 to total energy:
+    E(CASSCF+solvent) = -77.8163128729689
+PCM E_diel = -0.00304079048286386
+PCM E_diel = -0.00346138227763691
+PCM E_diel = -0.003460384229385
+PCM E_diel = -0.00346125471792594
+macro iter  40 ( 21 JK    4 micro), CASSCF E = -77.3874382698218  dE = -1.15021185e-05  S^2 = 0.0000000
+               |grad[o]|=0.00204  |ddm|=0.000954  |maxRot[o]|=0.000981
+Removing duplication 0.425413896583746, adding E(solvent) = -0.00346125471792594 to total energy:
+    E(CASSCF+solvent) = -77.8163134211235
+PCM E_diel = -0.00304078013634795
+PCM E_diel = -0.00346128999481819
+PCM E_diel = -0.00346029286813751
+macro iter  41 ( 11 JK    2 micro), CASSCF E = -77.3875688934280  dE = -1.30623606e-04  S^2 = 0.0000000
+               |grad[o]|=0.00204  |ddm|=0.00036  |maxRot[o]|=7.38e-05
+Removing duplication 0.425283038046005, adding E(solvent) = -0.00346029286813751 to total energy:
+    E(CASSCF+solvent) = -77.8163122243422
+PCM E_diel = -0.00304084752179791
+PCM E_diel = -0.00346065666499489
+PCM E_diel = -0.0034608451342488
+PCM E_diel = -0.00346110692790963
+macro iter  42 ( 17 JK    4 micro), CASSCF E = -77.3875736220244  dE = -4.72859635e-06  S^2 = 0.0000000
+               |grad[o]|=0.00205  |ddm|=0.000943  |maxRot[o]|=0.0689
+Removing duplication 0.425396462423363, adding E(solvent) = -0.00346110692790963 to total energy:
+    E(CASSCF+solvent) = -77.8164311913757
+PCM E_diel = -0.00304191102774544
+PCM E_diel = -0.00345645345464609
+PCM E_diel = -0.00345670548070883
+PCM E_diel = -0.00345666900312489
+macro iter  43 ( 12 JK    3 micro), CASSCF E = -77.3880649448264  dE = -4.91322802e-04  S^2 = 0.0000000
+               |grad[o]|=0.00183  |ddm|=0.00106  |maxRot[o]|=0.082
+Removing duplication 0.425048757952795, adding E(solvent) = -0.00345666900312489 to total energy:
+    E(CASSCF+solvent) = -77.8165703717824
+PCM E_diel = -0.00304294691817542
+PCM E_diel = -0.00344765540077692
+PCM E_diel = -0.00344697047732409
+PCM E_diel = -0.00344747075857047
+macro iter  44 ( 21 JK    4 micro), CASSCF E = -77.3888757776555  dE = -8.10832829e-04  S^2 = 0.0000000
+               |grad[o]|=0.00167  |ddm|=0.000706  |maxRot[o]|=0.00425
+Removing duplication 0.424236811362499, adding E(solvent) = -0.00344747075857047 to total energy:
+    E(CASSCF+solvent) = -77.8165600597766
+PCM E_diel = -0.00304250357780423
+PCM E_diel = -0.0034448707880629
+PCM E_diel = -0.00344489974263032
+PCM E_diel = -0.00344500843801469
+macro iter  45 ( 21 JK    4 micro), CASSCF E = -77.3891386339369  dE = -2.62856281e-04  S^2 = 0.0000000
+               |grad[o]|=0.00161  |ddm|=0.000508  |maxRot[o]|=0.0355
+Removing duplication 0.424034441459847, adding E(solvent) = -0.00344500843801469 to total energy:
+    E(CASSCF+solvent) = -77.8166180838348
+PCM E_diel = -0.00304276470929337
+PCM E_diel = -0.00344058673101771
+PCM E_diel = -0.00344059357996396
+PCM E_diel = -0.00344058115130383
+macro iter  46 ( 12 JK    3 micro), CASSCF E = -77.3896383621923  dE = -4.99728255e-04  S^2 = 0.0000000
+               |grad[o]|=0.00153  |ddm|=0.000761  |maxRot[o]|=0.0706
+Removing duplication 0.423652489419197, adding E(solvent) = -0.00344058115130383 to total energy:
+    E(CASSCF+solvent) = -77.8167314327628
+PCM E_diel = -0.00304314333165022
+PCM E_diel = -0.00343092654245795
+PCM E_diel = -0.00343040163969328
+PCM E_diel = -0.00343073771090538
+macro iter  47 ( 21 JK    4 micro), CASSCF E = -77.3905160803940  dE = -8.77718202e-04  S^2 = 0.0000000
+               |grad[o]|=0.00145  |ddm|=0.000765  |maxRot[o]|=0.00707
+Removing duplication 0.422772434111292, adding E(solvent) = -0.00343073771090538 to total energy:
+    E(CASSCF+solvent) = -77.8167192522162
+PCM E_diel = -0.00304241715649071
+PCM E_diel = -0.0034256447630139
+PCM E_diel = -0.00342563542342236
+PCM E_diel = -0.00342536721923299
+macro iter  48 ( 22 JK    4 micro), CASSCF E = -77.3910340531126  dE = -5.17972719e-04  S^2 = 0.0000000
+               |grad[o]|=0.00147  |ddm|=0.00146  |maxRot[o]|=0.0447
+Removing duplication 0.422310882223035, adding E(solvent) = -0.00342536721923299 to total energy:
+    E(CASSCF+solvent) = -77.8167703025549
+PCM E_diel = -0.00304093070237363
+PCM E_diel = -0.00341315251847312
+PCM E_diel = -0.00341290105665921
+PCM E_diel = -0.00341291202266083
+macro iter  49 ( 12 JK    3 micro), CASSCF E = -77.3922052677541  dE = -1.17121464e-03  S^2 = 0.0000000
+               |grad[o]|=0.00144  |ddm|=0.000369  |maxRot[o]|=0.068
+Removing duplication 0.421240023287585, adding E(solvent) = -0.00341291202266083 to total energy:
+    E(CASSCF+solvent) = -77.8168582030644
+PCM E_diel = -0.00304107029556621
+PCM E_diel = -0.00340650844877358
+PCM E_diel = -0.00340613038194349
+PCM E_diel = -0.00340627604888218
+macro iter  50 ( 21 JK    4 micro), CASSCF E = -77.3928066543206  dE = -6.01386566e-04  S^2 = 0.0000000
+               |grad[o]|=0.0013  |ddm|=0.000703  |maxRot[o]|=0.014
+Removing duplication 0.420630995319845, adding E(solvent) = -0.00340627604888218 to total energy:
+    E(CASSCF+solvent) = -77.8168439256893
+PCM E_diel = -0.00303980998325102
+PCM E_diel = -0.00340286502771737
+PCM E_diel = -0.00340274367781424
+PCM E_diel = -0.00340240374477695
+macro iter  51 ( 23 JK    4 micro), CASSCF E = -77.3932295548797  dE = -4.22900559e-04  S^2 = 0.0000000
+               |grad[o]|=0.00152  |ddm|=0.00138  |maxRot[o]|=0.0641
+Removing duplication 0.420284726621146, adding E(solvent) = -0.00340240374477695 to total energy:
+    E(CASSCF+solvent) = -77.8169166852456
+PCM E_diel = -0.00303855704281393
+PCM E_diel = -0.0033968884900517
+PCM E_diel = -0.00339655213555901
+PCM E_diel = -0.0033965559265317
+macro iter  52 ( 12 JK    3 micro), CASSCF E = -77.3938447988476  dE = -6.15243968e-04  S^2 = 0.0000000
+               |grad[o]|=0.00141  |ddm|=0.000547  |maxRot[o]|=0.0674
+Removing duplication 0.419746761729779, adding E(solvent) = -0.0033965559265317 to total energy:
+    E(CASSCF+solvent) = -77.8169881165039
+PCM E_diel = -0.00303828857166189
+PCM E_diel = -0.00339182169302799
+PCM E_diel = -0.00339174955410988
+PCM E_diel = -0.0033916750112666
+macro iter  53 ( 21 JK    4 micro), CASSCF E = -77.3943603624986  dE = -5.15563651e-04  S^2 = 0.0000000
+               |grad[o]|=0.00123  |ddm|=0.00129  |maxRot[o]|=0.115
+Removing duplication 0.41930503368008, adding E(solvent) = -0.0033916750112666 to total energy:
+    E(CASSCF+solvent) = -77.81705707119
+PCM E_diel = -0.00303672822919699
+PCM E_diel = -0.00337486212089197
+PCM E_diel = -0.00337524062204099
+PCM E_diel = -0.00337479370800216
+macro iter  54 ( 21 JK    4 micro), CASSCF E = -77.3960134268744  dE = -1.65306438e-03  S^2 = 0.0000000
+               |grad[o]|=0.00168  |ddm|=0.00145  |maxRot[o]|=0.148
+Removing duplication 0.417683017141649, adding E(solvent) = -0.00337479370800216 to total energy:
+    E(CASSCF+solvent) = -77.8170712377241
+PCM E_diel = -0.00303504280949975
+PCM E_diel = -0.00335724939741987
+PCM E_diel = -0.00335792219526144
+PCM E_diel = -0.00335731632542346
+macro iter  55 ( 21 JK    4 micro), CASSCF E = -77.3976328932539  dE = -1.61946638e-03  S^2 = 0.0000000
+               |grad[o]|=0.002  |ddm|=0.000964  |maxRot[o]|=0.0389
+Removing duplication 0.416048725480348, adding E(solvent) = -0.00335731632542346 to total energy:
+    E(CASSCF+solvent) = -77.8170389350597
+PCM E_diel = -0.00303489059905525
+PCM E_diel = -0.00335514610016749
+PCM E_diel = -0.00335486380813892
+PCM E_diel = -0.0033550631218032
+macro iter  56 ( 21 JK    4 micro), CASSCF E = -77.3978969766510  dE = -2.64083397e-04  S^2 = 0.0000000
+               |grad[o]|=0.00227  |ddm|=0.00127  |maxRot[o]|=0.0713
+Removing duplication 0.415846050365867, adding E(solvent) = -0.0033550631218032 to total energy:
+    E(CASSCF+solvent) = -77.8170980901387
+PCM E_diel = -0.00303500340142888
+PCM E_diel = -0.00335917497284399
+PCM E_diel = -0.0033593929523791
+PCM E_diel = -0.00335938814697571
+macro iter  57 ( 12 JK    3 micro), CASSCF E = -77.3975327969070  dE =  3.64179744e-04  S^2 = 0.0000000
+               |grad[o]|=0.00176  |ddm|=0.00189  |maxRot[o]|=0.0781
+Removing duplication 0.416290738333868, adding E(solvent) = -0.00335938814697571 to total energy:
+    E(CASSCF+solvent) = -77.8171829233878
+PCM E_diel = -0.00303568212415337
+PCM E_diel = -0.00336059014902146
+PCM E_diel = -0.00336133789916387
+PCM E_diel = -0.00336133505630214
+macro iter  58 ( 12 JK    3 micro), CASSCF E = -77.3972896895430  dE =  2.43107364e-04  S^2 = 0.0000000
+               |grad[o]|=0.00154  |ddm|=0.00214  |maxRot[o]|=0.108
+Removing duplication 0.416639732389532, adding E(solvent) = -0.00336133505630214 to total energy:
+    E(CASSCF+solvent) = -77.8172907569888
+PCM E_diel = -0.00303783403103762
+PCM E_diel = -0.00334705209019939
+PCM E_diel = -0.00334685901190722
+PCM E_diel = -0.00334804539678021
+macro iter  59 ( 21 JK    4 micro), CASSCF E = -77.3979642447065  dE = -6.74555163e-04  S^2 = 0.0000000
+               |grad[o]|=0.00164  |ddm|=0.00192  |maxRot[o]|=0.0794
+Removing duplication 0.41600774103732, adding E(solvent) = -0.00334804539678021 to total energy:
+    E(CASSCF+solvent) = -77.8173200311406
+PCM E_diel = -0.00304021337696363
+PCM E_diel = -0.00332094047834607
+PCM E_diel = -0.00332038142188633
+PCM E_diel = -0.00332176652859232
+macro iter  60 ( 21 JK    4 micro), CASSCF E = -77.3996148538162  dE = -1.65060911e-03  S^2 = 0.0000000
+               |grad[o]|=0.00174  |ddm|=0.00139  |maxRot[o]|=0.0594
+Removing duplication 0.414392863243671, adding E(solvent) = -0.00332176652859232 to total energy:
+    E(CASSCF+solvent) = -77.8173294835885
+PCM E_diel = -0.00304246147116747
+PCM E_diel = -0.00331543768624615
+PCM E_diel = -0.00331481882956855
+PCM E_diel = -0.00331622437320672
+macro iter  61 ( 21 JK    4 micro), CASSCF E = -77.3994609799385  dE =  1.53873878e-04  S^2 = 0.0000000
+               |grad[o]|=0.00142  |ddm|=0.00129  |maxRot[o]|=0.0471
+Removing duplication 0.414568487709431, adding E(solvent) = -0.00331622437320672 to total energy:
+    E(CASSCF+solvent) = -77.8173456920212
+PCM E_diel = -0.00304445608142973
+PCM E_diel = -0.00330588940417312
+PCM E_diel = -0.00330528521798091
+PCM E_diel = -0.00330668135496786
+macro iter  62 ( 21 JK    4 micro), CASSCF E = -77.3997553695474  dE = -2.94389609e-04  S^2 = 0.0000000
+               |grad[o]|=0.00134  |ddm|=0.0013  |maxRot[o]|=0.0372
+Removing duplication 0.414290756946884, adding E(solvent) = -0.00330668135496786 to total energy:
+    E(CASSCF+solvent) = -77.8173528078493
+PCM E_diel = -0.00304610318853061
+PCM E_diel = -0.00329713471161309
+PCM E_diel = -0.00329649191301997
+PCM E_diel = -0.00329782091591524
+macro iter  63 ( 21 JK    4 micro), CASSCF E = -77.4000724194995  dE = -3.17049952e-04  S^2 = 0.0000000
+               |grad[o]|=0.00133  |ddm|=0.00129  |maxRot[o]|=0.0287
+Removing duplication 0.413986773379894, adding E(solvent) = -0.00329782091591524 to total energy:
+    E(CASSCF+solvent) = -77.8173570137953
+PCM E_diel = -0.00304744224904092
+PCM E_diel = -0.00328976089361725
+PCM E_diel = -0.00328923740880325
+PCM E_diel = -0.0032905425701811
+macro iter  64 ( 21 JK    4 micro), CASSCF E = -77.4003290176879  dE = -2.56598188e-04  S^2 = 0.0000000
+               |grad[o]|=0.00133  |ddm|=0.00129  |maxRot[o]|=0.0219
+Removing duplication 0.413739965387034, adding E(solvent) = -0.0032905425701811 to total energy:
+    E(CASSCF+solvent) = -77.8173595256451
+PCM E_diel = -0.00304845003781641
+PCM E_diel = -0.00328394172768192
+PCM E_diel = -0.0032833996702004
+PCM E_diel = -0.00328433107953933
+macro iter  65 ( 21 JK    4 micro), CASSCF E = -77.4005758189060  dE = -2.46801218e-04  S^2 = 0.0000000
+               |grad[o]|=0.00135  |ddm|=0.00132  |maxRot[o]|=0.0162
+Removing duplication 0.413500171859805, adding E(solvent) = -0.00328433107953933 to total energy:
+    E(CASSCF+solvent) = -77.8173603218453
+PCM E_diel = -0.00304917570514228
+PCM E_diel = -0.00327960920811574
+PCM E_diel = -0.00327899967603124
+PCM E_diel = -0.00327989203836692
+macro iter  66 ( 21 JK    4 micro), CASSCF E = -77.4007348859260  dE = -1.59067020e-04  S^2 = 0.0000000
+               |grad[o]|=0.00137  |ddm|=0.00131  |maxRot[o]|=0.0123
+Removing duplication 0.413346144424096, adding E(solvent) = -0.00327989203836692 to total energy:
+    E(CASSCF+solvent) = -77.8173609223885
+PCM E_diel = -0.00304977039202781
+PCM E_diel = -0.00327618541430657
+PCM E_diel = -0.00327558593361354
+PCM E_diel = -0.00327649494265327
+macro iter  67 ( 21 JK    4 micro), CASSCF E = -77.4008569731753  dE = -1.22087249e-04  S^2 = 0.0000000
+               |grad[o]|=0.00139  |ddm|=0.00133  |maxRot[o]|=0.0093
+Removing duplication 0.413227930596386, adding E(solvent) = -0.00327649494265327 to total energy:
+    E(CASSCF+solvent) = -77.8173613987143
+PCM E_diel = -0.00305022982619107
+PCM E_diel = -0.00327363480768132
+PCM E_diel = -0.00327306205506457
+PCM E_diel = -0.00327396832875256
+macro iter  68 ( 21 JK    4 micro), CASSCF E = -77.4009435375147  dE = -8.65643394e-05  S^2 = 0.0000000
+               |grad[o]|=0.0014  |ddm|=0.00134  |maxRot[o]|=0.00704
+Removing duplication 0.413144334160487, adding E(solvent) = -0.00327396832875256 to total energy:
+    E(CASSCF+solvent) = -77.8173618400039
+PCM E_diel = -0.00305050798775013
+PCM E_diel = -0.00327178186193614
+PCM E_diel = -0.00327118515668897
+PCM E_diel = -0.00327206983348386
+macro iter  69 ( 21 JK    4 micro), CASSCF E = -77.4010059147328  dE = -6.23772182e-05  S^2 = 0.0000000
+               |grad[o]|=0.00141  |ddm|=0.00133  |maxRot[o]|=0.0054
+Removing duplication 0.413084160132179, adding E(solvent) = -0.00327206983348386 to total energy:
+    E(CASSCF+solvent) = -77.8173621446985
+PCM E_diel = -0.00305071729691467
+PCM E_diel = -0.00327038669875593
+PCM E_diel = -0.00326975931360866
+PCM E_diel = -0.00327062463004018
+macro iter  70 ( 21 JK    4 micro), CASSCF E = -77.4010525216656  dE = -4.66069327e-05  S^2 = 0.0000000
+               |grad[o]|=0.00141  |ddm|=0.00132  |maxRot[o]|=0.00419
+Removing duplication 0.413039232501038, adding E(solvent) = -0.00327062463004018 to total energy:
+    E(CASSCF+solvent) = -77.8173623787966
+PCM E_diel = -0.00305092131001808
+PCM E_diel = -0.00326928238546211
+PCM E_diel = -0.00326865893894372
+PCM E_diel = -0.00326953709302816
+macro iter  71 ( 21 JK    4 micro), CASSCF E = -77.4010862613393  dE = -3.37396737e-05  S^2 = 0.0000000
+               |grad[o]|=0.00142  |ddm|=0.00133  |maxRot[o]|=0.00323
+Removing duplication 0.413006837926019, adding E(solvent) = -0.00326953709302816 to total energy:
+    E(CASSCF+solvent) = -77.8173626363583
+PCM E_diel = -0.00305105962535025
+PCM E_diel = -0.0032684230171855
+PCM E_diel = -0.00326783283916224
+PCM E_diel = -0.00326870877224425
+macro iter  72 ( 21 JK    4 micro), CASSCF E = -77.4011108807595  dE = -2.46194202e-05  S^2 = 0.0000000
+               |grad[o]|=0.00142  |ddm|=0.00133  |maxRot[o]|=0.00246
+Removing duplication 0.412983266221148, adding E(solvent) = -0.00326870877224425 to total energy:
+    E(CASSCF+solvent) = -77.8173628557528
+PCM E_diel = -0.00305115467890659
+PCM E_diel = -0.00326790434213842
+PCM E_diel = -0.00326727127998324
+PCM E_diel = -0.00326814941422623
+macro iter  73 ( 21 JK    4 micro), CASSCF E = -77.4011228469109  dE = -1.19661514e-05  S^2 = 0.0000000
+               |grad[o]|=0.00142  |ddm|=0.00133  |maxRot[o]|=0.00197
+Removing duplication 0.412972132042052, adding E(solvent) = -0.00326814941422623 to total energy:
+    E(CASSCF+solvent) = -77.8173631283671
+PCM E_diel = -0.00305121030788588
+PCM E_diel = -0.00326742801574197
+PCM E_diel = -0.00326681927158647
+PCM E_diel = -0.00326770065996325
+macro iter  74 ( 21 JK    4 micro), CASSCF E = -77.4011329062984  dE = -1.00593876e-05  S^2 = 0.0000000
+               |grad[o]|=0.00143  |ddm|=0.00132  |maxRot[o]|=0.00153
+Removing duplication 0.412962721741525, adding E(solvent) = -0.00326770065996325 to total energy:
+    E(CASSCF+solvent) = -77.8173633286999
+PCM E_diel = -0.00305129552592118
+PCM E_diel = -0.00326708094435597
+PCM E_diel = -0.00326647932235941
+PCM E_diel = -0.00326736226891793
+macro iter  75 ( 21 JK    4 micro), CASSCF E = -77.4011402130845  dE = -7.30678605e-06  S^2 = 0.0000000
+               |grad[o]|=0.00143  |ddm|=0.00133  |maxRot[o]|=0.0012
+Removing duplication 0.412955986675846, adding E(solvent) = -0.00326736226891793 to total energy:
+    E(CASSCF+solvent) = -77.8173635620292
+PCM E_diel = -0.00305130920140743
+PCM E_diel = -0.00326691926343372
+PCM E_diel = -0.00326629170976304
+PCM E_diel = -0.00326717286620604
+macro iter  76 ( 21 JK    4 micro), CASSCF E = -77.4011388850565  dE =  1.32802796e-06  S^2 = 0.0000000
+               |grad[o]|=0.00143  |ddm|=0.00132  |maxRot[o]|=0.000981
+Removing duplication 0.412957734446044, adding E(solvent) = -0.00326717286620604 to total energy:
+    E(CASSCF+solvent) = -77.8173637923687
+PCM E_diel = -0.00305139176874868
+PCM E_diel = -0.00326654708661016
+PCM E_diel = -0.00326601205636422
+PCM E_diel = -0.00326695254538947
+macro iter  77 ( 21 JK    4 micro), CASSCF E = -77.4011449231431  dE = -6.03808664e-06  S^2 = 0.0000000
+               |grad[o]|=0.00143  |ddm|=0.00135  |maxRot[o]|=0.00089
+Removing duplication 0.412952063870296, adding E(solvent) = -0.00326695254538947 to total energy:
+    E(CASSCF+solvent) = -77.8173639395588
+PCM E_diel = -0.00305142626395919
+PCM E_diel = -0.00326670945777495
+PCM E_diel = -0.00326610463953046
+PCM E_diel = -0.00326699386490406
+macro iter  78 ( 21 JK    4 micro), CASSCF E = -77.4011321904828  dE =  1.27326604e-05  S^2 = 0.0000000
+               |grad[o]|=0.00142  |ddm|=0.00133  |maxRot[o]|=0.000881
+Removing duplication 0.412965117584046, adding E(solvent) = -0.00326699386490406 to total energy:
+    E(CASSCF+solvent) = -77.8173643019317
+PCM E_diel = -0.00305140965605142
+PCM E_diel = -0.003266610611719
+PCM E_diel = -0.00326598144696842
+PCM E_diel = -0.00326686221366919
+macro iter  79 ( 21 JK    4 micro), CASSCF E = -77.4011333998244  dE = -1.20934163e-06  S^2 = 0.0000000
+               |grad[o]|=0.00143  |ddm|=0.00133  |maxRot[o]|=0.000885
+Removing duplication 0.412964205769928, adding E(solvent) = -0.00326686221366919 to total energy:
+    E(CASSCF+solvent) = -77.817364467808
+PCM E_diel = -0.0030514599862439
+PCM E_diel = -0.00326631913207011
+PCM E_diel = -0.00326578322854994
+PCM E_diel = -0.00326672505290301
+macro iter  80 ( 21 JK    4 micro), CASSCF E = -77.4011377830585  dE = -4.38323411e-06  S^2 = 0.0000000
+               |grad[o]|=0.00142  |ddm|=0.00135  |maxRot[o]|=0.000879
+Removing duplication 0.412960105593999, adding E(solvent) = -0.00326672505290301 to total energy:
+    E(CASSCF+solvent) = -77.8173646137054
+PCM E_diel = -0.00305146822474958
+PCM E_diel = -0.00326655474454088
+PCM E_diel = -0.00326594785531418
+PCM E_diel = -0.00326683464513668
+macro iter  81 ( 21 JK    4 micro), CASSCF E = -77.4011235251116  dE =  1.42579470e-05  S^2 = 0.0000000
+               |grad[o]|=0.00142  |ddm|=0.00133  |maxRot[o]|=0.000876
+Removing duplication 0.412974618541887, adding E(solvent) = -0.00326683464513668 to total energy:
+    E(CASSCF+solvent) = -77.8173649782986
+PCM E_diel = -0.00305143516161377
+PCM E_diel = -0.00326648749857988
+PCM E_diel = -0.00326588564377417
+PCM E_diel = -0.00326675981252236
+macro iter  82 ( 21 JK    4 micro), CASSCF E = -77.4011231928800  dE =  3.32231579e-07  S^2 = 0.0000000
+               |grad[o]|=0.00142  |ddm|=0.00132  |maxRot[o]|=0.000885
+Removing duplication 0.412975200310356, adding E(solvent) = -0.00326675981252236 to total energy:
+    E(CASSCF+solvent) = -77.8173651530029
+PCM E_diel = -0.00305147571444463
+PCM E_diel = -0.00326645230767035
+PCM E_diel = -0.00326582366281919
+PCM E_diel = -0.00326670759812036
+macro iter  83 ( 21 JK    4 micro), CASSCF E = -77.4011226368080  dE =  5.56071967e-07  S^2 = 0.0000000
+               |grad[o]|=0.00142  |ddm|=0.00133  |maxRot[o]|=0.000871
+Removing duplication 0.412976019910615, adding E(solvent) = -0.00326670759812036 to total energy:
+    E(CASSCF+solvent) = -77.8173653643167
+PCM E_diel = -0.00305149749332842
+PCM E_diel = -0.00326638145881517
+PCM E_diel = -0.00326578495840923
+PCM E_diel = -0.00326667257226696
+macro iter  84 ( 21 JK    4 micro), CASSCF E = -77.4011209669980  dE =  1.66980998e-06  S^2 = 0.0000000
+               |grad[o]|=0.00142  |ddm|=0.00133  |maxRot[o]|=0.000874
+Removing duplication 0.412977934885921, adding E(solvent) = -0.00326667257226696 to total energy:
+    E(CASSCF+solvent) = -77.8173655744562
+PCM E_diel = -0.00305150271961369
+PCM E_diel = -0.00326642663128985
+PCM E_diel = -0.00326581974635428
+PCM E_diel = -0.00326669759932909
+macro iter  85 ( 21 JK    4 micro), CASSCF E = -77.4011147933797  dE =  6.17361835e-06  S^2 = 0.0000000
+               |grad[o]|=0.00142  |ddm|=0.00133  |maxRot[o]|=0.000874
+Removing duplication 0.412984344812374, adding E(solvent) = -0.00326669759932909 to total energy:
+    E(CASSCF+solvent) = -77.8173658357914
+PCM E_diel = -0.00305149136419609
+PCM E_diel = -0.00326644711373575
+PCM E_diel = -0.00326580322802075
+PCM E_diel = -0.00326670510846028
+macro iter  86 ( 21 JK    4 micro), CASSCF E = -77.4011099367339  dE =  4.85664577e-06  S^2 = 0.0000000
+               |grad[o]|=0.00142  |ddm|=0.00132  |maxRot[o]|=0.000876
+Removing duplication 0.412989405220766, adding E(solvent) = -0.00326670510846028 to total energy:
+    E(CASSCF+solvent) = -77.8173660470631
+PCM E_diel = -0.00305153916639574
+PCM E_diel = -0.00326622870107735
+PCM E_diel = -0.00326570419036967
+PCM E_diel = -0.00326664427178343
+macro iter  87 ( 21 JK    4 micro), CASSCF E = -77.4011123914073  dE = -2.45467342e-06  S^2 = 0.0000000
+               |grad[o]|=0.00142  |ddm|=0.00134  |maxRot[o]|=0.000877
+Removing duplication 0.412987199402906, adding E(solvent) = -0.00326664427178343 to total energy:
+    E(CASSCF+solvent) = -77.817366235082
+PCM E_diel = -0.00305150784537224
+PCM E_diel = -0.0032665356076907
+PCM E_diel = -0.00326593538583416
+PCM E_diel = -0.00326680657131945
+macro iter  88 ( 21 JK    4 micro), CASSCF E = -77.4010971206365  dE =  1.52707709e-05  S^2 = 0.0000000
+               |grad[o]|=0.00142  |ddm|=0.00132  |maxRot[o]|=0.000883
+Removing duplication 0.413002636642342, adding E(solvent) = -0.00326680657131945 to total energy:
+    E(CASSCF+solvent) = -77.8173665638501
+PCM E_diel = -0.00305154829922025
+PCM E_diel = -0.00326647357505728
+PCM E_diel = -0.00326585820468801
+PCM E_diel = -0.00326674069645874
+macro iter  89 ( 21 JK    4 micro), CASSCF E = -77.4010985888851  dE = -1.46824861e-06  S^2 = 0.0000000
+               |grad[o]|=0.00142  |ddm|=0.00132  |maxRot[o]|=0.000872
+Removing duplication 0.413001412811774, adding E(solvent) = -0.00326674069645874 to total energy:
+    E(CASSCF+solvent) = -77.8173667423933
+PCM E_diel = -0.00305156621948681
+PCM E_diel = -0.00326646034593735
+PCM E_diel = -0.00326582011732058
+PCM E_diel = -0.00326671141145688
+macro iter  90 ( 21 JK    4 micro), CASSCF E = -77.4010971911619  dE =  1.39772315e-06  S^2 = 0.0000000
+               |grad[o]|=0.00142  |ddm|=0.00133  |maxRot[o]|=0.000872
+Removing duplication 0.413003047009293, adding E(solvent) = -0.00326671141145688 to total energy:
+    E(CASSCF+solvent) = -77.8173669495827
+PCM E_diel = -0.00305158991038338
+PCM E_diel = -0.0032664051149277
+PCM E_diel = -0.00326578422218916
+PCM E_diel = -0.00326667795015475
+macro iter  91 ( 21 JK    4 micro), CASSCF E = -77.4010963283206  dE =  8.62841333e-07  S^2 = 0.0000000
+               |grad[o]|=0.00142  |ddm|=0.00133  |maxRot[o]|=0.000875
+Removing duplication 0.413004142811306, adding E(solvent) = -0.00326667795015475 to total energy:
+    E(CASSCF+solvent) = -77.817367149082
+PCM E_diel = -0.00305160610460261
+PCM E_diel = -0.00326639834830009
+PCM E_diel = -0.00326577054821515
+PCM E_diel = -0.00326666492423491
+macro iter  92 ( 21 JK    4 micro), CASSCF E = -77.4010941696179  dE =  2.15870269e-06  S^2 = 0.0000000
+               |grad[o]|=0.00142  |ddm|=0.00132  |maxRot[o]|=0.000874
+Removing duplication 0.413006522090774, adding E(solvent) = -0.00326666492423491 to total energy:
+    E(CASSCF+solvent) = -77.8173673566329
+PCM E_diel = -0.00305163198436382
+PCM E_diel = -0.00326634907661346
+PCM E_diel = -0.00326573817672461
+PCM E_diel = -0.00326663881607045
+macro iter  93 ( 21 JK    4 micro), CASSCF E = -77.4010940549529  dE =  1.14664999e-07  S^2 = 0.0000000
+               |grad[o]|=0.00142  |ddm|=0.00133  |maxRot[o]|=0.000878
+Removing duplication 0.41300687744271, adding E(solvent) = -0.00326663881607045 to total energy:
+    E(CASSCF+solvent) = -77.8173675712117
+PCM E_diel = -0.00305163729833987
+PCM E_diel = -0.00326639895002582
+PCM E_diel = -0.00326577657537305
+PCM E_diel = -0.00326667419676862
+macro iter  94 ( 21 JK    4 micro), CASSCF E = -77.4010883816220  dE =  5.67333089e-06  S^2 = 0.0000000
+               |grad[o]|=0.00142  |ddm|=0.00133  |maxRot[o]|=0.000873
+Removing duplication 0.413012756596869, adding E(solvent) = -0.00326667419676862 to total energy:
+    E(CASSCF+solvent) = -77.8173678124156
+PCM E_diel = -0.00305166553912436
+PCM E_diel = -0.00326636372499793
+PCM E_diel = -0.00326573916711672
+PCM E_diel = -0.00326665944474116
+macro iter  95 ( 21 JK    4 micro), CASSCF E = -77.4010873877709  dE =  9.93851131e-07  S^2 = 0.0000000
+               |grad[o]|=0.00141  |ddm|=0.00133  |maxRot[o]|=0.000881
+Removing duplication 0.413013964563529, adding E(solvent) = -0.00326665944474116 to total energy:
+    E(CASSCF+solvent) = -77.8173680117792
+PCM E_diel = -0.00305170588043459
+PCM E_diel = -0.00326638446161749
+PCM E_diel = -0.0032657929237394
+PCM E_diel = -0.00326668365648616
+macro iter  96 ( 21 JK    4 micro), CASSCF E = -77.4010831693490  dE =  4.21842185e-06  S^2 = 0.0000000
+               |grad[o]|=0.00141  |ddm|=0.00132  |maxRot[o]|=0.000884
+Removing duplication 0.413018438011971, adding E(solvent) = -0.00326668365648616 to total energy:
+    E(CASSCF+solvent) = -77.8173682910175
+PCM E_diel = -0.00305169230733884
+PCM E_diel = -0.00326638765695535
+PCM E_diel = -0.00326577147082587
+PCM E_diel = -0.00326666051061479
+macro iter  97 ( 21 JK    4 micro), CASSCF E = -77.4010820962819  dE =  1.07306715e-06  S^2 = 0.0000000
+               |grad[o]|=0.00141  |ddm|=0.00132  |maxRot[o]|=0.00088
+Removing duplication 0.413019758765744, adding E(solvent) = -0.00326666051061479 to total energy:
+    E(CASSCF+solvent) = -77.8173685155582
+PCM E_diel = -0.00305171528918855
+PCM E_diel = -0.00326636411919377
+PCM E_diel = -0.00326574079591208
+PCM E_diel = -0.0032666293405868
+macro iter  98 ( 21 JK    4 micro), CASSCF E = -77.4010820476146  dE =  4.86672604e-08  S^2 = 0.0000000
+               |grad[o]|=0.00141  |ddm|=0.00132  |maxRot[o]|=0.000884
+Removing duplication 0.413020056899254, adding E(solvent) = -0.0032666293405868 to total energy:
+    E(CASSCF+solvent) = -77.8173687338545
+PCM E_diel = -0.00305174393640428
+PCM E_diel = -0.00326630237831875
+PCM E_diel = -0.00326569577655893
+PCM E_diel = -0.00326659692877682
+macro iter  99 ( 21 JK    4 micro), CASSCF E = -77.4010823983980  dE = -3.50783381e-07  S^2 = 0.0000000
+               |grad[o]|=0.00141  |ddm|=0.00133  |maxRot[o]|=0.000883
+Removing duplication 0.413019959306186, adding E(solvent) = -0.00326659692877682 to total energy:
+    E(CASSCF+solvent) = -77.817368954633
+PCM E_diel = -0.00305175718915789
+PCM E_diel = -0.003266355689868
+PCM E_diel = -0.00326572768596802
+PCM E_diel = -0.00326662991630346
+macro iter 100 ( 21 JK    4 micro), CASSCF E = -77.4010772438547  dE =  5.15454325e-06  S^2 = 0.0000000
+               |grad[o]|=0.00141  |ddm|=0.00132  |maxRot[o]|=0.000887
+Removing duplication 0.413025325807226, adding E(solvent) = -0.00326662991630346 to total energy:
+    E(CASSCF+solvent) = -77.8173691995783
+PCM E_diel = -0.00305181878943886
+PCM E_diel = -0.00326630583931044
+PCM E_diel = -0.00326569773290655
+PCM E_diel = -0.00326659219384543
+macro iter 101 ( 21 JK    4 micro), CASSCF E = -77.4010777065031  dE = -4.62648316e-07  S^2 = 0.0000000
+               |grad[o]|=0.00141  |ddm|=0.00132  |maxRot[o]|=0.000883
+Removing duplication 0.413025144109895, adding E(solvent) = -0.00326659219384543 to total energy:
+    E(CASSCF+solvent) = -77.8173694428068
+PCM E_diel = -0.00305180714426257
+PCM E_diel = -0.00326631098502846
+PCM E_diel = -0.00326567027606105
+PCM E_diel = -0.00326655387403402
+macro iter 102 ( 21 JK    4 micro), CASSCF E = -77.4010784569875  dE = -7.50484475e-07  S^2 = 0.0000000
+               |grad[o]|=0.00141  |ddm|=0.00132  |maxRot[o]|=0.000893
+Removing duplication 0.413024680306754, adding E(solvent) = -0.00326655387403402 to total energy:
+    E(CASSCF+solvent) = -77.8173696911683
+PCM E_diel = -0.00305181176929954
+PCM E_diel = -0.00326626262653795
+PCM E_diel = -0.00326564905578221
+PCM E_diel = -0.00326653269065004
+macro iter 103 ( 21 JK    4 micro), CASSCF E = -77.4010775430183  dE =  9.13969188e-07  S^2 = 0.0000000
+               |grad[o]|=0.00141  |ddm|=0.00131  |maxRot[o]|=0.000898
+Removing duplication 0.413025851741375, adding E(solvent) = -0.00326653269065004 to total energy:
+    E(CASSCF+solvent) = -77.8173699274504
+PCM E_diel = -0.00305185946112423
+PCM E_diel = -0.00326626309556866
+PCM E_diel = -0.00326558914647287
+PCM E_diel = -0.00326648375908813
+macro iter 104 ( 21 JK    4 micro), CASSCF E = -77.4010792655080  dE = -1.72248963e-06  S^2 = 0.0000000
+               |grad[o]|=0.00141  |ddm|=0.00131  |maxRot[o]|=0.000891
+Removing duplication 0.413024420753525, adding E(solvent) = -0.00326648375908813 to total energy:
+    E(CASSCF+solvent) = -77.8173701700206
+PCM E_diel = -0.00305187131360808
+PCM E_diel = -0.00326617157788516
+PCM E_diel = -0.00326556670682139
+PCM E_diel = -0.00326645468499406
+macro iter 105 ( 21 JK    4 micro), CASSCF E = -77.4010789283840  dE =  3.37123979e-07  S^2 = 0.0000000
+               |grad[o]|=0.00141  |ddm|=0.00131  |maxRot[o]|=0.000907
+Removing duplication 0.413025029857924, adding E(solvent) = -0.00326645468499406 to total energy:
+    E(CASSCF+solvent) = -77.8173704129269
+PCM E_diel = -0.00305189824542328
+PCM E_diel = -0.00326612058431989
+PCM E_diel = -0.00326552964195369
+PCM E_diel = -0.00326642284828229
+macro iter 106 ( 21 JK    4 micro), CASSCF E = -77.4010797532442  dE = -8.24860237e-07  S^2 = 0.0000000
+               |grad[o]|=0.00141  |ddm|=0.00131  |maxRot[o]|=0.000908
+Removing duplication 0.41302447411497, adding E(solvent) = -0.00326642284828229 to total energy:
+    E(CASSCF+solvent) = -77.8173706502075
+PCM E_diel = -0.00305192446209775
+PCM E_diel = -0.00326613627067366
+PCM E_diel = -0.00326554339425278
+PCM E_diel = -0.00326643306600318
+macro iter 107 ( 21 JK    4 micro), CASSCF E = -77.4010774215118  dE =  2.33173243e-06  S^2 = 0.0000000
+               |grad[o]|=0.00141  |ddm|=0.00131  |maxRot[o]|=0.00091
+Removing duplication 0.413027063559656, adding E(solvent) = -0.00326643306600318 to total energy:
+    E(CASSCF+solvent) = -77.8173709181375
+PCM E_diel = -0.0030519715896943
+PCM E_diel = -0.00326618001321103
+PCM E_diel = -0.00326551248942463
+PCM E_diel = -0.00326641172965933
+macro iter 108 ( 21 JK    4 micro), CASSCF E = -77.4010773240442  dE =  9.74675629e-08  S^2 = 0.0000000
+               |grad[o]|=0.00141  |ddm|=0.00132  |maxRot[o]|=0.000904
+Removing duplication 0.413027440784236, adding E(solvent) = -0.00326641172965933 to total energy:
+    E(CASSCF+solvent) = -77.8173711765581
+PCM E_diel = -0.00305200939418285
+PCM E_diel = -0.00326610236936006
+PCM E_diel = -0.003265453950398
+PCM E_diel = -0.00326635187921193
+macro iter 109 ( 21 JK    4 micro), CASSCF E = -77.4010795980563  dE = -2.27401202e-06  S^2 = 0.0000000
+               |grad[o]|=0.00141  |ddm|=0.00131  |maxRot[o]|=0.000914
+Removing duplication 0.413025441841557, adding E(solvent) = -0.00326635187921193 to total energy:
+    E(CASSCF+solvent) = -77.817371391777
+PCM E_diel = -0.00305206271729782
+PCM E_diel = -0.00326596937635221
+PCM E_diel = -0.00326535877247913
+PCM E_diel = -0.00326627212440364
+macro iter 110 ( 21 JK    4 micro), CASSCF E = -77.4010849247790  dE = -5.32672276e-06  S^2 = 0.0000000
+               |grad[o]|=0.0014  |ddm|=0.00133  |maxRot[o]|=0.000913
+Removing duplication 0.413020422735534, adding E(solvent) = -0.00326627212440364 to total energy:
+    E(CASSCF+solvent) = -77.8173716196389
+PCM E_diel = -0.00305207030928712
+PCM E_diel = -0.00326603366791079
+PCM E_diel = -0.00326540660324532
+PCM E_diel = -0.00326630401903004
+macro iter 111 ( 21 JK    4 micro), CASSCF E = -77.4010802883478  dE =  4.63643124e-06  S^2 = 0.0000000
+               |grad[o]|=0.0014  |ddm|=0.00131  |maxRot[o]|=0.000909
+Removing duplication 0.413025342729719, adding E(solvent) = -0.00326630401903004 to total energy:
+    E(CASSCF+solvent) = -77.8173719350965
+PCM E_diel = -0.00305208707525805
+PCM E_diel = -0.0032659662640016
+PCM E_diel = -0.00326536226887814
+PCM E_diel = -0.00326625094880166
+macro iter 112 ( 21 JK    4 micro), CASSCF E = -77.4010822866640  dE = -1.99831618e-06  S^2 = 0.0000000
+               |grad[o]|=0.0014  |ddm|=0.00131  |maxRot[o]|=0.000926
+Removing duplication 0.413023625626266, adding E(solvent) = -0.00326625094880166 to total energy:
+    E(CASSCF+solvent) = -77.817372163239
+PCM E_diel = -0.00305214237374297
+PCM E_diel = -0.00326592726781269
+PCM E_diel = -0.0032653022202818
+PCM E_diel = -0.00326619362522583
+macro iter 113 ( 21 JK    4 micro), CASSCF E = -77.4010851721550  dE = -2.88549106e-06  S^2 = 0.0000000
+               |grad[o]|=0.0014  |ddm|=0.00131  |maxRot[o]|=0.000916
+Removing duplication 0.413021048644322, adding E(solvent) = -0.00326619362522583 to total energy:
+    E(CASSCF+solvent) = -77.8173724144246
+PCM E_diel = -0.0030521804752863
+PCM E_diel = -0.00326585459151352
+PCM E_diel = -0.00326523833178138
+PCM E_diel = -0.00326613327928353
+macro iter 114 ( 21 JK    4 micro), CASSCF E = -77.4010881188495  dE = -2.94669445e-06  S^2 = 0.0000000
+               |grad[o]|=0.0014  |ddm|=0.00132  |maxRot[o]|=0.000921
+Removing duplication 0.413018414252642, adding E(solvent) = -0.00326613327928353 to total energy:
+    E(CASSCF+solvent) = -77.8173726663814
+PCM E_diel = -0.00305221767914492
+PCM E_diel = -0.00326583477527645
+PCM E_diel = -0.00326518800255963
+PCM E_diel = -0.00326608891275339
+macro iter 115 ( 21 JK    4 micro), CASSCF E = -77.4010897272515  dE = -1.60840200e-06  S^2 = 0.0000000
+               |grad[o]|=0.0014  |ddm|=0.00131  |maxRot[o]|=0.000922
+Removing duplication 0.413017123059822, adding E(solvent) = -0.00326608891275339 to total energy:
+    E(CASSCF+solvent) = -77.817372939224
+PCM E_diel = -0.00305224049731537
+PCM E_diel = -0.00326575880485413
+PCM E_diel = -0.00326513725163127
+PCM E_diel = -0.00326602860817798
+macro iter 116 ( 21 JK    4 micro), CASSCF E = -77.4010926942151  dE = -2.96696368e-06  S^2 = 0.0000000
+               |grad[o]|=0.0014  |ddm|=0.00131  |maxRot[o]|=0.000932
+Removing duplication 0.413014452155548, adding E(solvent) = -0.00326602860817798 to total energy:
+    E(CASSCF+solvent) = -77.8173731749789
+PCM E_diel = -0.00305230084385095
+PCM E_diel = -0.00326566185355531
+PCM E_diel = -0.00326504081415385
+PCM E_diel = -0.00326595750718931
+macro iter 117 ( 21 JK    4 micro), CASSCF E = -77.4010969854437  dE = -4.29122859e-06  S^2 = 0.0000000
+               |grad[o]|=0.0014  |ddm|=0.00131  |maxRot[o]|=0.000928
+Removing duplication 0.413010501644767, adding E(solvent) = -0.00326595750718931 to total energy:
+    E(CASSCF+solvent) = -77.8173734445957
+PCM E_diel = -0.00305232000513303
+PCM E_diel = -0.00326570200978644
+PCM E_diel = -0.00326502145766303
+PCM E_diel = -0.00326592500540106
+macro iter 118 ( 21 JK    4 micro), CASSCF E = -77.4010982754559  dE = -1.29001216e-06  S^2 = 0.0000000
+               |grad[o]|=0.0014  |ddm|=0.00131  |maxRot[o]|=0.000935
+Removing duplication 0.413009506305603, adding E(solvent) = -0.00326592500540106 to total energy:
+    E(CASSCF+solvent) = -77.8173737067669
+PCM E_diel = -0.00305237964687869
+PCM E_diel = -0.00326556882396943
+PCM E_diel = -0.00326496933675328
+PCM E_diel = -0.00326585610031716
+macro iter 119 ( 21 JK    4 micro), CASSCF E = -77.4011023498317  dE = -4.07437578e-06  S^2 = 0.0000000
+               |grad[o]|=0.0014  |ddm|=0.00131  |maxRot[o]|=0.000937
+Removing duplication 0.413005762305792, adding E(solvent) = -0.00326585610031716 to total energy:
+    E(CASSCF+solvent) = -77.8173739682378
+PCM E_diel = -0.00305242234565631
+PCM E_diel = -0.0032655292992416
+PCM E_diel = -0.00326490445520673
+PCM E_diel = -0.00326579993696529
+macro iter 120 ( 21 JK    4 micro), CASSCF E = -77.4011053727601  dE = -3.02292838e-06  S^2 = 0.0000000
+               |grad[o]|=0.0014  |ddm|=0.00131  |maxRot[o]|=0.000933
+Removing duplication 0.413003075028686, adding E(solvent) = -0.00326579993696529 to total energy:
+    E(CASSCF+solvent) = -77.8173742477257
+PCM E_diel = -0.00305246841096865
+PCM E_diel = -0.00326543750157115
+PCM E_diel = -0.00326483218199699
+PCM E_diel = -0.0032657223126488
+macro iter 121 ( 21 JK    4 micro), CASSCF E = -77.4011100228020  dE = -4.65004196e-06  S^2 = 0.0000000
+               |grad[o]|=0.0014  |ddm|=0.00131  |maxRot[o]|=0.000937
+Removing duplication 0.412998764519986, adding E(solvent) = -0.0032657223126488 to total energy:
+    E(CASSCF+solvent) = -77.8173745096346
+PCM E_diel = -0.00305251216987688
+PCM E_diel = -0.00326538566572401
+PCM E_diel = -0.00326474942840871
+PCM E_diel = -0.00326565341419062
+macro iter 122 ( 21 JK    4 micro), CASSCF E = -77.4011140507395  dE = -4.02793751e-06  S^2 = 0.0000000
+               |grad[o]|=0.0014  |ddm|=0.00131  |maxRot[o]|=0.000936
+Removing duplication 0.412995057663066, adding E(solvent) = -0.00326565341419062 to total energy:
+    E(CASSCF+solvent) = -77.8173747618168
+PCM E_diel = -0.00305257542089355
+PCM E_diel = -0.00326523922131305
+PCM E_diel = -0.00326464582879975
+PCM E_diel = -0.00326555496310512
+macro iter 123 ( 21 JK    4 micro), CASSCF E = -77.4011214102772  dE = -7.35953763e-06  S^2 = 0.0000000
+               |grad[o]|=0.0014  |ddm|=0.00132  |maxRot[o]|=0.000942
+Removing duplication 0.412988045479036, adding E(solvent) = -0.00326555496310512 to total energy:
+    E(CASSCF+solvent) = -77.8173750107193
+PCM E_diel = -0.0030526020132446
+PCM E_diel = -0.00326526403790211
+PCM E_diel = -0.00326465034687263
+PCM E_diel = -0.00326555161341912
+macro iter 124 ( 21 JK    4 micro), CASSCF E = -77.4011203727551  dE =  1.03752203e-06  S^2 = 0.0000000
+               |grad[o]|=0.0014  |ddm|=0.00131  |maxRot[o]|=0.000939
+Removing duplication 0.412989420520446, adding E(solvent) = -0.00326555161341912 to total energy:
+    E(CASSCF+solvent) = -77.817375344889
+PCM E_diel = -0.00305263023426704
+PCM E_diel = -0.0032652065289317
+PCM E_diel = -0.00326459925737401
+PCM E_diel = -0.00326548790272487
+macro iter 125 ( 21 JK    4 micro), CASSCF E = -77.4011239013603  dE = -3.52860521e-06  S^2 = 0.0000000
+               |grad[o]|=0.00139  |ddm|=0.0013  |maxRot[o]|=0.000952
+Removing duplication 0.412986223181403, adding E(solvent) = -0.00326548790272487 to total energy:
+    E(CASSCF+solvent) = -77.8173756124445
+PCM E_diel = -0.00305269755414676
+PCM E_diel = -0.00326513940339516
+PCM E_diel = -0.00326449169223873
+PCM E_diel = -0.00326538760915281
+macro iter 126 ( 21 JK    4 micro), CASSCF E = -77.4011311997163  dE = -7.29835594e-06  S^2 = 0.0000000
+               |grad[o]|=0.00139  |ddm|=0.00131  |maxRot[o]|=0.000944
+Removing duplication 0.412979271865135, adding E(solvent) = -0.00326538760915281 to total energy:
+    E(CASSCF+solvent) = -77.8173758591906
+PCM E_diel = -0.00305276787555558
+PCM E_diel = -0.003264973464881
+PCM E_diel = -0.00326438940030964
+PCM E_diel = -0.00326528738161469
+macro iter 127 ( 21 JK    4 micro), CASSCF E = -77.4011385771439  dE = -7.37742765e-06  S^2 = 0.0000000
+               |grad[o]|=0.00139  |ddm|=0.00131  |maxRot[o]|=0.00095
+Removing duplication 0.412972289078433, adding E(solvent) = -0.00326528738161469 to total energy:
+    E(CASSCF+solvent) = -77.817376153604
+PCM E_diel = -0.00305277985553886
+PCM E_diel = -0.00326495309258245
+PCM E_diel = -0.00326436935250706
+PCM E_diel = -0.00326525538084118
+macro iter 128 ( 21 JK    4 micro), CASSCF E = -77.4011398443048  dE = -1.26716085e-06  S^2 = 0.0000000
+               |grad[o]|=0.00139  |ddm|=0.0013  |maxRot[o]|=0.000961
+Removing duplication 0.412971361621545, adding E(solvent) = -0.00326525538084118 to total energy:
+    E(CASSCF+solvent) = -77.8173764613072
+PCM E_diel = -0.00305284963566209
+PCM E_diel = -0.00326492394372752
+PCM E_diel = -0.0032642466337667
+PCM E_diel = -0.00326515079201649
+macro iter 129 ( 21 JK    4 micro), CASSCF E = -77.4011474167148  dE = -7.57240998e-06  S^2 = 0.0000000
+               |grad[o]|=0.00139  |ddm|=0.0013  |maxRot[o]|=0.000944
+Removing duplication 0.412964150756548, adding E(solvent) = -0.00326515079201649 to total energy:
+    E(CASSCF+solvent) = -77.8173767182633
+PCM E_diel = -0.00305290654029543
+PCM E_diel = -0.00326481792749341
+PCM E_diel = -0.00326417260288438
+PCM E_diel = -0.00326506524307527
+macro iter 130 ( 21 JK    4 micro), CASSCF E = -77.4011529264559  dE = -5.50974116e-06  S^2 = 0.0000000
+               |grad[o]|=0.00139  |ddm|=0.00131  |maxRot[o]|=0.000949
+Removing duplication 0.412959005604628, adding E(solvent) = -0.00326506524307527 to total energy:
+    E(CASSCF+solvent) = -77.8173769973036
+PCM E_diel = -0.0030529699238169
+PCM E_diel = -0.00326469781087212
+PCM E_diel = -0.00326405548670375
+PCM E_diel = -0.0032649558102743
+macro iter 131 ( 21 JK    4 micro), CASSCF E = -77.4011602749747  dE = -7.34851878e-06  S^2 = 0.0000000
+               |grad[o]|=0.00139  |ddm|=0.0013  |maxRot[o]|=0.000959
+Removing duplication 0.412952049934007, adding E(solvent) = -0.0032649558102743 to total energy:
+    E(CASSCF+solvent) = -77.817377280719
+PCM E_diel = -0.00305300659257736
+PCM E_diel = -0.00326458064076695
+PCM E_diel = -0.00326398388158524
+PCM E_diel = -0.00326486750299588
+macro iter 132 ( 21 JK    4 micro), CASSCF E = -77.4011662058741  dE = -5.93089936e-06  S^2 = 0.0000000
+               |grad[o]|=0.00139  |ddm|=0.0013  |maxRot[o]|=0.000959
+Removing duplication 0.412946483127602, adding E(solvent) = -0.00326486750299588 to total energy:
+    E(CASSCF+solvent) = -77.8173775565047
+PCM E_diel = -0.00305307865403486
+PCM E_diel = -0.00326450698507403
+PCM E_diel = -0.00326384550146628
+PCM E_diel = -0.00326475625385073
+macro iter 133 ( 21 JK    4 micro), CASSCF E = -77.4011741913948  dE = -7.98552077e-06  S^2 = 0.0000000
+               |grad[o]|=0.00139  |ddm|=0.0013  |maxRot[o]|=0.000947
+Removing duplication 0.412938895806636, adding E(solvent) = -0.00326475625385073 to total energy:
+    E(CASSCF+solvent) = -77.8173778434553
+PCM E_diel = -0.00305312271115401
+PCM E_diel = -0.00326441099622562
+PCM E_diel = -0.00326379153897149
+PCM E_diel = -0.00326467614118275
+macro iter 134 ( 21 JK    4 micro), CASSCF E = -77.4011795526226  dE = -5.36122772e-06  S^2 = 0.0000000
+               |grad[o]|=0.00139  |ddm|=0.0013  |maxRot[o]|=0.000958
+Removing duplication 0.41293389692624, adding E(solvent) = -0.00326467614118275 to total energy:
+    E(CASSCF+solvent) = -77.81737812569
+PCM E_diel = -0.00305319846179927
+PCM E_diel = -0.00326427980427765
+PCM E_diel = -0.00326365482205082
+PCM E_diel = -0.00326454694302403
+macro iter 135 ( 21 JK    4 micro), CASSCF E = -77.4011892736708  dE = -9.72104829e-06  S^2 = 0.0000000
+               |grad[o]|=0.00139  |ddm|=0.0013  |maxRot[o]|=0.000947
+Removing duplication 0.412924583702094, adding E(solvent) = -0.00326454694302403 to total energy:
+    E(CASSCF+solvent) = -77.817378404316
+PCM E_diel = -0.00305323853306529
+PCM E_diel = -0.00326420239223232
+PCM E_diel = -0.00326355474024738
+PCM E_diel = -0.00326447025011309
+macro iter 136 ( 21 JK    4 micro), CASSCF E = -77.4011944613607  dE = -5.18768985e-06  S^2 = 0.0000000
+               |grad[o]|=0.00139  |ddm|=0.00129  |maxRot[o]|=0.000958
+Removing duplication 0.412919748625559, adding E(solvent) = -0.00326447025011309 to total energy:
+    E(CASSCF+solvent) = -77.8173786802364
+PCM E_diel = -0.00305333313385637
+PCM E_diel = -0.00326399543850393
+PCM E_diel = -0.00326340392843701
+PCM E_diel = -0.00326432066888316
+macro iter 137 ( 21 JK    4 micro), CASSCF E = -77.4012075964824  dE = -1.31351217e-05  S^2 = 0.0000000
+               |grad[o]|=0.00139  |ddm|=0.00131  |maxRot[o]|=0.000946
+Removing duplication 0.412907025113628, adding E(solvent) = -0.00326432066888316 to total energy:
+    E(CASSCF+solvent) = -77.8173789422649
+PCM E_diel = -0.00305335204414208
+PCM E_diel = -0.00326404003153493
+PCM E_diel = -0.00326344787006795
+PCM E_diel = -0.00326432880307378
+macro iter 138 ( 21 JK    4 micro), CASSCF E = -77.4012058957516  dE =  1.70073078e-06  S^2 = 0.0000000
+               |grad[o]|=0.00139  |ddm|=0.00129  |maxRot[o]|=0.000955
+Removing duplication 0.412909074286736, adding E(solvent) = -0.00326432880307378 to total energy:
+    E(CASSCF+solvent) = -77.8173792988414
+PCM E_diel = -0.00305343506989962
+PCM E_diel = -0.0032639106238332
+PCM E_diel = -0.00326329095239302
+PCM E_diel = -0.00326418711784079
+macro iter 139 ( 21 JK    4 micro), CASSCF E = -77.4012170074909  dE = -1.11117393e-05  S^2 = 0.0000000
+               |grad[o]|=0.00139  |ddm|=0.0013  |maxRot[o]|=0.000946
+Removing duplication 0.412898356258957, adding E(solvent) = -0.00326418711784079 to total energy:
+    E(CASSCF+solvent) = -77.8173795508677
+PCM E_diel = -0.00305351287519014
+PCM E_diel = -0.00326373391655073
+PCM E_diel = -0.0032631486730108
+PCM E_diel = -0.00326405808736414
+macro iter 140 ( 21 JK    4 micro), CASSCF E = -77.4012273535773  dE = -1.03460864e-05  S^2 = 0.0000000
+               |grad[o]|=0.00139  |ddm|=0.0013  |maxRot[o]|=0.000956
+Removing duplication 0.412888392024329, adding E(solvent) = -0.00326405808736414 to total energy:
+    E(CASSCF+solvent) = -77.817379803689
+PCM E_diel = -0.00305359940926792
+PCM E_diel = -0.00326366656382143
+PCM E_diel = -0.00326308803689931
+PCM E_diel = -0.00326398124029985
+macro iter 141 ( 21 JK    4 micro), CASSCF E = -77.4012330235283  dE = -5.66995105e-06  S^2 = 0.0000000
+               |grad[o]|=0.00138  |ddm|=0.0013  |maxRot[o]|=0.000934
+Removing duplication 0.412883125683309, adding E(solvent) = -0.00326398124029985 to total energy:
+    E(CASSCF+solvent) = -77.817380130452
+PCM E_diel = -0.00305363108729445
+PCM E_diel = -0.0032635368213
+PCM E_diel = -0.00326297663969695
+PCM E_diel = -0.00326385166534655
+macro iter 142 ( 21 JK    4 micro), CASSCF E = -77.4012430652005  dE = -1.00416721e-05  S^2 = 0.0000000
+               |grad[o]|=0.00138  |ddm|=0.0013  |maxRot[o]|=0.000951
+Removing duplication 0.412873482273016, adding E(solvent) = -0.00326385166534655 to total energy:
+    E(CASSCF+solvent) = -77.8173803991388
+PCM E_diel = -0.00305370329392147
+PCM E_diel = -0.0032634335551635
+PCM E_diel = -0.00326286397349924
+PCM E_diel = -0.00326374872564639
+macro iter 143 ( 21 JK    4 micro), CASSCF E = -77.4012516673147  dE = -8.60211421e-06  S^2 = 0.0000000
+               |grad[o]|=0.00138  |ddm|=0.0013  |maxRot[o]|=0.000941
+Removing duplication 0.412865309653818, adding E(solvent) = -0.00326374872564639 to total energy:
+    E(CASSCF+solvent) = -77.8173807256942
+PCM E_diel = -0.00305374054005047
+PCM E_diel = -0.00326340249293808
+PCM E_diel = -0.00326277139475667
+PCM E_diel = -0.00326365649559055
+macro iter 144 ( 21 JK    4 micro), CASSCF E = -77.4012585820582  dE = -6.91474349e-06  S^2 = 0.0000000
+               |grad[o]|=0.00138  |ddm|=0.00128  |maxRot[o]|=0.000946
+Removing duplication 0.412858782846217, adding E(solvent) = -0.00326365649559055 to total energy:
+    E(CASSCF+solvent) = -77.8173810214
+PCM E_diel = -0.00305382988854043
+PCM E_diel = -0.00326324720193018
+PCM E_diel = -0.00326261970839802
+PCM E_diel = -0.00326351643657378
+macro iter 145 ( 21 JK    4 micro), CASSCF E = -77.4012696182267  dE = -1.10361685e-05  S^2 = 0.0000000
+               |grad[o]|=0.00138  |ddm|=0.00129  |maxRot[o]|=0.000935
+Removing duplication 0.412848176280151, adding E(solvent) = -0.00326351643657378 to total energy:
+    E(CASSCF+solvent) = -77.8173813109434
+PCM E_diel = -0.00305388627268381
+PCM E_diel = -0.00326312913326366
+PCM E_diel = -0.00326250833366916
+PCM E_diel = -0.0032633927836463
+macro iter 146 ( 21 JK    4 micro), CASSCF E = -77.4012790510549  dE = -9.43282818e-06  S^2 = 0.0000000
+               |grad[o]|=0.00138  |ddm|=0.00129  |maxRot[o]|=0.000938
+Removing duplication 0.412839135323159, adding E(solvent) = -0.0032633927836463 to total energy:
+    E(CASSCF+solvent) = -77.8173815791617
+PCM E_diel = -0.003053971764361
+PCM E_diel = -0.00326298386132226
+PCM E_diel = -0.00326236179464357
+PCM E_diel = -0.00326325293336701
+macro iter 147 ( 21 JK    4 micro), CASSCF E = -77.4012903063089  dE = -1.12552541e-05  S^2 = 0.0000000
+               |grad[o]|=0.00138  |ddm|=0.00129  |maxRot[o]|=0.00093
+Removing duplication 0.412828310219892, adding E(solvent) = -0.00326325293336701 to total energy:
+    E(CASSCF+solvent) = -77.8173818694622
+PCM E_diel = -0.0030540263745303
+PCM E_diel = -0.00326283478449927
+PCM E_diel = -0.00326224126661152
+PCM E_diel = -0.00326313602101708
+macro iter 148 ( 21 JK    4 micro), CASSCF E = -77.4012992998688  dE = -8.99355985e-06  S^2 = 0.0000000
+               |grad[o]|=0.00138  |ddm|=0.00129  |maxRot[o]|=0.000933
+Removing duplication 0.412819691721422, adding E(solvent) = -0.00326313602101708 to total energy:
+    E(CASSCF+solvent) = -77.8173821276112
+PCM E_diel = -0.00305413628195719
+PCM E_diel = -0.00326266076672379
+PCM E_diel = -0.00326209458861876
+PCM E_diel = -0.00326298751649273
+macro iter 149 ( 21 JK    4 micro), CASSCF E = -77.4013120465306  dE = -1.27466619e-05  S^2 = 0.0000000
+               |grad[o]|=0.00138  |ddm|=0.0013  |maxRot[o]|=0.000922
+Removing duplication 0.412807391208852, adding E(solvent) = -0.00326298751649273 to total energy:
+    E(CASSCF+solvent) = -77.817382425256
+PCM E_diel = -0.00305416525130401
+PCM E_diel = -0.00326262230424608
+PCM E_diel = -0.00326201796741089
+PCM E_diel = -0.00326291203790755
+macro iter 150 ( 21 JK    4 micro), CASSCF E = -77.4013176553043  dE = -5.60877369e-06  S^2 = 0.0000000
+               |grad[o]|=0.00138  |ddm|=0.00128  |maxRot[o]|=0.000926
+Removing duplication 0.412802151902271, adding E(solvent) = -0.00326291203790755 to total energy:
+    E(CASSCF+solvent) = -77.8173827192445
+PCM E_diel = -0.00305427556562089
+PCM E_diel = -0.00326239204309532
+PCM E_diel = -0.00326182591701206
+PCM E_diel = -0.00326272916671124
+macro iter 151 ( 21 JK    4 micro), CASSCF E = -77.4013341257529  dE = -1.64704485e-05  S^2 = 0.0000000
+               |grad[o]|=0.00138  |ddm|=0.0013  |maxRot[o]|=0.000913
+Removing duplication 0.412786125412299, adding E(solvent) = -0.00326272916671124 to total energy:
+    E(CASSCF+solvent) = -77.8173829803319
+PCM E_diel = -0.00305430390521504
+PCM E_diel = -0.00326236765271404
+PCM E_diel = -0.00326180956270197
+PCM E_diel = -0.00326268591243848
+macro iter 152 ( 21 JK    4 micro), CASSCF E = -77.4013374554953  dE = -3.32974240e-06  S^2 = 0.0000000
+               |grad[o]|=0.00138  |ddm|=0.00128  |maxRot[o]|=0.000912
+Removing duplication 0.412783185679484, adding E(solvent) = -0.00326268591243848 to total energy:
+    E(CASSCF+solvent) = -77.8173833270872
+PCM E_diel = -0.00305437799329158
+PCM E_diel = -0.00326221760869315
+PCM E_diel = -0.00326166131848749
+PCM E_diel = -0.00326254055947371
+macro iter 153 ( 21 JK    4 micro), CASSCF E = -77.4013493951103  dE = -1.19396151e-05  S^2 = 0.0000000
+               |grad[o]|=0.00138  |ddm|=0.00128  |maxRot[o]|=0.000914
+Removing duplication 0.412771647916168, adding E(solvent) = -0.00326254055947371 to total energy:
+    E(CASSCF+solvent) = -77.817383583586
+PCM E_diel = -0.00305446780839334
+PCM E_diel = -0.00326213583310812
+PCM E_diel = -0.00326151290042556
+PCM E_diel = -0.0032624039153922
+macro iter 154 ( 21 JK    4 micro), CASSCF E = -77.4013609487845  dE = -1.15536741e-05  S^2 = 0.0000000
+               |grad[o]|=0.00138  |ddm|=0.00129  |maxRot[o]|=0.000893
+Removing duplication 0.412760505524007, adding E(solvent) = -0.0032624039153922 to total energy:
+    E(CASSCF+solvent) = -77.8173838582239
+PCM E_diel = -0.00305455124096099
+PCM E_diel = -0.00326194566899172
+PCM E_diel = -0.0032613590932577
+PCM E_diel = -0.00326226663404315
+macro iter 155 ( 21 JK    4 micro), CASSCF E = -77.4013719474353  dE = -1.09986509e-05  S^2 = 0.0000000
+               |grad[o]|=0.00138  |ddm|=0.00129  |maxRot[o]|=0.000899
+Removing duplication 0.412749901432285, adding E(solvent) = -0.00326226663404315 to total energy:
+    E(CASSCF+solvent) = -77.8173841155017
+PCM E_diel = -0.00305465830655569
+PCM E_diel = -0.0032617725802442
+PCM E_diel = -0.00326122417122956
+PCM E_diel = -0.00326211088961035
+macro iter 156 ( 21 JK    4 micro), CASSCF E = -77.4013853327486  dE = -1.33853133e-05  S^2 = 0.0000000
+               |grad[o]|=0.00138  |ddm|=0.0013  |maxRot[o]|=0.000885
+Removing duplication 0.412736945511284, adding E(solvent) = -0.00326211088961035 to total energy:
+    E(CASSCF+solvent) = -77.8173843891495
+PCM E_diel = -0.00305469732004969
+PCM E_diel = -0.00326172560889591
+PCM E_diel = -0.00326109848280339
+PCM E_diel = -0.00326198348250588
+macro iter 157 ( 21 JK    4 micro), CASSCF E = -77.4013957544569  dE = -1.04217083e-05  S^2 = 0.0000000
+               |grad[o]|=0.00138  |ddm|=0.00128  |maxRot[o]|=0.000883
+Removing duplication 0.412726930690039, adding E(solvent) = -0.00326198348250588 to total energy:
+    E(CASSCF+solvent) = -77.8173846686295
+PCM E_diel = -0.00305477394630148
+PCM E_diel = -0.00326150245172569
+PCM E_diel = -0.00326094155011378
+PCM E_diel = -0.0032618240565322
+macro iter 158 ( 21 JK    4 micro), CASSCF E = -77.4014089239761  dE = -1.31695192e-05  S^2 = 0.0000000
+               |grad[o]|=0.00138  |ddm|=0.00129  |maxRot[o]|=0.000866
+Removing duplication 0.41271418758132, adding E(solvent) = -0.0032618240565322 to total energy:
+    E(CASSCF+solvent) = -77.817384935614
+PCM E_diel = -0.00305482841929439
+PCM E_diel = -0.00326142756725256
+PCM E_diel = -0.00326084315319932
+PCM E_diel = -0.00326171794663417
+macro iter 159 ( 21 JK    4 micro), CASSCF E = -77.4014174063327  dE = -8.48235655e-06  S^2 = 0.0000000
+               |grad[o]|=0.00137  |ddm|=0.00127  |maxRot[o]|=0.000871
+Removing duplication 0.412706092647125, adding E(solvent) = -0.00326171794663417 to total energy:
+    E(CASSCF+solvent) = -77.8173852169265
+PCM E_diel = -0.00305492241842385
+PCM E_diel = -0.00326123343297094
+PCM E_diel = -0.00326067899321765
+PCM E_diel = -0.003261553004342
+macro iter 160 ( 21 JK    4 micro), CASSCF E = -77.4014312863296  dE = -1.38799969e-05  S^2 = 0.0000000
+               |grad[o]|=0.00137  |ddm|=0.00128  |maxRot[o]|=0.00085
+Removing duplication 0.412692644751424, adding E(solvent) = -0.003261553004342 to total energy:
+    E(CASSCF+solvent) = -77.8173854840853
+PCM E_diel = -0.00305497971789548
+PCM E_diel = -0.00326112281017265
+PCM E_diel = -0.00326056394277703
+PCM E_diel = -0.00326142877630517
+macro iter 161 ( 21 JK    4 micro), CASSCF E = -77.4014414218013  dE = -1.01354717e-05  S^2 = 0.0000000
+               |grad[o]|=0.00137  |ddm|=0.00127  |maxRot[o]|=0.000856
+Removing duplication 0.412682912231455, adding E(solvent) = -0.00326142877630517 to total energy:
+    E(CASSCF+solvent) = -77.817385762809
+PCM E_diel = -0.00305505773960386
+PCM E_diel = -0.0032609555316674
+PCM E_diel = -0.00326040848806141
+PCM E_diel = -0.00326127635766437
+macro iter 162 ( 21 JK    4 micro), CASSCF E = -77.4014545022413  dE = -1.30804400e-05  S^2 = 0.0000000
+               |grad[o]|=0.00137  |ddm|=0.00127  |maxRot[o]|=0.000851
+Removing duplication 0.412670227244754, adding E(solvent) = -0.00326127635766437 to total energy:
+    E(CASSCF+solvent) = -77.8173860058437
+PCM E_diel = -0.00305514758082488
+PCM E_diel = -0.00326086199040281
+PCM E_diel = -0.00326025828772034
+PCM E_diel = -0.00326113860830404
+macro iter 163 ( 21 JK    4 micro), CASSCF E = -77.4014667102790  dE = -1.22080377e-05  S^2 = 0.0000000
+               |grad[o]|=0.00137  |ddm|=0.00128  |maxRot[o]|=0.000829
+Removing duplication 0.412658416034227, adding E(solvent) = -0.00326113860830404 to total energy:
+    E(CASSCF+solvent) = -77.8173862649215
+PCM E_diel = -0.00305523044605665
+PCM E_diel = -0.00326066285160582
+PCM E_diel = -0.00326010296038595
+PCM E_diel = -0.00326099077943564
+macro iter 164 ( 21 JK    4 micro), CASSCF E = -77.4014796287518  dE = -1.29184728e-05  S^2 = 0.0000000
+               |grad[o]|=0.00137  |ddm|=0.00129  |maxRot[o]|=0.00082
+Removing duplication 0.412645910104558, adding E(solvent) = -0.00326099077943564 to total energy:
+    E(CASSCF+solvent) = -77.8173865296358
+PCM E_diel = -0.00305528695859541
+PCM E_diel = -0.00326060457322854
+PCM E_diel = -0.00326004384349145
+PCM E_diel = -0.0032608995873391
+macro iter 165 ( 21 JK    4 micro), CASSCF E = -77.4014874831646  dE = -7.85441280e-06  S^2 = 0.0000000
+               |grad[o]|=0.00137  |ddm|=0.00127  |maxRot[o]|=0.000833
+Removing duplication 0.412638429922766, adding E(solvent) = -0.0032608995873391 to total energy:
+    E(CASSCF+solvent) = -77.8173868126747
+PCM E_diel = -0.00305537353742056
+PCM E_diel = -0.00326046275769884
+PCM E_diel = -0.00325984567100408
+PCM E_diel = -0.00326072085100385
+macro iter 166 ( 21 JK    4 micro), CASSCF E = -77.4015030384708  dE = -1.55553063e-05  S^2 = 0.0000000
+               |grad[o]|=0.00137  |ddm|=0.00128  |maxRot[o]|=0.0008
+Removing duplication 0.412623289284168, adding E(solvent) = -0.00326072085100385 to total energy:
+    E(CASSCF+solvent) = -77.817387048606
+PCM E_diel = -0.00305543522701803
+PCM E_diel = -0.00326024089269413
+PCM E_diel = -0.00325971105142065
+PCM E_diel = -0.00326057965242756
+macro iter 167 ( 21 JK    4 micro), CASSCF E = -77.4015149749287  dE = -1.19364579e-05  S^2 = 0.0000000
+               |grad[o]|=0.00137  |ddm|=0.00127  |maxRot[o]|=0.000807
+Removing duplication 0.412611729712248, adding E(solvent) = -0.00326057965242756 to total energy:
+    E(CASSCF+solvent) = -77.8173872842934
+PCM E_diel = -0.00305552198809524
+PCM E_diel = -0.00326019924459658
+PCM E_diel = -0.00325956944776738
+PCM E_diel = -0.00326046675904596
+macro iter 168 ( 21 JK    4 micro), CASSCF E = -77.4015252017831  dE = -1.02268544e-05  S^2 = 0.0000000
+               |grad[o]|=0.00137  |ddm|=0.00128  |maxRot[o]|=0.000785
+Removing duplication 0.412601867121626, adding E(solvent) = -0.00326046675904596 to total energy:
+    E(CASSCF+solvent) = -77.8173875356638
+PCM E_diel = -0.00305562324243281
+PCM E_diel = -0.00325997614747406
+PCM E_diel = -0.00325941532899935
+PCM E_diel = -0.00326032018772285
+macro iter 169 ( 21 JK    4 micro), CASSCF E = -77.4015384176288  dE = -1.32158457e-05  S^2 = 0.0000000
+               |grad[o]|=0.00137  |ddm|=0.00129  |maxRot[o]|=0.000786
+Removing duplication 0.412588996693168, adding E(solvent) = -0.00326032018772285 to total energy:
+    E(CASSCF+solvent) = -77.8173877345097
+PCM E_diel = -0.00305573580267514
+PCM E_diel = -0.00325986120677478
+PCM E_diel = -0.00325933031588516
+PCM E_diel = -0.00326019918535818
+macro iter 170 ( 21 JK    4 micro), CASSCF E = -77.4015494651701  dE = -1.10475413e-05  S^2 = 0.0000000
+               |grad[o]|=0.00137  |ddm|=0.00129  |maxRot[o]|=0.000774
+Removing duplication 0.412578358152168, adding E(solvent) = -0.00326019918535818 to total energy:
+    E(CASSCF+solvent) = -77.8173880225076
+PCM E_diel = -0.00305575315521315
+PCM E_diel = -0.00325972906989801
+PCM E_diel = -0.00325917229010925
+PCM E_diel = -0.00326003710109526
+macro iter 171 ( 21 JK    4 micro), CASSCF E = -77.4015627480578  dE = -1.32828877e-05  S^2 = 0.0000000
+               |grad[o]|=0.00137  |ddm|=0.00128  |maxRot[o]|=0.000751
+Removing duplication 0.412565457006961, adding E(solvent) = -0.00326003710109526 to total energy:
+    E(CASSCF+solvent) = -77.8173882421658
+PCM E_diel = -0.00305582536986383
+PCM E_diel = -0.00325959348167529
+PCM E_diel = -0.00325902719381313
+PCM E_diel = -0.00325989512455937
+macro iter 172 ( 21 JK    4 micro), CASSCF E = -77.4015749199633  dE = -1.21719055e-05  S^2 = 0.0000000
+               |grad[o]|=0.00137  |ddm|=0.00128  |maxRot[o]|=0.000744
+Removing duplication 0.412553657936272, adding E(solvent) = -0.00325989512455937 to total energy:
+    E(CASSCF+solvent) = -77.8173884730241
+PCM E_diel = -0.00305589920455204
+PCM E_diel = -0.00325943408408788
+PCM E_diel = -0.00325886537643089
+PCM E_diel = -0.00325974349396846
+macro iter 173 ( 21 JK    4 micro), CASSCF E = -77.4015878011439  dE = -1.28811807e-05  S^2 = 0.0000000
+               |grad[o]|=0.00137  |ddm|=0.00128  |maxRot[o]|=0.000726
+Removing duplication 0.41254112328082, adding E(solvent) = -0.00325974349396846 to total energy:
+    E(CASSCF+solvent) = -77.8173886679187
+PCM E_diel = -0.00305599591718829
+PCM E_diel = -0.00325925000520932
+PCM E_diel = -0.00325870160352468
+PCM E_diel = -0.00325958742441022
+macro iter 174 ( 21 JK    4 micro), CASSCF E = -77.4016018886095  dE = -1.40874656e-05  S^2 = 0.0000000
+               |grad[o]|=0.00137  |ddm|=0.00129  |maxRot[o]|=0.000719
+Removing duplication 0.412527398153557, adding E(solvent) = -0.00325958742441022 to total energy:
+    E(CASSCF+solvent) = -77.8173888741875
+PCM E_diel = -0.00305605992810182
+PCM E_diel = -0.0032591315589721
+PCM E_diel = -0.00325859308124463
+PCM E_diel = -0.00325947506440073
+macro iter 175 ( 21 JK    4 micro), CASSCF E = -77.4016125839950  dE = -1.06953855e-05  S^2 = 0.0000000
+               |grad[o]|=0.00136  |ddm|=0.00129  |maxRot[o]|=0.000713
+Removing duplication 0.412517047653887, adding E(solvent) = -0.00325947506440073 to total energy:
+    E(CASSCF+solvent) = -77.8173891067133
+PCM E_diel = -0.00305612133259071
+PCM E_diel = -0.0032590259886055
+PCM E_diel = -0.00325847797738073
+PCM E_diel = -0.00325936689813829
+macro iter 176 ( 21 JK    4 micro), CASSCF E = -77.4016227965223  dE = -1.02125273e-05  S^2 = 0.0000000
+               |grad[o]|=0.00136  |ddm|=0.00128  |maxRot[o]|=0.000696
+Removing duplication 0.412507197463213, adding E(solvent) = -0.00325936689813829 to total energy:
+    E(CASSCF+solvent) = -77.8173893608837
+PCM E_diel = -0.00305616350937877
+PCM E_diel = -0.00325899903636631
+PCM E_diel = -0.00325837777339501
+PCM E_diel = -0.00325927806952545
+macro iter 177 ( 21 JK    4 micro), CASSCF E = -77.4016304457536  dE = -7.64923132e-06  S^2 = 0.0000000
+               |grad[o]|=0.00136  |ddm|=0.00127  |maxRot[o]|=0.000696
+Removing duplication 0.412499827777007, adding E(solvent) = -0.00325927806952545 to total energy:
+    E(CASSCF+solvent) = -77.8173895516002
+PCM E_diel = -0.00305629818344565
+PCM E_diel = -0.00325876264375943
+PCM E_diel = -0.00325823924621007
+PCM E_diel = -0.00325910362195876
+macro iter 178 ( 21 JK    4 micro), CASSCF E = -77.4016465142500  dE = -1.60684964e-05  S^2 = 0.0000000
+               |grad[o]|=0.00136  |ddm|=0.00128  |maxRot[o]|=0.000671
+Removing duplication 0.412484152371417, adding E(solvent) = -0.00325910362195876 to total energy:
+    E(CASSCF+solvent) = -77.8173897702434
+PCM E_diel = -0.00305630315194365
+PCM E_diel = -0.00325869584682222
+PCM E_diel = -0.00325813430941811
+PCM E_diel = -0.0032589796112137
+macro iter 179 ( 21 JK    4 micro), CASSCF E = -77.4016568399130  dE = -1.03256630e-05  S^2 = 0.0000000
+               |grad[o]|=0.00136  |ddm|=0.00126  |maxRot[o]|=0.000679
+Removing duplication 0.41247415587445, adding E(solvent) = -0.0032589796112137 to total energy:
+    E(CASSCF+solvent) = -77.8173899753987
+PCM E_diel = -0.00305638837269582
+PCM E_diel = -0.00325852914277873
+PCM E_diel = -0.00325797515998639
+PCM E_diel = -0.00325883195318148
+macro iter 180 ( 21 JK    4 micro), CASSCF E = -77.4016697579876  dE = -1.29180746e-05  S^2 = 0.0000000
+               |grad[o]|=0.00136  |ddm|=0.00127  |maxRot[o]|=0.000657
+Removing duplication 0.412461581010626, adding E(solvent) = -0.00325883195318148 to total energy:
+    E(CASSCF+solvent) = -77.8173901709514
+PCM E_diel = -0.00305646264235306
+PCM E_diel = -0.00325839112528563
+PCM E_diel = -0.00325781048010049
+PCM E_diel = -0.00325868052431914
+macro iter 181 ( 21 JK    4 micro), CASSCF E = -77.4016829630509  dE = -1.32050634e-05  S^2 = 0.0000000
+               |grad[o]|=0.00136  |ddm|=0.00128  |maxRot[o]|=0.000644
+Removing duplication 0.412448706642715, adding E(solvent) = -0.00325868052431914 to total energy:
+    E(CASSCF+solvent) = -77.817390350218
+PCM E_diel = -0.00305653684734106
+PCM E_diel = -0.00325818025443469
+PCM E_diel = -0.00325766366781166
+PCM E_diel = -0.00325852740921795
+macro iter 182 ( 21 JK    4 micro), CASSCF E = -77.4016967619010  dE = -1.37988500e-05  S^2 = 0.0000000
+               |grad[o]|=0.00136  |ddm|=0.00128  |maxRot[o]|=0.000641
+Removing duplication 0.412435238562296, adding E(solvent) = -0.00325852740921795 to total energy:
+    E(CASSCF+solvent) = -77.8173905278725
+PCM E_diel = -0.00305660570046349
+PCM E_diel = -0.00325812111235268
+PCM E_diel = -0.00325756188233968
+PCM E_diel = -0.00325842354326881
+macro iter 183 ( 21 JK    4 micro), CASSCF E = -77.4017063973393  dE = -9.63543835e-06  S^2 = 0.0000000
+               |grad[o]|=0.00136  |ddm|=0.00127  |maxRot[o]|=0.000635
+Removing duplication 0.412425936530732, adding E(solvent) = -0.00325842354326881 to total energy:
+    E(CASSCF+solvent) = -77.8173907574133
+PCM E_diel = -0.00305665420295058
+PCM E_diel = -0.0032579731737718
+PCM E_diel = -0.00325744507935634
+PCM E_diel = -0.00325828652253061
+macro iter 184 ( 21 JK    4 micro), CASSCF E = -77.4017184299335  dE = -1.20325942e-05  S^2 = 0.0000000
+               |grad[o]|=0.00136  |ddm|=0.00126  |maxRot[o]|=0.000631
+Removing duplication 0.412414211182236, adding E(solvent) = -0.00325828652253061 to total energy:
+    E(CASSCF+solvent) = -77.8173909276383
+PCM E_diel = -0.00305673062068993
+PCM E_diel = -0.0032578624037797
+PCM E_diel = -0.00325729923215126
+PCM E_diel = -0.00325814742812311
+macro iter 185 ( 21 JK    4 micro), CASSCF E = -77.4017308474051  dE = -1.24174716e-05  S^2 = 0.0000000
+               |grad[o]|=0.00136  |ddm|=0.00127  |maxRot[o]|=0.000608
+Removing duplication 0.412402113968027, adding E(solvent) = -0.00325814742812311 to total energy:
+    E(CASSCF+solvent) = -77.8173911088013
+PCM E_diel = -0.00305680530850308
+PCM E_diel = -0.00325771400410864
+PCM E_diel = -0.00325714370778348
+PCM E_diel = -0.00325800508727981
+macro iter 186 ( 21 JK    4 micro), CASSCF E = -77.4017435217449  dE = -1.26743398e-05  S^2 = 0.0000000
+               |grad[o]|=0.00136  |ddm|=0.00127  |maxRot[o]|=0.000608
+Removing duplication 0.412389740478965, adding E(solvent) = -0.00325800508727981 to total energy:
+    E(CASSCF+solvent) = -77.8173912673112
+PCM E_diel = -0.00305689383987746
+PCM E_diel = -0.00325752085043882
+PCM E_diel = -0.0032569990839069
+PCM E_diel = -0.00325786111583699
+macro iter 187 ( 21 JK    4 micro), CASSCF E = -77.4017569537452  dE = -1.34320002e-05  S^2 = 0.0000000
+               |grad[o]|=0.00136  |ddm|=0.00128  |maxRot[o]|=0.000596
+Removing duplication 0.412376638147903, adding E(solvent) = -0.00325786111583699 to total energy:
+    E(CASSCF+solvent) = -77.8173914530089
+PCM E_diel = -0.00305691781537999
+PCM E_diel = -0.00325746189769909
+PCM E_diel = -0.00325693651351218
+PCM E_diel = -0.00325777317575196
+macro iter 188 ( 21 JK    4 micro), CASSCF E = -77.4017649941679  dE = -8.04042271e-06  S^2 = 0.0000000
+               |grad[o]|=0.00136  |ddm|=0.00126  |maxRot[o]|=0.000588
+Removing duplication 0.41236889042749, adding E(solvent) = -0.00325777317575196 to total energy:
+    E(CASSCF+solvent) = -77.8173916577711
+PCM E_diel = -0.00305698161695891
+PCM E_diel = -0.00325731441122253
+PCM E_diel = -0.00325679418405997
+PCM E_diel = -0.00325763113291138
+macro iter 189 ( 21 JK    4 micro), CASSCF E = -77.4017776943960  dE = -1.27002281e-05  S^2 = 0.0000000
+               |grad[o]|=0.00136  |ddm|=0.00126  |maxRot[o]|=0.000578
+Removing duplication 0.41235649039264, adding E(solvent) = -0.00325763113291138 to total energy:
+    E(CASSCF+solvent) = -77.8173918159215
+PCM E_diel = -0.00305704690920507
+PCM E_diel = -0.0032571721663315
+PCM E_diel = -0.00325666625672649
+PCM E_diel = -0.00325750349107842
+macro iter 190 ( 21 JK    4 micro), CASSCF E = -77.4017894025223  dE = -1.17081263e-05  S^2 = 0.0000000
+               |grad[o]|=0.00136  |ddm|=0.00126  |maxRot[o]|=0.000573
+Removing duplication 0.412345069141652, adding E(solvent) = -0.00325750349107842 to total energy:
+    E(CASSCF+solvent) = -77.817391975155
+PCM E_diel = -0.00305712078433742
+PCM E_diel = -0.00325708760546259
+PCM E_diel = -0.00325653496547892
+PCM E_diel = -0.00325738260692928
+macro iter 191 ( 21 JK    4 micro), CASSCF E = -77.4018008096679  dE = -1.14071455e-05  S^2 = 0.0000000
+               |grad[o]|=0.00136  |ddm|=0.00127  |maxRot[o]|=0.000549
+Removing duplication 0.41233394740642, adding E(solvent) = -0.00325738260692928 to total energy:
+    E(CASSCF+solvent) = -77.8173921396812
+PCM E_diel = -0.00305719068395064
+PCM E_diel = -0.00325693680013223
+PCM E_diel = -0.00325641166070025
+PCM E_diel = -0.00325726067350346
+macro iter 192 ( 21 JK    4 micro), CASSCF E = -77.4018119950411  dE = -1.11853732e-05  S^2 = 0.0000000
+               |grad[o]|=0.00136  |ddm|=0.00127  |maxRot[o]|=0.000547
+Removing duplication 0.41232305836762, adding E(solvent) = -0.00325726067350346 to total energy:
+    E(CASSCF+solvent) = -77.8173923140822
+PCM E_diel = -0.00305723589856456
+PCM E_diel = -0.00325680457100854
+PCM E_diel = -0.00325630586852563
+PCM E_diel = -0.0032571407128823
+macro iter 193 ( 21 JK    4 micro), CASSCF E = -77.4018228055854  dE = -1.08105443e-05  S^2 = 0.0000000
+               |grad[o]|=0.00136  |ddm|=0.00127  |maxRot[o]|=0.000535
+Removing duplication 0.412312504454433, adding E(solvent) = -0.0032571407128823 to total energy:
+    E(CASSCF+solvent) = -77.8173924507527
+PCM E_diel = -0.00305730550547995
+PCM E_diel = -0.00325672755172204
+PCM E_diel = -0.00325617263412179
+PCM E_diel = -0.0032570315006808
+macro iter 194 ( 21 JK    4 micro), CASSCF E = -77.4018327656076  dE = -9.96002217e-06  S^2 = 0.0000000
+               |grad[o]|=0.00136  |ddm|=0.00127  |maxRot[o]|=0.000518
+Removing duplication 0.412302792517059, adding E(solvent) = -0.0032570315006808 to total energy:
+    E(CASSCF+solvent) = -77.8173925896253
+PCM E_diel = -0.00305739499917028
+PCM E_diel = -0.00325654941605461
+PCM E_diel = -0.00325605711000463
+PCM E_diel = -0.00325689429162238
+macro iter 195 ( 21 JK    4 micro), CASSCF E = -77.4018453869840  dE = -1.26213764e-05  S^2 = 0.0000000
+               |grad[o]|=0.00136  |ddm|=0.00127  |maxRot[o]|=0.000513
+Removing duplication 0.412290455763336, adding E(solvent) = -0.00325689429162238 to total energy:
+    E(CASSCF+solvent) = -77.817392737039
+PCM E_diel = -0.00305742800133774
+PCM E_diel = -0.00325649797165903
+PCM E_diel = -0.00325594697935683
+PCM E_diel = -0.00325689102823407
+macro iter 196 ( 21 JK    4 micro), CASSCF E = -77.4018436385300  dE =  1.74845398e-06  S^2 = 0.0000000
+               |grad[o]|=0.00136  |ddm|=0.00126  |maxRot[o]|=0.000503
+Removing duplication 0.412292503070592, adding E(solvent) = -0.00325689102823407 to total energy:
+    E(CASSCF+solvent) = -77.8173930326288
+PCM E_diel = -0.00305749233694075
+PCM E_diel = -0.00325624211584971
+PCM E_diel = -0.0032557533389224
+PCM E_diel = -0.00325660443993466
+macro iter 197 ( 21 JK    4 micro), CASSCF E = -77.4018715161636  dE = -2.78776336e-05  S^2 = 0.0000000
+               |grad[o]|=0.00136  |ddm|=0.00128  |maxRot[o]|=0.000496
+Removing duplication 0.412264849615505, adding E(solvent) = -0.00325660443993466 to total energy:
+    E(CASSCF+solvent) = -77.817392970219
+PCM E_diel = -0.00305754335581538
+PCM E_diel = -0.00325536683615577
+PCM E_diel = -0.00325612463912452
+PCM E_diel = -0.00325581097398261
+macro iter 198 ( 17 JK    4 micro), CASSCF E = -77.4019619649828  dE = -9.04488192e-05  S^2 = 0.0000000
+               |grad[o]|=0.00136  |ddm|=0.000529  |maxRot[o]|=0.0311
+Removing duplication 0.412215589131764, adding E(solvent) = -0.00325581097398261 to total energy:
+    E(CASSCF+solvent) = -77.8174333650885
+PCM E_diel = -0.0030578815555065
+PCM E_diel = -0.00325961496432332
+PCM E_diel = -0.00326067556919397
+PCM E_diel = -0.00326060019216445
+macro iter 199 ( 11 JK    3 micro), CASSCF E = -77.4017674487267  dE =  1.94516256e-04  S^2 = 0.0000000
+               |grad[o]|=0.00126  |ddm|=0.00125  |maxRot[o]|=0.0711
+Removing duplication 0.412515633795204, adding E(solvent) = -0.00326060019216445 to total energy:
+    E(CASSCF+solvent) = -77.8175436827141
+PCM E_diel = -0.00305978766329826
+PCM E_diel = -0.00325662613615521
+PCM E_diel = -0.00325638109685364
+PCM E_diel = -0.00325718751079958
+macro iter 200 ( 21 JK    4 micro), CASSCF E = -77.4018291937361  dE = -6.17450094e-05  S^2 = 0.0000000
+               |grad[o]|=0.00125  |ddm|=0.0011  |maxRot[o]|= 0.02
+Removing duplication 0.412456202412869, adding E(solvent) = -0.00325718751079958 to total energy:
+    E(CASSCF+solvent) = -77.8175425836598
+PCM E_diel = -0.00306068162385166
+1-step CASSCF not converged, 200 macro (4121 JK 791 micro) steps
+CASSCF canonicalization
+Density matrix diagonal elements [1.99588967 1.79830198 1.39380707 0.40721868 0.20207556 0.20270705]
+CASSCF energy = -77.8175425836598
+CASCI E = -77.8175425836598  E(CI) = -8.39314112254898  S^2 = 0.0000000
+CASCI state-averaged energy = -77.4018291937361
+CASCI energy for each state
+  State 0 weight 0.2  E = -77.6258913347407 S^2 = 0.0000000
+  State 1 weight 0.2  E = -77.4017455278396 S^2 = 0.0000000
+  State 2 weight 0.2  E = -77.3791145774303 S^2 = 0.0000000
+  State 3 weight 0.2  E = -77.3282269804407 S^2 = 0.0000000
+  State 4 weight 0.2  E = -77.2741675482291 S^2 = 0.0000000
+
+** Self-consistently update the solvent effects for PCMDFCASCI **
+
+** Solvent self-consistent cycle 0:
+DFCASCI/DFCASSCF: density fitting for JK matrix and 2e integral transformation
+******** <class 'pyscf.solvent.pcm.PCM'> (In testing) ********
+
+WARN: PCM is an experimental feature. It is still in testing.
+Features and APIs may be changed in the future.
+
+lebedev_order = 29 (302 grids per sphere)
+eps = 4.0
+frozen = False
+CASCI state   0  E = -77.5988043052956  E(CI) = -8.60614957268861  S^2 = 0.0000000
+CASCI state   1  E = -77.3763590806709  E(CI) = -8.38370434806382  S^2 = 0.0000000
+CASCI state   2  E = -77.3539954148294  E(CI) = -8.36134068222241  S^2 = 0.0000000
+CASCI state   3  E = -77.3021205937248  E(CI) = -8.30946586111772  S^2 = 0.0000000
+CASCI state   4  E = -77.2466179793631  E(CI) = -8.25396324675610  S^2 = 0.0000000
+PCM E_diel = -0.00254046636052008
+Solvent cycle 0  CASCI root 0  E(CASCI+solvent) = -78.0445253827787  dE = -78.0445
+Solvent cycle 0  CASCI root 1  E(CASCI+solvent) = -77.8220801581539  dE = -77.8221
+Solvent cycle 0  CASCI root 2  E(CASCI+solvent) = -77.7997164923125  dE = -77.7997
+Solvent cycle 0  CASCI root 3  E(CASCI+solvent) = -77.7478416712078  dE = -77.7478
+Solvent cycle 0  CASCI root 4  E(CASCI+solvent) = -77.6923390568462  dE = -77.6923
+
+** Solvent self-consistent cycle 1:
+DFCASCI/DFCASSCF: density fitting for JK matrix and 2e integral transformation
+******** <class 'pyscf.solvent.pcm.PCM'> (In testing) ********
+
+WARN: PCM is an experimental feature. It is still in testing.
+Features and APIs may be changed in the future.
+
+lebedev_order = 29 (302 grids per sphere)
+eps = 4.0
+frozen = False
+CASCI state   0  E = -78.0476763938294  E(CI) = -8.77228919825987  S^2 = 0.0000000
+CASCI state   1  E = -77.8137045841833  E(CI) = -8.53831738861378  S^2 = 0.0000000
+CASCI state   2  E = -77.7878011872372  E(CI) = -8.51241399166771  S^2 = 0.0000000
+CASCI state   3  E = -77.7455986226753  E(CI) = -8.47021142710577  S^2 = 0.0000000
+CASCI state   4  E = -77.6945177521768  E(CI) = -8.41913055660727  S^2 = 0.0000000
+PCM E_diel = -0.00254901366150572
+Solvent cycle 1  CASCI root 0  E(CASCI+solvent) = -78.0440046296224  dE = 0.000520753
+Solvent cycle 1  CASCI root 1  E(CASCI+solvent) = -77.8100328199763  dE = 0.0120473
+Solvent cycle 1  CASCI root 2  E(CASCI+solvent) = -77.7841294230302  dE = 0.0155871
+Solvent cycle 1  CASCI root 3  E(CASCI+solvent) = -77.7419268584683  dE = 0.00591481
+Solvent cycle 1  CASCI root 4  E(CASCI+solvent) = -77.6908459879698  dE = 0.00149307
+
+** Solvent self-consistent cycle 2:
+DFCASCI/DFCASSCF: density fitting for JK matrix and 2e integral transformation
+******** <class 'pyscf.solvent.pcm.PCM'> (In testing) ********
+
+WARN: PCM is an experimental feature. It is still in testing.
+Features and APIs may be changed in the future.
+
+lebedev_order = 29 (302 grids per sphere)
+eps = 4.0
+frozen = False
+CASCI state   0  E = -78.0483672109831  E(CI) = -8.77254860580541  S^2 = 0.0000000
+CASCI state   1  E = -77.8143745116877  E(CI) = -8.53855590651000  S^2 = 0.0000000
+CASCI state   2  E = -77.7884574331536  E(CI) = -8.51263882797585  S^2 = 0.0000000
+CASCI state   3  E = -77.7462771848921  E(CI) = -8.47045857971433  S^2 = 0.0000000
+CASCI state   4  E = -77.6952086940426  E(CI) = -8.41939008886486  S^2 = 0.0000000
+PCM E_diel = -0.00254902455050326
+Solvent cycle 2  CASCI root 0  E(CASCI+solvent) = -78.0440131666114  dE = -8.53699e-06
+Solvent cycle 2  CASCI root 1  E(CASCI+solvent) = -77.810020467316  dE = 1.23527e-05
+Solvent cycle 2  CASCI root 2  E(CASCI+solvent) = -77.7841033887819  dE = 2.60342e-05
+Solvent cycle 2  CASCI root 3  E(CASCI+solvent) = -77.7419231405203  dE = 3.71795e-06
+Solvent cycle 2  CASCI root 4  E(CASCI+solvent) = -77.6908546496709  dE = -8.6617e-06
+
+** Solvent self-consistent cycle 3:
+DFCASCI/DFCASSCF: density fitting for JK matrix and 2e integral transformation
+******** <class 'pyscf.solvent.pcm.PCM'> (In testing) ********
+
+WARN: PCM is an experimental feature. It is still in testing.
+Features and APIs may be changed in the future.
+
+lebedev_order = 29 (302 grids per sphere)
+eps = 4.0
+frozen = False
+CASCI state   0  E = -78.0483690472770  E(CI) = -8.77255129038949  S^2 = 0.0000000
+CASCI state   1  E = -77.8143763388876  E(CI) = -8.53855858200009  S^2 = 0.0000000
+CASCI state   2  E = -77.7884591789693  E(CI) = -8.51264142208178  S^2 = 0.0000000
+CASCI state   3  E = -77.7462789476497  E(CI) = -8.47046119076221  S^2 = 0.0000000
+CASCI state   4  E = -77.6952105857400  E(CI) = -8.41939282885252  S^2 = 0.0000000
+PCM E_diel = -0.00254902312184899
+Solvent cycle 3  CASCI root 0  E(CASCI+solvent) = -78.0440131789485  dE = -1.2337e-08
+Solvent cycle 3  CASCI root 1  E(CASCI+solvent) = -77.8100204705591  dE = -3.24306e-09
+Solvent cycle 3  CASCI root 2  E(CASCI+solvent) = -77.7841033106408  dE = 7.81411e-08
+Solvent cycle 3  CASCI root 3  E(CASCI+solvent) = -77.7419230793212  dE = 6.11992e-08
+Solvent cycle 3  CASCI root 4  E(CASCI+solvent) = -77.6908547174115  dE = -6.77406e-08
+
+******** <class 'pyscf.solvent._attach_solvent.PCMDFCASCI'> ********
+CAS (3e+3e, 6o), ncore = 5, nvir = 71
+natorb = False
+canonicalization = True
+sorting_mo_energy = False
+max_memory 100000 MB (current use 230 MB)
+******** <class 'pyscf.fci.addons.SpinPenaltyFCISolver'> ********
+max. cycles = 200
+conv_tol = 1e-08
+davidson only = True
+linear dependence = 1e-12
+level shift = 0.001
+max iter space = 12
+max_memory 100000 MB
+nroots = 5
+pspace_size = 400
+spin = None
+DFCASCI/DFCASSCF: density fitting for JK matrix and 2e integral transformation
+******** <class 'pyscf.solvent.pcm.PCM'> (In testing) ********
+
+WARN: PCM is an experimental feature. It is still in testing.
+Features and APIs may be changed in the future.
+
+lebedev_order = 29 (302 grids per sphere)
+eps = 4.0
+frozen = False
+
+WARN: Mulitple states found in CASCI solver. First state is used to compute the Fock matrix and natural orbitals in active space.
+
+Density matrix diagonal elements [1.99821360e+00 1.99960266e+00 1.96555629e+00 3.50030600e-02
+ 7.46402819e-04 8.77990316e-04]
+CASCI converged
+PCM E_diel = -0.00254902472590306
+self-consistent CASCI+solvent converged
+Total energy with solvent effects
+CASCI state   0  E = -78.0440131759187  E(CI) = -8.77255146238853  S^2 = 0.0000000
+CASCI state   1  E = -77.8100204743223  E(CI) = -8.53855876079216  S^2 = 0.0000000
+CASCI state   2  E = -77.7841033065900  E(CI) = -8.51264159305981  S^2 = 0.0000000
+CASCI state   3  E = -77.7419230755419  E(CI) = -8.47046136201169  S^2 = 0.0000000
+CASCI state   4  E = -77.6908547243484  E(CI) = -8.41939301081820  S^2 = 0.0000000
+State #1, dE =  0.0 eV
+State #2, dE =  6.367269000219683 eV
+State #3, dE =  7.072511418251618 eV
+State #4, dE =  8.220294557394462 eV
+State #5, dE =  9.609935889061074 eV
+
+WARN: Mulitple states found in CASCI/CASSCF solver. Density matrix of the first state is generated in .analyze() function.
+
+Natural occ [1.99971673e+00 1.99878606e+00 1.96555663e+00 3.50027190e-02
+ 7.88668323e-04 1.49197613e-04]
+Natural orbital (expansion on meta-Lowdin AOs) in CAS space
+               #1        #2        #3        #4        #5       
+0 C 1s          -0.00005  -0.00073   0.00000   0.00000  -0.00091
+0 C 2s           0.01656   0.08940  -0.00000  -0.00000   0.05557
+0 C 3s           0.00077   0.00218   0.00000   0.00000  -0.05705
+0 C 4s           0.00115   0.01038  -0.00000   0.00000  -0.14909
+0 C 2px          0.00000  -0.00000   0.70534   0.57266   0.00000
+0 C 2py          0.06806   0.13027   0.00000  -0.00000   0.09788
+0 C 2pz          0.56434   0.11129  -0.00000   0.00000  -0.02294
+0 C 3px          0.00000   0.00000   0.03680   0.22654   0.00000
+0 C 3py         -0.00609  -0.01640  -0.00000  -0.00000   0.06497
+0 C 3pz         -0.01966  -0.01305   0.00000  -0.00000   0.05102
+0 C 4px          0.00000   0.00000   0.00407   0.19629   0.00000
+0 C 4py         -0.00175  -0.02087  -0.00000  -0.00000   0.18326
+0 C 4pz         -0.00609  -0.00114  -0.00000  -0.00000   0.12087
+0 C 3dxy        -0.00000   0.00000  -0.04192   0.10208   0.00000
+0 C 3dyz         0.01553   0.00133  -0.00000  -0.00000  -0.00961
+0 C 3dz^2        0.00262   0.00315   0.00000  -0.00000  -0.00420
+0 C 3dxz         0.00000  -0.00000   0.00011   0.00356   0.00000
+0 C 3dx2-y2      0.00223   0.00274   0.00000   0.00000  -0.02563
+0 C 4dxy         0.00000   0.00000  -0.00051   0.16721   0.00000
+0 C 4dyz        -0.03310   0.00265  -0.00000  -0.00000  -0.00132
+0 C 4dz^2       -0.00158  -0.00610  -0.00000   0.00000  -0.03331
+0 C 4dxz         0.00000  -0.00000  -0.00018   0.00335   0.00000
+0 C 4dx2-y2      0.00084   0.00235   0.00000   0.00000  -0.02668
+1 C 1s          -0.00092  -0.00629  -0.00000   0.00000  -0.00121
+1 C 2s          -0.07650  -0.55543  -0.00000   0.00000   0.19718
+1 C 3s           0.00528   0.03381   0.00000   0.00000  -0.11319
+1 C 4s           0.00008   0.00354  -0.00000   0.00000  -0.22101
+1 C 2px          0.00000  -0.00000   0.70385  -0.57313  -0.00000
+1 C 2py          0.01080   0.41386   0.00000  -0.00000  -0.10899
+1 C 2pz         -0.41083   0.25148  -0.00000  -0.00000  -0.04583
+1 C 3px          0.00000  -0.00000   0.03851  -0.20945  -0.00000
+1 C 3py         -0.00093  -0.03358   0.00000   0.00000   0.05952
+1 C 3pz          0.00547  -0.01640   0.00000   0.00000   0.06174
+1 C 4px          0.00000  -0.00000   0.00631  -0.16750  -0.00000
+1 C 4py         -0.00215  -0.00949   0.00000  -0.00000   0.15460
+1 C 4pz          0.00238  -0.00169   0.00000  -0.00000   0.14499
+1 C 3dxy         0.00000   0.00000   0.04109   0.10127   0.00000
+1 C 3dyz         0.01190  -0.00515   0.00000   0.00000   0.01030
+1 C 3dz^2       -0.00096  -0.02187   0.00000  -0.00000   0.02871
+1 C 3dxz        -0.00000   0.00000  -0.00074   0.00516   0.00000
+1 C 3dx2-y2      0.00345   0.01058  -0.00000   0.00000  -0.03785
+1 C 4dxy         0.00000   0.00000  -0.00093   0.16717   0.00000
+1 C 4dyz        -0.03159   0.00650  -0.00000  -0.00000  -0.01176
+1 C 4dz^2        0.00179   0.01668   0.00000  -0.00000  -0.03594
+1 C 4dxz        -0.00000   0.00000  -0.00007   0.00354   0.00000
+1 C 4dx2-y2      0.00020  -0.00248   0.00000   0.00000  -0.00425
+2 H 1s           0.41680   0.10088  -0.00000   0.00000  -0.05629
+2 H 2s          -0.00866  -0.00327  -0.00000  -0.00000  -0.09527
+2 H 3s           0.02292   0.02161  -0.00000   0.00000  -0.12347
+2 H 2px          0.00000   0.00000   0.01235   0.11841   0.00000
+2 H 2py         -0.01301  -0.00497  -0.00000  -0.00000   0.01942
+2 H 2pz         -0.02126  -0.00608   0.00000  -0.00000  -0.01068
+2 H 3px          0.00000   0.00000   0.00435   0.12099   0.00000
+2 H 3py          0.00103   0.00135  -0.00000  -0.00000   0.01663
+2 H 3pz         -0.00132   0.00200  -0.00000  -0.00000  -0.02118
+3 H 1s          -0.34944  -0.28119  -0.00000   0.00000  -0.16487
+3 H 2s           0.01006   0.02865   0.00000   0.00000  -0.31284
+3 H 3s          -0.01180  -0.02027  -0.00000   0.00000  -0.23300
+3 H 2px         -0.00000  -0.00000   0.01247  -0.10807  -0.00000
+3 H 2py         -0.01064  -0.01909   0.00000  -0.00000   0.02385
+3 H 2pz          0.01707   0.00622   0.00000   0.00000  -0.02486
+3 H 3px         -0.00000  -0.00000   0.00576  -0.10987  -0.00000
+3 H 3py          0.00000  -0.01117   0.00000  -0.00000   0.03909
+3 H 3pz          0.00031  -0.01606   0.00000   0.00000  -0.03568
+4 H 1s          -0.35703   0.01757   0.00000   0.00000  -0.13323
+4 H 2s           0.01073   0.00350  -0.00000   0.00000  -0.23192
+4 H 3s          -0.01311   0.00587   0.00000   0.00000  -0.18670
+4 H 2px         -0.00000   0.00000   0.01233   0.11384   0.00000
+4 H 2py          0.00711  -0.00690  -0.00000   0.00000   0.01452
+4 H 2pz         -0.01998  -0.00036   0.00000  -0.00000   0.04256
+4 H 3px          0.00000   0.00000   0.00468   0.11797   0.00000
+4 H 3py         -0.00486  -0.00628   0.00000   0.00000   0.01260
+4 H 3pz         -0.00460  -0.00451  -0.00000  -0.00000   0.05956
+5 H 1s           0.26936  -0.56394  -0.00000  -0.00000  -0.26264
+5 H 2s           0.00092   0.03864  -0.00000   0.00000  -0.48781
+5 H 3s           0.00772  -0.04401   0.00000   0.00000  -0.28919
+5 H 2px          0.00000  -0.00000   0.01314  -0.11450  -0.00000
+5 H 2py          0.00890  -0.02285  -0.00000  -0.00000   0.03813
+5 H 2pz          0.01324  -0.02265   0.00000   0.00000   0.07210
+5 H 3px          0.00000  -0.00000   0.00555  -0.11293  -0.00000
+5 H 3py          0.00130  -0.00260   0.00000   0.00000   0.05537
+5 H 3pz          0.00215   0.01278   0.00000  -0.00000   0.09308
+               #6       
+0 C 1s          -0.00092
+0 C 2s           0.16023
+0 C 3s          -0.08627
+0 C 4s          -0.16011
+0 C 2px          0.00000
+0 C 2py          0.04661
+0 C 2pz          0.06378
+0 C 3px         -0.00000
+0 C 3py         -0.09245
+0 C 3pz         -0.10756
+0 C 4px         -0.00000
+0 C 4py         -0.26093
+0 C 4pz         -0.25915
+0 C 3dxy         0.00000
+0 C 3dyz         0.01813
+0 C 3dz^2        0.03195
+0 C 3dxz        -0.00000
+0 C 3dx2-y2     -0.02494
+0 C 4dxy         0.00000
+0 C 4dyz        -0.01261
+0 C 4dz^2       -0.02123
+0 C 4dxz        -0.00000
+0 C 4dx2-y2      0.01121
+1 C 1s          -0.00039
+1 C 2s          -0.03641
+1 C 3s          -0.00322
+1 C 4s          -0.04660
+1 C 2px         -0.00000
+1 C 2py         -0.05787
+1 C 2pz          0.05344
+1 C 3px         -0.00000
+1 C 3py         -0.10098
+1 C 3pz         -0.10360
+1 C 4px         -0.00000
+1 C 4py         -0.28400
+1 C 4pz         -0.25055
+1 C 3dxy        -0.00000
+1 C 3dyz        -0.01792
+1 C 3dz^2       -0.01843
+1 C 3dxz        -0.00000
+1 C 3dx2-y2     -0.01271
+1 C 4dxy        -0.00000
+1 C 4dyz         0.00779
+1 C 4dz^2       -0.01751
+1 C 4dxz        -0.00000
+1 C 4dx2-y2     -0.03076
+2 H 1s          -0.25817
+2 H 2s          -0.51273
+2 H 3s          -0.29351
+2 H 2px          0.00000
+2 H 2py         -0.05112
+2 H 2pz         -0.07455
+2 H 3px          0.00000
+2 H 3py         -0.06822
+2 H 3pz         -0.09836
+3 H 1s          -0.07700
+3 H 2s          -0.11649
+3 H 3s          -0.09325
+3 H 2px         -0.00000
+3 H 2py         -0.02606
+3 H 2pz         -0.04046
+3 H 3px         -0.00000
+3 H 3py         -0.03099
+3 H 3pz         -0.05385
+4 H 1s          -0.09144
+4 H 2s          -0.20443
+4 H 3s          -0.16905
+4 H 2px          0.00000
+4 H 2py         -0.03013
+4 H 2pz         -0.00081
+4 H 3px          0.00000
+4 H 3py         -0.04447
+4 H 3pz          0.00486
+5 H 1s           0.08440
+5 H 2s           0.17834
+5 H 3s           0.03457
+5 H 2px          0.00000
+5 H 2py         -0.04373
+5 H 2pz         -0.02951
+5 H 3px         -0.00000
+5 H 3py         -0.05046
+5 H 3pz         -0.03281
+<mo_coeff-mcscf|mo_coeff-hf>  1      1       -0.76671599
+<mo_coeff-mcscf|mo_coeff-hf>  1      2        0.64191279
+<mo_coeff-mcscf|mo_coeff-hf>  2      1        0.64194063
+<mo_coeff-mcscf|mo_coeff-hf>  2      2        0.76673111
+<mo_coeff-mcscf|mo_coeff-hf>  3      3        0.91490463
+<mo_coeff-mcscf|mo_coeff-hf>  4      4        0.44016412
+<mo_coeff-mcscf|mo_coeff-hf>  4      5        0.85521924
+<mo_coeff-mcscf|mo_coeff-hf>  5      6        0.89100014
+<mo_coeff-mcscf|mo_coeff-hf>  6      4       -0.77942771
+<mo_coeff-mcscf|mo_coeff-hf>  7      7        0.99157418
+<mo_coeff-mcscf|mo_coeff-hf>  8      8        0.99893736
+<mo_coeff-mcscf|mo_coeff-hf>  9      9        0.98641518
+<mo_coeff-mcscf|mo_coeff-hf>  10     10       0.99573204
+<mo_coeff-mcscf|mo_coeff-hf>  11     11       0.77718784
+<mo_coeff-mcscf|mo_coeff-hf>  11     12      -0.62069412
+<mo_coeff-mcscf|mo_coeff-hf>  12     11       0.59782042
+<mo_coeff-mcscf|mo_coeff-hf>  12     12       0.75304077
+<mo_coeff-mcscf|mo_coeff-hf>  13     13       0.98465171
+<mo_coeff-mcscf|mo_coeff-hf>  14     14       0.99430762
+<mo_coeff-mcscf|mo_coeff-hf>  15     15       0.97759083
+<mo_coeff-mcscf|mo_coeff-hf>  16     16       0.95301764
+<mo_coeff-mcscf|mo_coeff-hf>  17     18       0.98286375
+<mo_coeff-mcscf|mo_coeff-hf>  18     19       0.91403904
+<mo_coeff-mcscf|mo_coeff-hf>  19     17       0.97469096
+<mo_coeff-mcscf|mo_coeff-hf>  20     21       0.96515221
+<mo_coeff-mcscf|mo_coeff-hf>  21     22       0.91357372
+<mo_coeff-mcscf|mo_coeff-hf>  22     20       0.98087084
+<mo_coeff-mcscf|mo_coeff-hf>  23     23       0.94400419
+<mo_coeff-mcscf|mo_coeff-hf>  24     24       0.99620173
+<mo_coeff-mcscf|mo_coeff-hf>  25     25       0.92751420
+<mo_coeff-mcscf|mo_coeff-hf>  26     26       0.99669361
+<mo_coeff-mcscf|mo_coeff-hf>  27     27       0.97725595
+<mo_coeff-mcscf|mo_coeff-hf>  28     28       0.96165258
+<mo_coeff-mcscf|mo_coeff-hf>  29     29       0.99180893
+<mo_coeff-mcscf|mo_coeff-hf>  30     30       0.94736934
+<mo_coeff-mcscf|mo_coeff-hf>  31     31       0.98555389
+<mo_coeff-mcscf|mo_coeff-hf>  32     33       0.98780519
+<mo_coeff-mcscf|mo_coeff-hf>  33     34       0.97435783
+<mo_coeff-mcscf|mo_coeff-hf>  34     32       0.96905501
+<mo_coeff-mcscf|mo_coeff-hf>  35     35       0.89266192
+<mo_coeff-mcscf|mo_coeff-hf>  35     37       0.43754893
+<mo_coeff-mcscf|mo_coeff-hf>  36     38       0.96331721
+<mo_coeff-mcscf|mo_coeff-hf>  37     36       0.99151657
+<mo_coeff-mcscf|mo_coeff-hf>  38     39       0.94173594
+<mo_coeff-mcscf|mo_coeff-hf>  39     35      -0.40643128
+<mo_coeff-mcscf|mo_coeff-hf>  39     37       0.85630637
+<mo_coeff-mcscf|mo_coeff-hf>  40     42       0.96495124
+<mo_coeff-mcscf|mo_coeff-hf>  41     40       0.95142969
+<mo_coeff-mcscf|mo_coeff-hf>  42     41       0.99584634
+<mo_coeff-mcscf|mo_coeff-hf>  43     43       0.87777254
+<mo_coeff-mcscf|mo_coeff-hf>  44     45       0.98370494
+<mo_coeff-mcscf|mo_coeff-hf>  45     44       0.68037253
+<mo_coeff-mcscf|mo_coeff-hf>  45     47      -0.58944162
+<mo_coeff-mcscf|mo_coeff-hf>  46     44       0.51654197
+<mo_coeff-mcscf|mo_coeff-hf>  46     47       0.79937224
+<mo_coeff-mcscf|mo_coeff-hf>  47     49       0.99523050
+<mo_coeff-mcscf|mo_coeff-hf>  48     48       0.96849092
+<mo_coeff-mcscf|mo_coeff-hf>  49     46       0.99106726
+<mo_coeff-mcscf|mo_coeff-hf>  50     50       0.98715406
+<mo_coeff-mcscf|mo_coeff-hf>  51     51       0.98721259
+<mo_coeff-mcscf|mo_coeff-hf>  52     52       0.99095035
+<mo_coeff-mcscf|mo_coeff-hf>  53     53       0.97354100
+<mo_coeff-mcscf|mo_coeff-hf>  54     54       0.98389030
+<mo_coeff-mcscf|mo_coeff-hf>  55     55       0.99714466
+<mo_coeff-mcscf|mo_coeff-hf>  56     56       0.99670609
+<mo_coeff-mcscf|mo_coeff-hf>  57     58       0.99649162
+<mo_coeff-mcscf|mo_coeff-hf>  58     57       0.99534019
+<mo_coeff-mcscf|mo_coeff-hf>  59     59       0.99611972
+<mo_coeff-mcscf|mo_coeff-hf>  60     60       0.99422054
+<mo_coeff-mcscf|mo_coeff-hf>  61     61       0.99664825
+<mo_coeff-mcscf|mo_coeff-hf>  62     62       0.99778915
+<mo_coeff-mcscf|mo_coeff-hf>  63     63       0.99742713
+<mo_coeff-mcscf|mo_coeff-hf>  64     64       0.99740301
+<mo_coeff-mcscf|mo_coeff-hf>  65     65       0.99774508
+<mo_coeff-mcscf|mo_coeff-hf>  66     66       0.99528486
+<mo_coeff-mcscf|mo_coeff-hf>  67     67       0.99495750
+<mo_coeff-mcscf|mo_coeff-hf>  68     68       0.99861287
+<mo_coeff-mcscf|mo_coeff-hf>  69     69       0.99731839
+<mo_coeff-mcscf|mo_coeff-hf>  70     70       0.99088582
+<mo_coeff-mcscf|mo_coeff-hf>  71     71       0.99948202
+<mo_coeff-mcscf|mo_coeff-hf>  72     72       0.99666913
+<mo_coeff-mcscf|mo_coeff-hf>  73     73       0.99869364
+<mo_coeff-mcscf|mo_coeff-hf>  74     74       0.99935955
+<mo_coeff-mcscf|mo_coeff-hf>  75     75       0.99064154
+<mo_coeff-mcscf|mo_coeff-hf>  76     76       0.99754899
+<mo_coeff-mcscf|mo_coeff-hf>  77     77       0.99631948
+<mo_coeff-mcscf|mo_coeff-hf>  78     78       0.99582337
+<mo_coeff-mcscf|mo_coeff-hf>  79     79       0.99791647
+<mo_coeff-mcscf|mo_coeff-hf>  80     80       0.99798453
+<mo_coeff-mcscf|mo_coeff-hf>  81     81       0.99772126
+<mo_coeff-mcscf|mo_coeff-hf>  82     82       0.99955727
+** Largest CI components **
+  [alpha occ-orbitals] [beta occ-orbitals]  state 0   CI coefficient
+  [0 1 2]              [0 1 2]                        -0.990629671518
+  [0 1 3]              [0 1 3]                         0.129828453158
+  [alpha occ-orbitals] [beta occ-orbitals]  state 1   CI coefficient
+  [0 1 2]              [0 1 4]                        -0.705633537220
+  [0 1 4]              [0 1 2]                        -0.705633528494
+  [alpha occ-orbitals] [beta occ-orbitals]  state 2   CI coefficient
+  [0 1 2]              [0 1 5]                        -0.704913852278
+  [0 1 5]              [0 1 2]                        -0.704913850816
+  [alpha occ-orbitals] [beta occ-orbitals]  state 3   CI coefficient
+  [0 1 2]              [0 1 3]                        -0.701175498957
+  [0 1 3]              [0 1 2]                        -0.701175487610
+  [alpha occ-orbitals] [beta occ-orbitals]  state 4   CI coefficient
+  [0 1 2]              [0 2 3]                         0.704206401505
+  [0 2 3]              [0 1 2]                         0.704206360937
+ ** Mulliken pop on meta-lowdin orthogonal AOs  **
+ ** Mulliken pop  **
+pop of  0 C 1s            1.99999
+pop of  0 C 2s            1.03544
+pop of  0 C 3s            0.00591
+pop of  0 C 4s            0.00101
+pop of  0 C 2px           0.98937
+pop of  0 C 2py           1.08314
+pop of  0 C 2pz           1.15040
+pop of  0 C 3px           0.00446
+pop of  0 C 3py           0.00662
+pop of  0 C 3pz           0.00576
+pop of  0 C 4px           0.00138
+pop of  0 C 4py           0.00138
+pop of  0 C 4pz           0.00073
+pop of  0 C 3dxy          0.00382
+pop of  0 C 3dyz          0.00068
+pop of  0 C 3dz^2         0.00212
+pop of  0 C 3dxz          0.00000
+pop of  0 C 3dx2-y2       0.00356
+pop of  0 C 4dxy          0.00098
+pop of  0 C 4dyz          0.00223
+pop of  0 C 4dz^2         0.00073
+pop of  0 C 4dxz          0.00000
+pop of  0 C 4dx2-y2       0.00010
+pop of  1 C 1s            1.99999
+pop of  1 C 2s            1.02708
+pop of  1 C 3s            0.00564
+pop of  1 C 4s            0.00101
+pop of  1 C 2px           0.98525
+pop of  1 C 2py           1.07807
+pop of  1 C 2pz           1.15157
+pop of  1 C 3px           0.00445
+pop of  1 C 3py           0.00652
+pop of  1 C 3pz           0.00567
+pop of  1 C 4px           0.00106
+pop of  1 C 4py           0.00165
+pop of  1 C 4pz           0.00073
+pop of  1 C 3dxy          0.00368
+pop of  1 C 3dyz          0.00065
+pop of  1 C 3dz^2         0.00210
+pop of  1 C 3dxz          0.00000
+pop of  1 C 3dx2-y2       0.00356
+pop of  1 C 4dxy          0.00098
+pop of  1 C 4dyz          0.00225
+pop of  1 C 4dz^2         0.00066
+pop of  1 C 4dxz          0.00000
+pop of  1 C 4dx2-y2       0.00010
+pop of  2 H 1s            0.83486
+pop of  2 H 2s            0.00579
+pop of  2 H 3s            0.00401
+pop of  2 H 2px           0.00079
+pop of  2 H 2py           0.00195
+pop of  2 H 2pz           0.00208
+pop of  2 H 3px           0.00055
+pop of  2 H 3py           0.00139
+pop of  2 H 3pz           0.00051
+pop of  3 H 1s            0.83750
+pop of  3 H 2s            0.00555
+pop of  3 H 3s            0.00380
+pop of  3 H 2px           0.00071
+pop of  3 H 2py           0.00191
+pop of  3 H 2pz           0.00207
+pop of  3 H 3px           0.00049
+pop of  3 H 3py           0.00132
+pop of  3 H 3pz           0.00054
+pop of  4 H 1s            0.83527
+pop of  4 H 2s            0.00618
+pop of  4 H 3s            0.00342
+pop of  4 H 2px           0.00075
+pop of  4 H 2py           0.00192
+pop of  4 H 2pz           0.00211
+pop of  4 H 3px           0.00053
+pop of  4 H 3py           0.00135
+pop of  4 H 3pz           0.00050
+pop of  5 H 1s            0.84356
+pop of  5 H 2s            0.00418
+pop of  5 H 3s            0.00483
+pop of  5 H 2px           0.00080
+pop of  5 H 2py           0.00192
+pop of  5 H 2pz           0.00192
+pop of  5 H 3px           0.00051
+pop of  5 H 3py           0.00136
+pop of  5 H 3pz           0.00062
+ ** Mulliken atomic charges  **
+charge of    0C =     -0.29979
+charge of    1C =     -0.28267
+charge of    2H =      0.14806
+charge of    3H =      0.14611
+charge of    4H =      0.14798
+charge of    5H =      0.14031
+Mulliken spin population analysis on meta-Lowdin AOs:
+ ** Mulliken pop on meta-lowdin orthogonal AOs  **
+ ** Mulliken pop  **
+pop of  0 C 1s           -0.00000
+pop of  0 C 2s           -0.00000
+pop of  0 C 3s            0.00000
+pop of  0 C 4s            0.00000
+pop of  0 C 2px          -0.00000
+pop of  0 C 2py          -0.00000
+pop of  0 C 2pz           0.00000
+pop of  0 C 3px          -0.00000
+pop of  0 C 3py          -0.00000
+pop of  0 C 3pz           0.00000
+pop of  0 C 4px          -0.00000
+pop of  0 C 4py          -0.00000
+pop of  0 C 4pz           0.00000
+pop of  0 C 3dxy          0.00000
+pop of  0 C 3dyz          0.00000
+pop of  0 C 3dz^2        -0.00000
+pop of  0 C 3dxz         -0.00000
+pop of  0 C 3dx2-y2       0.00000
+pop of  0 C 4dxy          0.00000
+pop of  0 C 4dyz         -0.00000
+pop of  0 C 4dz^2        -0.00000
+pop of  0 C 4dxz          0.00000
+pop of  0 C 4dx2-y2       0.00000
+pop of  1 C 1s           -0.00000
+pop of  1 C 2s            0.00000
+pop of  1 C 3s            0.00000
+pop of  1 C 4s           -0.00000
+pop of  1 C 2px           0.00000
+pop of  1 C 2py           0.00000
+pop of  1 C 2pz          -0.00000
+pop of  1 C 3px           0.00000
+pop of  1 C 3py          -0.00000
+pop of  1 C 3pz          -0.00000
+pop of  1 C 4px           0.00000
+pop of  1 C 4py          -0.00000
+pop of  1 C 4pz          -0.00000
+pop of  1 C 3dxy         -0.00000
+pop of  1 C 3dyz         -0.00000
+pop of  1 C 3dz^2        -0.00000
+pop of  1 C 3dxz          0.00000
+pop of  1 C 3dx2-y2       0.00000
+pop of  1 C 4dxy          0.00000
+pop of  1 C 4dyz         -0.00000
+pop of  1 C 4dz^2         0.00000
+pop of  1 C 4dxz          0.00000
+pop of  1 C 4dx2-y2      -0.00000
+pop of  2 H 1s            0.00000
+pop of  2 H 2s           -0.00000
+pop of  2 H 3s            0.00000
+pop of  2 H 2px          -0.00000
+pop of  2 H 2py           0.00000
+pop of  2 H 2pz          -0.00000
+pop of  2 H 3px          -0.00000
+pop of  2 H 3py           0.00000
+pop of  2 H 3pz          -0.00000
+pop of  3 H 1s           -0.00000
+pop of  3 H 2s            0.00000
+pop of  3 H 3s           -0.00000
+pop of  3 H 2px           0.00000
+pop of  3 H 2py           0.00000
+pop of  3 H 2pz           0.00000
+pop of  3 H 3px           0.00000
+pop of  3 H 3py          -0.00000
+pop of  3 H 3pz          -0.00000
+pop of  4 H 1s           -0.00000
+pop of  4 H 2s            0.00000
+pop of  4 H 3s           -0.00000
+pop of  4 H 2px          -0.00000
+pop of  4 H 2py          -0.00000
+pop of  4 H 2pz           0.00000
+pop of  4 H 3px          -0.00000
+pop of  4 H 3py          -0.00000
+pop of  4 H 3pz           0.00000
+pop of  5 H 1s            0.00000
+pop of  5 H 2s           -0.00000
+pop of  5 H 3s            0.00000
+pop of  5 H 2px           0.00000
+pop of  5 H 2py          -0.00000
+pop of  5 H 2pz          -0.00000
+pop of  5 H 3px           0.00000
+pop of  5 H 3py          -0.00000
+pop of  5 H 3pz          -0.00000
+ ** Mulliken atomic charges  **
+charge of    0C =      6.00000
+charge of    1C =      6.00000
+charge of    2H =      1.00000
+charge of    3H =      1.00000
+charge of    4H =      1.00000
+charge of    5H =      1.00000
+spop of 0 C 1s         -0.00000
+spop of 0 C 2s         -0.00000
+spop of 0 C 3s          0.00000
+spop of 0 C 4s          0.00000
+spop of 0 C 2px        -0.00000
+spop of 0 C 2py        -0.00000
+spop of 0 C 2pz         0.00000
+spop of 0 C 3px        -0.00000
+spop of 0 C 3py        -0.00000
+spop of 0 C 3pz         0.00000
+spop of 0 C 4px        -0.00000
+spop of 0 C 4py        -0.00000
+spop of 0 C 4pz         0.00000
+spop of 0 C 3dxy        0.00000
+spop of 0 C 3dyz        0.00000
+spop of 0 C 3dz^2      -0.00000
+spop of 0 C 3dxz       -0.00000
+spop of 0 C 3dx2-y2     0.00000
+spop of 0 C 4dxy        0.00000
+spop of 0 C 4dyz       -0.00000
+spop of 0 C 4dz^2      -0.00000
+spop of 0 C 4dxz        0.00000
+spop of 0 C 4dx2-y2     0.00000
+spop of 1 C 1s         -0.00000
+spop of 1 C 2s          0.00000
+spop of 1 C 3s          0.00000
+spop of 1 C 4s         -0.00000
+spop of 1 C 2px         0.00000
+spop of 1 C 2py         0.00000
+spop of 1 C 2pz        -0.00000
+spop of 1 C 3px         0.00000
+spop of 1 C 3py        -0.00000
+spop of 1 C 3pz        -0.00000
+spop of 1 C 4px         0.00000
+spop of 1 C 4py        -0.00000
+spop of 1 C 4pz        -0.00000
+spop of 1 C 3dxy       -0.00000
+spop of 1 C 3dyz       -0.00000
+spop of 1 C 3dz^2      -0.00000
+spop of 1 C 3dxz        0.00000
+spop of 1 C 3dx2-y2     0.00000
+spop of 1 C 4dxy        0.00000
+spop of 1 C 4dyz       -0.00000
+spop of 1 C 4dz^2       0.00000
+spop of 1 C 4dxz        0.00000
+spop of 1 C 4dx2-y2    -0.00000
+spop of 2 H 1s          0.00000
+spop of 2 H 2s         -0.00000
+spop of 2 H 3s          0.00000
+spop of 2 H 2px        -0.00000
+spop of 2 H 2py         0.00000
+spop of 2 H 2pz        -0.00000
+spop of 2 H 3px        -0.00000
+spop of 2 H 3py         0.00000
+spop of 2 H 3pz        -0.00000
+spop of 3 H 1s         -0.00000
+spop of 3 H 2s          0.00000
+spop of 3 H 3s         -0.00000
+spop of 3 H 2px         0.00000
+spop of 3 H 2py         0.00000
+spop of 3 H 2pz         0.00000
+spop of 3 H 3px         0.00000
+spop of 3 H 3py        -0.00000
+spop of 3 H 3pz        -0.00000
+spop of 4 H 1s         -0.00000
+spop of 4 H 2s          0.00000
+spop of 4 H 3s         -0.00000
+spop of 4 H 2px        -0.00000
+spop of 4 H 2py        -0.00000
+spop of 4 H 2pz         0.00000
+spop of 4 H 3px        -0.00000
+spop of 4 H 3py        -0.00000
+spop of 4 H 3pz         0.00000
+spop of 5 H 1s          0.00000
+spop of 5 H 2s         -0.00000
+spop of 5 H 3s          0.00000
+spop of 5 H 2px         0.00000
+spop of 5 H 2py        -0.00000
+spop of 5 H 2pz        -0.00000
+spop of 5 H 3px         0.00000
+spop of 5 H 3py        -0.00000
+spop of 5 H 3pz        -0.00000
+Mulliken atomic spins:
+spin of  0C =     -0.00000
+spin of  1C =      0.00000
+spin of  2H =      0.00000
+spin of  3H =     -0.00000
+spin of  4H =     -0.00000
+spin of  5H =      0.00000

@@ -1,0 +1,4 @@
+/Users/juan/Downloads/pytenso-main-3/tutorials_buffalo/ex5_spin_boson_propagation/example5_plot.py:106: UserWarning: This figure includes Axes that are not compatible with tight_layout, so results might be incorrect.
+  fig.tight_layout(rect=(0,0,1,0.88))
+/Users/juan/Downloads/pytenso-main-3/tutorials_buffalo/ex5_spin_boson_propagation/example5_plot.py:108: UserWarning: FigureCanvasAgg is non-interactive, and thus cannot be shown
+  plt.show()

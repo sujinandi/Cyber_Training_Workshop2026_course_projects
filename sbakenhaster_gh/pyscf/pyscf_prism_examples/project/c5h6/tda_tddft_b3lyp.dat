@@ -1,0 +1,411 @@
+#INFO: **** input file is /vscratch/grp-cyberwksp21/sbakenhaster/tues_7_7/cybertraining_examples/pyscf_prism_examples/project/c5h6/tda_tddft_b3lyp.py ****
+import numpy as np
+from pyscf import gto, dft, adc, tddft
+from pyscf.tools import cubegen
+from pyscf.tools import molden
+
+# Specify geometry and molecular information
+mol = gto.Mole()
+mol.atom = '/vscratch/grp-cyberwksp21/sbakenhaster/tues_7_7/cybertraining_examples/pyscf_prism_examples/project/c5h6/c5h6.xyz'
+ #'/pirojects/academic/cyberwksp21/SOFTWARE_2026/pyscf_prism_examples/geometries/ethylene.xyz'
+mol.basis = 'aug-cc-pvdz'
+mol.verbose = 4
+mol.charge = 0
+mol.max_memory = 10000
+mol.build()
+
+# Run reference (ground-state) Hartree-Fock calculation
+mf = dft.RKS(mol)
+mf.xc = 'SR_HF(0.1) * 0.25 + LR_HF(0.1) * 1.0 + 0.75*PBE, PBE'
+#mf.xc = "b3lyp"
+mf.kernel()
+
+# Run time-dependent DFT calculation in the Tamm-Dancoff approximation (CIS)
+mytd = tddft.TDA(mf)
+mytd.nstates = 10
+mytd.singlet = True
+mytd.kernel()
+
+# Analyze the results
+mytd.analyze()
+
+# Compute natural transition orbitals
+for i in range(mytd.nstates):
+    weights, nto = mytd.get_nto(state=i+1, verbose=4)
+    molden.from_mo(mol, 'nto-tda-%s.molden' % str(i+1), nto)
+
+# Function for calculating TDA density matrix
+def tda_density_matrix(td, state_id):
+    '''
+    Taking the TDA amplitudes as the CIS coefficients, calculate the density
+    matrix (in AO basis) of the excited states
+    '''
+    cis_t1 = td.xy[state_id][0]
+    dm_oo =-np.einsum('ia,ka->ik', cis_t1.conj(), cis_t1)
+    dm_vv = np.einsum('ia,ic->ac', cis_t1, cis_t1.conj())
+
+    # The ground state density matrix in mo_basis
+    mf = td._scf
+    dm = np.diag(mf.mo_occ)
+
+    # Add CIS contribution
+    nocc = cis_t1.shape[0]
+    # Note that dm_oo and dm_vv correspond to spin-up contribution. "*2" to
+    # include the spin-down contribution
+    dm[:nocc,:nocc] += dm_oo * 2
+    dm[nocc:,nocc:] += dm_vv * 2
+
+    # Transform density matrix to AO basis
+    mo = mf.mo_coeff
+    dm = np.einsum('pi,ij,qj->pq', mo, dm, mo.conj())
+    return dm
+
+# Density matrix for the 3rd excited state
+dm = tda_density_matrix(mytd, 2)
+
+# Write to cube format
+from pyscf.tools import cubegen
+cubegen.density(mol, 'tda_density.cube', dm)
+
+# Write the density difference between excited state and ground state
+cubegen.density(mol, 'density_diff.cube', dm - mf.make_rdm1())
+
+# Run full time-dependent SCF calculation (RPA)
+mytd = tddft.TDDFT(mf)
+mytd.nstates = 10
+mytd.singlet = True
+mytd.kernel()
+
+# Analyze the results
+mytd.analyze()
+
+# Compute natural transition orbitals
+for i in range(mytd.nstates):
+    weights, nto = mytd.get_nto(state=i+1, verbose=4)
+    molden.from_mo(mol, 'nto-rpa-%s.molden' % str(i+1), nto)
+
+#INFO: ******************** input file end ********************
+
+
+System: uname_result(system='Linux', node='cpn-c02-07.core.ccr.buffalo.edu', release='6.8.0-124-generic', version='#124-Ubuntu SMP PREEMPT_DYNAMIC Tue May 26 13:00:45 UTC 2026', machine='x86_64')  Threads 4
+Python 3.13.14 | packaged by Anaconda, Inc. | (main, Jun 17 2026, 20:12:46) [GCC 14.3.0]
+numpy 1.26.4  scipy 1.14.1  h5py 3.16.0
+Date: Fri Jul 17 20:14:20 2026
+PySCF version 2.13.1
+PySCF path  /projects/academic/cyberwksp21/SOFTWARE_2026/conda/miniconda3/envs/pyscf/lib/python3.13/site-packages/pyscf
+
+[CONFIG] conf_file None
+[INPUT] verbose = 4
+[INPUT] num. atoms = 11
+[INPUT] num. electrons = 36
+[INPUT] charge = 0
+[INPUT] spin (= nelec alpha-beta = 2S) = 0
+[INPUT] symmetry False subgroup None
+[INPUT] Mole.unit = angstrom
+[INPUT] Symbol           X                Y                Z      unit          X                Y                Z       unit  Magmom
+[INPUT]  1 C      0.276788426869  -1.177141266445   0.000016817118 AA    0.523054321231  -2.224474603504   0.000031779748 Bohr   0.0
+[INPUT]  2 C     -0.996917532470  -0.734912599439  -0.000014915012 AA   -1.883901105146  -1.388783538433  -0.000028185288 Bohr   0.0
+[INPUT]  3 C     -0.996851914017   0.735004518125  -0.000011825897 AA   -1.883777104241   1.388957239573  -0.000022347707 Bohr   0.0
+[INPUT]  4 C      0.276893282426   1.177118959015   0.000021459963 AA    0.523252469517   2.224432448571   0.000040553454 Bohr   0.0
+[INPUT]  5 C      1.209353340827  -0.000052641936   0.000054082816 AA    2.285346601990  -0.000099478842   0.000102201710 Bohr   0.0
+[INPUT]  6 H      0.604725299119  -2.214489483191   0.000022313629 AA    1.142765195931  -4.184778628960   0.000042166648 Bohr   0.0
+[INPUT]  7 H     -1.892442935619  -1.354305178448  -0.000036373042 AA   -3.576198854687  -2.559265876346  -0.000068735089 Bohr   0.0
+[INPUT]  8 H     -1.892322673987   1.354476116701  -0.000030886958 AA   -3.575971593139   2.559588902830  -0.000058367891 Bohr   0.0
+[INPUT]  9 H      0.604924097871   2.214437289619   0.000031068776 AA    1.143140871126   4.184679997405   0.000058711477 Bohr   0.0
+[INPUT] 10 H      1.869436927879  -0.000083345104   0.882971812491 AA    3.532723800840  -0.000157499421   1.668574901319 Bohr   0.0
+[INPUT] 11 H      1.869549973205  -0.000079826870  -0.882775998780 AA    3.532937425545  -0.000150850921  -1.668204867034 Bohr   0.0
+
+nuclear repulsion = 156.534641429742
+number of shells = 70
+number of NR pGTOs = 241
+number of NR cGTOs = 169
+basis = aug-cc-pvdz
+ecp = {}
+CPU time:         1.38
+
+
+******** <class 'pyscf.dft.rks.RKS'> ********
+method = RKS
+initial guess = minao
+damping factor = 0
+level_shift factor = 0
+DIIS = <class 'pyscf.scf.diis.CDIIS'>
+diis_start_cycle = 1
+diis_space = 8
+diis_damp = 0
+SCF conv_tol = 1e-09
+SCF conv_tol_grad = None
+SCF max_cycles = 50
+direct_scf = True
+direct_scf_tol = 1e-13
+chkfile to save SCF result = /scratch/25296817/tmpfwzvk615
+max_memory 10000 MB (current use 96 MB)
+XC library pyscf.dft.libxc version 7.0.0
+    S. Lehtola, C. Steigemann, M. J.T. Oliveira, and M. A.L. Marques.,  SoftwareX 7, 1–5 (2018)
+XC functionals = SR_HF(0.1) * 0.25 + LR_HF(0.1) * 1.0 + 0.75*PBE, PBE
+    J. P. Perdew, K. Burke, and M. Ernzerhof.,  Phys. Rev. Lett. 77, 3865 (1996)
+    J. P. Perdew, K. Burke, and M. Ernzerhof.,  Phys. Rev. Lett. 78, 1396 (1997)
+    J. P. Perdew, K. Burke, and M. Ernzerhof.,  Phys. Rev. Lett. 77, 3865 (1996)
+    J. P. Perdew, K. Burke, and M. Ernzerhof.,  Phys. Rev. Lett. 78, 1396 (1997)
+radial grids: 
+Treutler-Ahlrichs [JCP 102, 346 (1995); DOI:10.1063/1.469408] (M4) radial grids
+
+becke partition: Becke, JCP 88, 2547 (1988); DOI:10.1063/1.454033
+pruning grids: <function nwchem_prune at 0x14d296f220c0>
+grids dens level: 3
+symmetrized grids: False
+atomic radii adjust function: <function treutler_atomic_radii_adjust at 0x14d296f22020>
+small_rho_cutoff = 0
+Set gradient conv threshold to 3.16228e-05
+Initial guess from minao.
+tot grids = 129440
+init E= -196.168691261336
+  HOMO = -0.300203888712903  LUMO = -0.119397719571015
+cycle= 1 E= -195.367240903026  delta_E= 0.801  |g|= 0.286  |ddm|= 7.18
+  HOMO = -0.265093102117369  LUMO = 0.00553249767546093
+cycle= 2 E= -195.373909490887  delta_E= -0.00667  |g|= 0.261  |ddm|= 1.61
+  HOMO = -0.314650878920813  LUMO = -0.0230687242480139
+cycle= 3 E= -195.391896579208  delta_E= -0.018  |g|= 0.02  |ddm|= 0.528
+  HOMO = -0.314253830357177  LUMO = -0.0218525539137522
+cycle= 4 E= -195.391990322258  delta_E= -9.37e-05  |g|= 0.0126  |ddm|=  0.1
+  HOMO = -0.313609826702671  LUMO = -0.0214887186531905
+cycle= 5 E= -195.392026869865  delta_E= -3.65e-05  |g|= 0.00432  |ddm|= 0.0308
+  HOMO = -0.313614938347929  LUMO = -0.0215164894349553
+cycle= 6 E= -195.392031979597  delta_E= -5.11e-06  |g|= 0.000504  |ddm|= 0.0103
+  HOMO = -0.313656886528114  LUMO = -0.0215387978699906
+cycle= 7 E= -195.392032105903  delta_E= -1.26e-07  |g|= 0.000282  |ddm|= 0.0021
+  HOMO = -0.313653613603158  LUMO = -0.0215382293529229
+cycle= 8 E= -195.392032133711  delta_E= -2.78e-08  |g|= 3.71e-05  |ddm|= 0.00076
+  HOMO = -0.313655856203968  LUMO = -0.0215374891177391
+cycle= 9 E= -195.392032135015  delta_E= -1.3e-09  |g|= 5.17e-06  |ddm|= 0.000242
+  HOMO = -0.313656522296697  LUMO = -0.0215377734120552
+cycle= 10 E= -195.392032135053  delta_E= -3.8e-11  |g|= 1.06e-06  |ddm|= 2.72e-05
+  HOMO = -0.313656370881225  LUMO = -0.0215375548114913
+Extra cycle  E= -195.392032135055  delta_E= -1.42e-12  |g|= 4.5e-07  |ddm|= 6.5e-06
+converged SCF energy = -195.392032135055
+
+
+******** <class 'pyscf.tdscf.rks.TDA'> for <class 'pyscf.dft.rks.RKS'> ********
+nstates = 10 singlet
+deg_eia_thresh = 1.000e-03
+wfnsym = None
+conv_tol = 1e-05
+eigh lindep = 1e-12
+eigh level_shift = 0
+eigh max_cycle = 100
+chkfile = /scratch/25296817/tmpfwzvk615
+max_memory 10000 MB (current use 961 MB)
+
+
+Excitation energies (eV)
+[5.48098167 5.66810186 6.31476708 6.35774488 6.54483052 6.70859022
+ 6.91800405 6.97107876 7.24189052 7.79433726]
+
+** Singlet excitation energies and oscillator strengths **
+Excited State   1:      5.48098 eV    226.21 nm  f=0.1322
+      18 -> 19        0.68971
+Excited State   2:      5.66810 eV    218.74 nm  f=0.0000
+      18 -> 20       -0.69601
+Excited State   3:      6.31477 eV    196.34 nm  f=0.0380
+      18 -> 21        0.69202
+      18 -> 33        0.11242
+Excited State   4:      6.35774 eV    195.01 nm  f=0.0000
+      18 -> 22       -0.69496
+Excited State   5:      6.54483 eV    189.44 nm  f=0.0611
+      18 -> 23        0.69500
+Excited State   6:      6.70859 eV    184.81 nm  f=0.0026
+      17 -> 19        0.49348
+      18 -> 26       -0.50040
+Excited State   7:      6.91800 eV    179.22 nm  f=0.0000
+      18 -> 24        0.67652
+      18 -> 31        0.13339
+Excited State   8:      6.97108 eV    177.86 nm  f=0.0004
+      18 -> 25        0.68318
+      18 -> 29        0.13846
+Excited State   9:      7.24189 eV    171.20 nm  f=0.0000
+      18 -> 24        0.10245
+      18 -> 27        0.68389
+Excited State  10:      7.79434 eV    159.07 nm  f=0.0000
+      15 -> 19       -0.69921
+
+** Transition electric dipole moments (AU) **
+state          X           Y           Z        Dip. S.      Osc.
+  1        -0.0000     -0.9922     -0.0000      0.9844      0.1322
+  2        -0.0000     -0.0001      0.0000      0.0000      0.0000
+  3         0.0000      0.0000     -0.4957      0.2458      0.0380
+  4        -0.0000      0.0000     -0.0000      0.0000      0.0000
+  5        -0.0000     -0.6170     -0.0000      0.3807      0.0611
+  6         0.1256     -0.0000      0.0000      0.0158      0.0026
+  7        -0.0000     -0.0000     -0.0000      0.0000      0.0000
+  8        -0.0000     -0.0000      0.0502      0.0025      0.0004
+  9         0.0000     -0.0000      0.0000      0.0000      0.0000
+ 10         0.0000     -0.0000      0.0000      0.0000      0.0000
+
+** Transition velocity dipole moments (imaginary part, AU) **
+state          X           Y           Z        Dip. S.      Osc.
+  1         0.0000      0.0325      0.0000      0.0011      0.0035
+  2        -0.0000      0.0000      0.0000      0.0000      0.0000
+  3         0.0000      0.0000     -0.1024      0.0105      0.0301
+  4        -0.0000      0.0000     -0.0000      0.0000      0.0000
+  5        -0.0000     -0.1086     -0.0000      0.0118      0.0327
+  6         0.0017     -0.0000     -0.0000      0.0000      0.0000
+  7        -0.0000     -0.0000     -0.0000      0.0000      0.0000
+  8         0.0000     -0.0000      0.0140      0.0002      0.0005
+  9         0.0000      0.0000      0.0000      0.0000      0.0000
+ 10         0.0000     -0.0000      0.0000      0.0000      0.0000
+
+** Transition magnetic dipole moments (imaginary part, AU) **
+state          X           Y           Z
+  1        -0.0000      0.0000     -0.9120
+  2         0.6344     -0.0000     -0.0001
+  3         0.0000      0.0654      0.0000
+  4        -0.0267      0.0000      0.0000
+  5         0.0000      0.0000     -0.0676
+  6        -0.0000      0.0000      0.0000
+  7        -0.3434      0.0000      0.0000
+  8        -0.0000     -0.0174     -0.0000
+  9         0.6483     -0.0000      0.0000
+ 10        -1.1060      0.0000     -0.0000
+State 1: 5.48098 eV  NTO largest component 0.9605289967158487
+    occ-NTO: 1.000000 (MO #18)
+    vir-NTO: 0.995237 (MO #19)
+State 2: 5.6681 eV  NTO largest component 0.9956954566761695
+    occ-NTO: 1.000000 (MO #18)
+    vir-NTO: 0.986432 (MO #20)
+State 3: 6.31477 eV  NTO largest component 0.9856446021856045
+    occ-NTO: 1.000000 (MO #18)
+    vir-NTO: 0.985766 (MO #21)
+State 4: 6.35774 eV  NTO largest component 0.9967897489605269
+    occ-NTO: 1.000000 (MO #18)
+    vir-NTO: 0.984400 (MO #22)
+State 5: 6.54483 eV  NTO largest component 0.9973914506626249
+    occ-NTO: 1.000000 (MO #18)
+    vir-NTO: 0.984162 (MO #23)
+State 6: 6.70859 eV  NTO largest component 0.5088443289740748
+    occ-NTO: 1.000000 (MO #18)
+    vir-NTO: 0.992059 (MO #26)
+State 7: 6.918 eV  NTO largest component 0.990505305982107
+    occ-NTO: 1.000000 (MO #18)
+    vir-NTO: 0.961320 (MO #24)
+State 8: 6.97108 eV  NTO largest component 0.9898362336065857
+    occ-NTO: 1.000000 (MO #18)
+    vir-NTO: 0.971107 (MO #25)
+State 9: 7.24189 eV  NTO largest component 0.9916557836350992
+    occ-NTO: 1.000000 (MO #18)
+    vir-NTO: 0.971230 (MO #27)
+State 10: 7.79434 eV  NTO largest component 0.9850464741783831
+    occ-NTO: 0.998800 (MO #15)
+    vir-NTO: 0.997487 (MO #19)
+
+
+******** <class 'pyscf.tdscf.rks.TDDFT'> for <class 'pyscf.dft.rks.RKS'> ********
+nstates = 10 singlet
+deg_eia_thresh = 1.000e-03
+wfnsym = None
+conv_tol = 1e-05
+eigh lindep = 1e-12
+eigh level_shift = 0
+eigh max_cycle = 100
+chkfile = /scratch/25296817/tmpfwzvk615
+max_memory 10000 MB (current use 1020 MB)
+
+
+Excitation energies (eV)
+[5.12390258 5.66729944 6.31333664 6.35692711 6.53939197 6.69051544
+ 6.91278378 6.96887474 7.23650758 7.78179709]
+
+** Singlet excitation energies and oscillator strengths **
+Excited State   1:      5.12390 eV    241.97 nm  f=0.0841
+      18 -> 19       -0.70493
+Excited State   2:      5.66730 eV    218.77 nm  f=0.0000
+      18 -> 20       -0.69597
+Excited State   3:      6.31334 eV    196.38 nm  f=0.0368
+      18 -> 21       -0.69199
+      18 -> 33       -0.11266
+Excited State   4:      6.35693 eV    195.04 nm  f=0.0000
+      18 -> 22       -0.69484
+Excited State   5:      6.53939 eV    189.60 nm  f=0.0540
+      18 -> 23       -0.69486
+Excited State   6:      6.69052 eV    185.31 nm  f=0.0024
+      17 -> 19        0.49909
+      18 -> 26       -0.49528
+Excited State   7:      6.91278 eV    179.35 nm  f=0.0000
+      18 -> 24        0.67485
+      18 -> 31        0.13524
+Excited State   8:      6.96887 eV    177.91 nm  f=0.0004
+      18 -> 25       -0.68307
+      18 -> 29       -0.13893
+Excited State   9:      7.23651 eV    171.33 nm  f=0.0000
+      18 -> 24       -0.11087
+      18 -> 27       -0.68281
+Excited State  10:      7.78180 eV    159.33 nm  f=0.0000
+      15 -> 19       -0.69963
+
+** Transition electric dipole moments (AU) **
+state          X           Y           Z        Dip. S.      Osc.
+  1         0.0000      0.8186      0.0000      0.6701      0.0841
+  2         0.0000     -0.0000      0.0000      0.0000      0.0000
+  3        -0.0000     -0.0000      0.4876      0.2378      0.0368
+  4        -0.0000      0.0000     -0.0000      0.0000      0.0000
+  5         0.0000      0.5807      0.0000      0.3372      0.0540
+  6         0.1214     -0.0000      0.0000      0.0147      0.0024
+  7        -0.0000     -0.0000     -0.0000      0.0000      0.0000
+  8         0.0000      0.0000     -0.0513      0.0026      0.0004
+  9        -0.0000      0.0000     -0.0000      0.0000      0.0000
+ 10        -0.0000     -0.0000     -0.0000      0.0000      0.0000
+
+** Transition velocity dipole moments (imaginary part, AU) **
+state          X           Y           Z        Dip. S.      Osc.
+  1         0.0000      0.1535      0.0000      0.0235      0.0834
+  2         0.0000     -0.0000      0.0000      0.0000      0.0000
+  3        -0.0000     -0.0000      0.1121      0.0126      0.0361
+  4        -0.0000      0.0000     -0.0000      0.0000      0.0000
+  5         0.0000      0.1366      0.0000      0.0187      0.0518
+  6         0.0297     -0.0000      0.0000      0.0009      0.0024
+  7        -0.0000     -0.0000     -0.0000      0.0000      0.0000
+  8         0.0000      0.0000     -0.0132      0.0002      0.0005
+  9        -0.0000      0.0000     -0.0000      0.0000      0.0000
+ 10        -0.0000     -0.0000     -0.0000      0.0000      0.0000
+
+** Transition magnetic dipole moments (imaginary part, AU) **
+state          X           Y           Z
+  1         0.0000     -0.0000      0.9453
+  2         0.6426     -0.0000     -0.0000
+  3        -0.0000     -0.0628     -0.0000
+  4        -0.0460      0.0000      0.0000
+  5        -0.0000     -0.0000      0.0605
+  6        -0.0000      0.0000      0.0000
+  7        -0.4173      0.0000     -0.0000
+  8        -0.0000     -0.0069      0.0000
+  9        -0.7233      0.0000     -0.0000
+ 10        -1.1728      0.0000     -0.0000
+State 1: 5.1239 eV  NTO largest component 0.9806998057643799
+    occ-NTO: 1.000000 (MO #18)
+    vir-NTO: 0.997961 (MO #19)
+State 2: 5.6673 eV  NTO largest component 0.9956894583946907
+    occ-NTO: 1.000000 (MO #18)
+    vir-NTO: 0.986367 (MO #20)
+State 3: 6.31334 eV  NTO largest component 0.9856384594721269
+    occ-NTO: 1.000000 (MO #18)
+    vir-NTO: 0.985697 (MO #21)
+State 4: 6.35693 eV  NTO largest component 0.9967780025417746
+    occ-NTO: 1.000000 (MO #18)
+    vir-NTO: 0.984227 (MO #22)
+State 5: 6.53939 eV  NTO largest component 0.9976206264670439
+    occ-NTO: 1.000000 (MO #18)
+    vir-NTO: 0.983755 (MO #23)
+State 6: 6.69052 eV  NTO largest component 0.49964534394625343
+    occ-NTO: 0.999628 (MO #17)
+    vir-NTO: 0.998589 (MO #19)
+State 7: 6.91278 eV  NTO largest component 0.9906821270544669
+    occ-NTO: 1.000000 (MO #18)
+    vir-NTO: 0.958780 (MO #24)
+State 8: 6.96887 eV  NTO largest component 0.9900007870663431
+    occ-NTO: 1.000000 (MO #18)
+    vir-NTO: 0.970844 (MO #25)
+State 9: 7.23651 eV  NTO largest component 0.9926219006219801
+    occ-NTO: 1.000000 (MO #18)
+    vir-NTO: 0.969137 (MO #27)
+State 10: 7.7818 eV  NTO largest component 0.9857484872745309
+    occ-NTO: 0.998828 (MO #15)
+    vir-NTO: 0.997465 (MO #19)
