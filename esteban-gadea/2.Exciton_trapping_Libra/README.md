@@ -61,6 +61,10 @@ Libra install (e.g. a CHPC cluster build).
    `run3_control/`.
 3. `production_runs/analyze_dynamics.py <prefix>` -- bond-distortion and hole/electron
    density (IPR) diagnostics for one run, e.g. `analyze_dynamics.py run2_selftrapping`.
+   Produces `<prefix>_maps.png` (hole density, electron density, and bond-distortion
+   heatmaps together, so the exciton's localized region can be checked directly against
+   where the lattice is maximally distorted) and `<prefix>_localization.png` (IPR vs.
+   RMS bond distortion).
 4. `production_runs/check_energy_conservation.py <prefix>` -- confirms any observed
    growth is real dynamics, not integration drift.
 5. `production_runs/compare_runs.py` -- overlays all three runs' bond-distortion traces
@@ -85,7 +89,10 @@ folder holds only the code needed to reproduce the report's actual results.
 
 ## Status
 
-Part II's methodology (the CIS/TDA port and its validation) is complete. The three
-production runs (`production_runs/`) are launched on the corrected Hamiltonian from
-Part I; results are pending and will be added to `../report.md` Section 2.4 and this
-folder's `report/figures/` once the runs complete.
+Part II is complete. All three production runs (`production_runs/`) have been run on
+the corrected Hamiltonian from Part I; results, figures, and discussion are in
+`../report.md` Section 2.4. Headline result: Run 2 (seeded exciton) shows a clean,
+energy-conserving self-trapping signature not previously seen in the original
+real-time Ehrenfest implementation (`../report.md` Section 2.1). Remaining open
+items are tracked in `../report.md` Sections 2.5-2.7 (ongoing nonadiabatic-coupling
+work, near-crossing search, FSSH/decoherence, two-chain moiré extension).

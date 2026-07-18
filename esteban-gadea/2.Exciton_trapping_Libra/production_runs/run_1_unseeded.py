@@ -31,7 +31,7 @@ from recipes import ehrenfest_onthefly
 
 # ---------------- System size / geometry ----------------
 NCHAIN = 32          # dimer unit cells; ndof = 2*NCHAIN = 64
-DIMER1 = 0.086419    # ground-state equilibrium dimerization at this chain length (energy-minimized)
+DIMER1 = 0.095665    # ground-state equilibrium dimerization at this chain length (energy-minimized)
 LATTICE_ANG = 6.0
 
 # get_default_params() already returns the ab initio-corrected Hamiltonian and

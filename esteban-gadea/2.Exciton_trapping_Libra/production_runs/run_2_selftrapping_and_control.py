@@ -43,7 +43,7 @@ from recipes import ehrenfest_onthefly
 
 # ---------------- System size / geometry ----------------
 NCHAIN = 32
-DIMER1 = 0.086419    # ground-state equilibrium dimerization at this chain length (energy-minimized)
+DIMER1 = 0.095665    # ground-state equilibrium dimerization at this chain length (energy-minimized)
 LATTICE_ANG = 6.0
 
 model_params = get_default_params(nchain=NCHAIN, dimer1=DIMER1, lattice_ang=LATTICE_ANG, hartreeu=0.0)
@@ -53,11 +53,11 @@ ndof = 2 * NCHAIN
 nstates = 2
 
 # ---------------- Nuclear initial conditions: zero-momentum-balanced thermal seed ----------------
-TSEED_K = 15.0                     # seed temperature (K) -- small on purpose, just enough to
+TSEED_K = 10.0                     # seed temperature (K) -- small on purpose, just enough to
                                     # break symmetry, not meant to represent a real sample temperature
 KB_HA_PER_K = 3.1668115634556e-6   # Boltzmann constant, Hartree/Kelvin (atomic units)
 MASS_VAL = 198046.0                # atomic units (m_e)
-SEED = 2026                        # numpy RNG seed -- fully reproducible
+SEED = 25091993                       # numpy RNG seed 
 
 q0 = ring_positions(NCHAIN, model_params["r1"], model_params["r2"])
 mass = [MASS_VAL] * ndof
@@ -82,7 +82,7 @@ nucl_params_template = {
 
 # ---------------- Dynamics parameters ----------------
 DT_FS = 0.001
-NSTEPS = 1_000_000   # 1 ps total -- long enough for the self-trapping signature to develop and
+NSTEPS = 800000   # 0.8 ps total -- long enough for the self-trapping signature to develop and
                       # for at least one full localization/re-delocalization "beat" to be captured.
 
 

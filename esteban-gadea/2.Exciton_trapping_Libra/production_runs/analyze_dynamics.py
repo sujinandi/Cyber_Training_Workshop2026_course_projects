@@ -9,12 +9,19 @@ e.g.
 Reads `<prefix>/mem_data.hdf`, recomputes the CIS exciton state at a subsample
 of saved MD steps to get real-space hole/electron densities and their inverse
 participation ratios (IPR; n=fully delocalized, 1=fully localized on one
-site), and plots them alongside the RMS bond-length distortion from the
-starting geometry. Saves `<prefix>_dynamics.png`.
+site). Produces two separate figures:
+
+  - `<prefix>_maps.png` -- hole density, electron density, and the per-bond
+    distortion map (all atom/bond-index-vs-time heatmaps, same time axis), so
+    the exciton's localized region can be checked directly against where the
+    lattice is maximally distorted.
+  - `<prefix>_localization.png` -- IPR(hole)/IPR(electron) vs. time, overlaid
+    with the RMS bond-length distortion.
 
 For run3_control (ground state only, no exciton), the density/IPR panels are
 skipped automatically -- there is no CIS exciton state to recompute for a
-pure ground-state trajectory -- and only the bond-distortion trace is plotted.
+pure ground-state trajectory -- `<prefix>_maps.png` then contains only the
+bond-distortion map, and `<prefix>_localization.png` only the RMS trace.
 """
 import sys
 import _pathsetup  # noqa: F401
@@ -41,7 +48,7 @@ if q.ndim == 3:
 nsteps_saved, ndof = q.shape
 nchain = ndof // 2
 
-p = get_default_params(nchain=nchain, dimer1=0.086419, lattice_ang=6.0, hartreeu=0.0)
+p = get_default_params(nchain=nchain, dimer1=0.095665, lattice_ang=6.0, hartreeu=0.0)
 boxl = p["boxl"]
 print(f"{PREFIX}: nchain={nchain} (ndof={ndof}), {nsteps_saved} saved steps")
 
@@ -53,16 +60,37 @@ bonds[:, ndof - 1] = (q[:, 0] + boxl) - q[:, ndof - 1]
 bond_change = bonds - bonds[0, :]
 rms_bond = np.sqrt(np.mean(bond_change ** 2, axis=1))
 
+bond_vmax = np.max(np.abs(bond_change))
+
+
+def plot_bond_map(ax, fig):
+    im = ax.imshow(bond_change.T, aspect="auto", origin="lower",
+                    extent=[t[0], t[-1], 0, ndof], cmap="RdBu_r",
+                    vmin=-bond_vmax, vmax=bond_vmax)
+    ax.set_ylabel("bond index")
+    ax.set_title(f"bond-length distortion delta_r(bond, time)")
+    fig.colorbar(im, ax=ax, label="delta bond length (bohr)")
+    return im
+
+
 if IS_GROUND_ONLY:
-    fig, ax = plt.subplots(figsize=(10, 4))
+    fig_maps, ax_map = plt.subplots(figsize=(8, 4))
+    plot_bond_map(ax_map, fig_maps)
+    ax_map.set_xlabel("time (a.u.)")
+    plt.tight_layout()
+    plt.savefig(f"{PREFIX}_maps.png", dpi=150)
+    plt.show()
+    print(f"Saved {PREFIX}_maps.png")
+
+    fig_loc, ax = plt.subplots(figsize=(8, 4))
     ax.plot(t, rms_bond, color="black")
     ax.set_xlabel("time (a.u.)")
     ax.set_ylabel("RMS bond-length change (bohr)")
-    ax.set_title(f"{PREFIX}: RMS bond distortion (ground-state control, no exciton)")
+    ax.set_title(f"RMS bond distortion")
     plt.tight_layout()
-    plt.savefig(f"{PREFIX}_dynamics.png", dpi=150)
+    plt.savefig(f"{PREFIX}_localization.png", dpi=150)
     plt.show()
-    print(f"Saved {PREFIX}_dynamics.png")
+    print(f"Saved {PREFIX}_localization.png")
     raise SystemExit
 
 # ---------------- hole/electron density + IPR at a subsample of steps ----------------
@@ -90,34 +118,44 @@ for k, idx in enumerate(idxs):
         print(f"  {k + 1}/{len(idxs)}  t={t_sub[k]:.1f} a.u.  E_n={E_n:.6f} Ha  "
               f"IPR_hole={ipr_hole_t[k]:.2f}  IPR_elec={ipr_elec_t[k]:.2f}  (n={ndof})")
 
-fig, axes = plt.subplots(3, 1, figsize=(10, 12), sharex=True)
+# ---------------- figure 1: hole/electron density maps + bond-distortion map ----------------
+fig, axes = plt.subplots(3, 1, figsize=(8, 10), sharex=True)
 
 im0 = axes[0].imshow(rho_hole_t.T, aspect="auto", origin="lower",
                       extent=[t_sub[0], t_sub[-1], 0, ndof], cmap="inferno")
-axes[0].set_ylabel("site index")
-axes[0].set_title(f"{PREFIX} (nchain={nchain}): hole density rho_hole(site, t)")
+axes[0].set_ylabel("atom index")
+axes[0].set_title(f"hole density rho_hole(atom, time)")
 fig.colorbar(im0, ax=axes[0], label="probability")
 
 im1 = axes[1].imshow(rho_elec_t.T, aspect="auto", origin="lower",
                       extent=[t_sub[0], t_sub[-1], 0, ndof], cmap="viridis")
-axes[1].set_ylabel("site index")
-axes[1].set_title(f"{PREFIX} (nchain={nchain}): excited-electron density rho_elec(site, t)")
+axes[1].set_ylabel("atom index")
+axes[1].set_title(f"electron density rho_elec(atom, time)")
 fig.colorbar(im1, ax=axes[1], label="probability")
 
-ax2 = axes[2]
+plot_bond_map(axes[2], fig)
+axes[2].set_xlabel("time (a.u.)")
+
+plt.tight_layout()
+plt.savefig(f"{PREFIX}_maps.png", dpi=150)
+plt.show()
+print(f"Saved {PREFIX}_maps.png")
+
+# ---------------- figure 2: localization (IPR) vs. lattice distortion ----------------
+fig2, ax2 = plt.subplots(figsize=(8, 4))
 ax2.plot(t_sub, ipr_hole_t, label="IPR(hole)", color="tab:red")
 ax2.plot(t_sub, ipr_elec_t, label="IPR(electron)", color="tab:blue")
 ax2.axhline(ndof, color="gray", linestyle=":", linewidth=1, label=f"n={ndof} (fully delocalized)")
-ax2.set_ylabel("IPR (n=delocalized, 1=fully localized)")
+ax2.set_ylabel("IPR (64=delocalized, 1=fully localized)")
 ax2.legend(loc="upper left")
 ax2r = ax2.twinx()
 ax2r.plot(t, rms_bond, color="black", alpha=0.5, linewidth=1, label="RMS bond distortion")
 ax2r.set_ylabel("RMS bond-length change (bohr)")
 ax2r.legend(loc="upper right")
 ax2.set_xlabel("time (a.u.)")
-ax2.set_title(f"{PREFIX}: localization (IPR) vs. lattice distortion")
+ax2.set_title(f"localization (IPR) vs. lattice distortion")
 
 plt.tight_layout()
-plt.savefig(f"{PREFIX}_dynamics.png", dpi=150)
+plt.savefig(f"{PREFIX}_localization.png", dpi=150)
 plt.show()
-print(f"Saved {PREFIX}_dynamics.png")
+print(f"Saved {PREFIX}_localization.png")
