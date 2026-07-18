@@ -5,7 +5,7 @@ CyberTraining 2026 course project
 
 ---
 
-## The result in one sentence
+## Main initial finding.
 
 An Ar 3s⁻¹ hole at 28.97 eV that is unable to decay by ICD,
 transfers its energy by virtual photon to a **bright superexcited state of water
