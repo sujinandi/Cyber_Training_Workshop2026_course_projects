@@ -12,13 +12,6 @@ committing to the full production sweep needed for the new (HF/post-HF based)
 TB reparametrization. Nothing here is meant to be a final scientific number --
 it's a timing/convergence reconnaissance run.
 
-Usage:
-    python convergence_scan.py
-
-Edit the parameter lists in main() below to match what you actually need
-(lattice length / dimerization can be swapped for your other geometries,
-e.g. the 5.6/5.8/6.0/6.2 A set from the single-chain report).
-
 Each run is wrapped in try/except so one failure/non-convergence doesn't
 kill the whole sweep -- failures are logged in the CSV with a note.
 """

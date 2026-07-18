@@ -29,11 +29,11 @@ CCSD reference here, become more trustworthy) -- if so, that converged k is
 the one to use for the rescaling, since it's evaluated in the regime where
 this whole approach is most defensible.
 
-Usage: add new (label, lattice_length, delta, pbe_gap_eV) entries to
+New (label, lattice_length, delta, pbe_gap_eV) entries can be added to
 CALIBRATION_POINTS below as new PBE grid values come in (prefer delta values
-larger than 0.167, per the above), then rerun. Already-computed points are
-skipped automatically (checked via existing beta_rescaling_<label>.csv), so
-it's safe to keep adding points to the same list over time.
+larger than 0.167, per the above). Already-computed points are skipped
+automatically (checked via existing beta_rescaling_<label>.csv), so it's safe
+to keep adding points to the same list over time.
 
 Cost: same profile as the earlier point1/point2 scripts -- natoms=12 took
 ~2.4-3.3 min wall per point in earlier runs. Budget accordingly if adding

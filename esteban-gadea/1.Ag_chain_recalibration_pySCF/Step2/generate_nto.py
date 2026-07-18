@@ -12,14 +12,8 @@ s-orbital-derived TB band in the first place.
 Method: pyscf's tdscf.TDA.get_nto(state=1) decomposes the CIS transition
 density into hole/electron NTO pairs ranked by weight. Character is checked
 with a plain Mulliken population (mol.intor('int1e_ovlp') restricted to the
-'5s' AO label subset) on the dominant pair.
-
-Result (already checked interactively before writing this): the dominant
-NTO pair carries 69.7% of the transition weight; its hole orbital has
-~0% Ag 5s character (essentially zero, ~1e-28) and its electron orbital has
-55% Ag 5s character -- i.e. the hole is NOT on the s-manifold (likely
-5p/d-derived) while the electron substantially is. Direct, concrete support
-for the single s-band TB picture.
+'5s' AO label subset) on the dominant pair. Results are in
+report/objective1_report.md Section 4.5.
 
 Outputs hole/electron NTO cube files (viewable in VMD, PyMOL, Avogadro,
 VESTA, etc. -- isosurface at roughly +-0.02-0.05 is a reasonable starting

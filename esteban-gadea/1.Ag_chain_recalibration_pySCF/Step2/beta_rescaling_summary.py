@@ -6,10 +6,9 @@ the current directory, fits fundamental_gap_ccsd_eV vs 1/natoms for each
 used throughout this project's other extrapolations), and computes
 k = extrapolated_gap / pbe_gap_eV for each point/fit combination.
 
-Run this any time after beta_rescaling_scan.py has produced or added to the
-per-point CSVs -- safe to rerun as more calibration points come in. Writes
-beta_rescaling_k_summary.csv and prints a table sorted by delta so the k(delta)
-trend is easy to read off directly.
+Safe to rerun any time after beta_rescaling_scan.py has produced or added to
+the per-point CSVs. Writes beta_rescaling_k_summary.csv and prints a table
+sorted by delta so the k(delta) trend is easy to read off directly.
 """
 
 import csv

@@ -1,8 +1,7 @@
 #!/usr/bin/env python3
 """
-Run this BEFORE submitting submit_step1_array.slurm tonight.
-
-Two things checked per point, at the REAL production recipe (nk=16, vacuum=30 A):
+Preflight check for submit_step1_array.slurm. Two things checked per point,
+at the real production recipe (nk=16, vacuum=30 A):
 
 1. Convergence robustness at the low-delta (near-undimerized) end -- none of
    Step 0's testing touched this regime. (Same as before.)
