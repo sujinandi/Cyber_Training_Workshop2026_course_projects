@@ -1,0 +1,395 @@
+#INFO: **** input file is /vscratch/grp-cyberwksp21/sbakenhaster/tues_7_7/cybertraining_examples/pyscf_prism_examples/04_sr_adc/adc2/nitroxyl/04_sr_adc.py ****
+import numpy as np
+from pyscf import gto, scf, adc
+from pyscf import lib
+from pyscf.tools import cubegen
+from pyscf.tools import molden
+
+# Specify geometry and molecular information
+mol = gto.Mole()
+mol.atom = '/projects/academic/cyberwksp21/SOFTWARE_2026/pyscf_prism_examples/geometries/nitroxyl.xyz'
+mol.basis = 'aug-cc-pvdz'
+mol.verbose = 4
+mol.charge = 0
+mol.max_memory = 10000
+mol.build()
+
+# Run reference (ground-state) Hartree-Fock calculation
+mf = scf.RHF(mol).density_fit("aug-cc-pvdz-jkfit")
+mf.conv_tol = 1e-8
+mf.kernel()
+
+# Run EE-ADC(2) calculation
+myadc = adc.ADC(mf).density_fit("aug-cc-pvdz-ri")
+myadc.method = "adc(2)"
+myadc.conv_tol = 1e-5
+myadc.tol_residual = 1e-3
+myadc.method_type = "ee"
+myadc.verbose = 5
+myadc.approx_trans_moments = True
+e,v,p,x = myadc.kernel(nroots = 5)
+
+# Analyze the results
+myadc.analyze()
+
+# Compute reference (ground-state) one-particle density matrix
+rdm1_ref = myadc.make_ref_rdm1(ao_repr = True)
+
+# Compute excited-state one-particle density matrix
+rdm1_ee = np.array(myadc.make_rdm1(ao_repr = True))
+
+# Write density difference for each excited state
+for state in range(rdm1_ee.shape[0]):
+    rdm1_diff = rdm1_ee[state] - rdm1_ref
+    cubegen.density(mol, 'state_%s.cube' % str(state + 1), rdm1_diff)
+
+# Compute natural transition orbitals
+import prism.interface
+from prism.tools import trans_prop
+interface = prism.interface.PYSCF(mf)
+for state in range(x.shape[0]):
+    trans_prop.compute_ntos(interface, x[state], initial_state=0, target_state=state+1)
+#INFO: ******************** input file end ********************
+
+
+System: uname_result(system='Linux', node='cpn-c04-07.core.ccr.buffalo.edu', release='6.8.0-124-generic', version='#124-Ubuntu SMP PREEMPT_DYNAMIC Tue May 26 13:00:45 UTC 2026', machine='x86_64')  Threads 12
+Python 3.13.14 | packaged by Anaconda, Inc. | (main, Jun 17 2026, 20:12:46) [GCC 14.3.0]
+numpy 2.4.6  scipy 1.18.0  h5py 3.16.0
+Date: Tue Jul  7 13:06:58 2026
+PySCF version 2.13.1
+PySCF path  /projects/academic/cyberwksp21/SOFTWARE_2026/conda/miniconda3/envs/pyscf/lib/python3.13/site-packages/pyscf
+
+[CONFIG] conf_file None
+[INPUT] verbose = 4
+[INPUT] num. atoms = 3
+[INPUT] num. electrons = 16
+[INPUT] charge = 0
+[INPUT] spin (= nelec alpha-beta = 2S) = 0
+[INPUT] symmetry False subgroup None
+[INPUT] Mole.unit = angstrom
+[INPUT] Symbol           X                Y                Z      unit          X                Y                Z       unit  Magmom
+[INPUT]  1 O      0.111654780000   0.000000000000   1.140178240000 AA    0.210996954699   0.000000000000   2.154624606789 Bohr   0.0
+[INPUT]  2 N     -0.236948950000   0.000000000000  -0.018993560000 AA   -0.447768621003   0.000000000000  -0.035892626530 Bohr   0.0
+[INPUT]  3 H      0.625294180000   0.000000000000  -0.621184670000 AA    1.181634747484   0.000000000000  -1.173868899078 Bohr   0.0
+
+nuclear repulsion = 30.3111081662337
+number of shells = 21
+number of NR pGTOs = 81
+number of NR cGTOs = 55
+basis = aug-cc-pvdz
+ecp = {}
+CPU time:         2.08
+
+
+******** <class 'pyscf.df.df_jk.DFRHF'> ********
+method = DFRHF
+initial guess = minao
+damping factor = 0
+level_shift factor = 0
+DIIS = <class 'pyscf.scf.diis.CDIIS'>
+diis_start_cycle = 1
+diis_space = 8
+diis_damp = 0
+SCF conv_tol = 1e-08
+SCF conv_tol_grad = None
+SCF max_cycles = 50
+direct_scf = False
+chkfile to save SCF result = /scratch/25176444/tmpm44ibj89
+max_memory 10000 MB (current use 97 MB)
+Set gradient conv threshold to 0.0001
+Initial guess from minao.
+******** <class 'pyscf.df.df.DF'> ********
+auxbasis = aug-cc-pvdz-jkfit
+max_memory = 10000
+init E= -129.867318593093
+  HOMO = -0.212450329931904  LUMO = -0.0941780393428937
+cycle= 1 E= -129.725840888296  delta_E= 0.141  |g|= 0.609  |ddm|= 1.87
+  HOMO = -0.417613907371558  LUMO = 0.00855884441507815
+cycle= 2 E= -129.759735120864  delta_E= -0.0339  |g|= 0.53  |ddm|= 0.67
+  HOMO = -0.437674803397342  LUMO = 0.0336385672867707
+cycle= 3 E= -129.809076419731  delta_E= -0.0493  |g|= 0.0535  |ddm|= 0.307
+  HOMO = -0.424057131728032  LUMO = 0.035101324641778
+cycle= 4 E= -129.809994566143  delta_E= -0.000918  |g|= 0.0223  |ddm|= 0.0523
+  HOMO = -0.430389919134971  LUMO = 0.0354680348547731
+cycle= 5 E= -129.810202522689  delta_E= -0.000208  |g|= 0.00738  |ddm|= 0.0323
+  HOMO = -0.430313380803137  LUMO = 0.0353967679022738
+cycle= 6 E= -129.810241452872  delta_E= -3.89e-05  |g|= 0.00346  |ddm|= 0.0129
+  HOMO = -0.430811511499  LUMO = 0.0354599572573062
+cycle= 7 E= -129.810250371534  delta_E= -8.92e-06  |g|= 0.000965  |ddm|= 0.00753
+  HOMO = -0.430796962445886  LUMO = 0.0354850428903073
+cycle= 8 E= -129.810251022384  delta_E= -6.51e-07  |g|= 0.000181  |ddm|= 0.00232
+  HOMO = -0.430786339835958  LUMO = 0.0354908607528563
+cycle= 9 E= -129.81025105258  delta_E= -3.02e-08  |g|= 3.61e-05  |ddm|= 0.000529
+  HOMO = -0.430788109828799  LUMO = 0.0354911849277388
+cycle= 10 E= -129.810251053648  delta_E= -1.07e-09  |g|= 7.36e-06  |ddm|= 0.00011
+  HOMO = -0.430788496199773  LUMO = 0.035491419857709
+Extra cycle  E= -129.810251053682  delta_E= -3.35e-11  |g|= 3.2e-06  |ddm|= 1.35e-05
+converged SCF energy = -129.810251053682
+
+******** <class 'pyscf.adc.radc.RADC'> ********
+max_memory 10000 MB (current use 114 MB)
+******** ADC Orbital Information ********
+Number of Frozen Occupied Orbitals: 0
+Number of Frozen Virtual Orbitals: 0
+Number of Active Occupied Orbitals: 8
+Number of Active Virtual Orbitals: 47
+*****************************************
+******** <class 'pyscf.df.df.DF'> ********
+auxbasis = aug-cc-pvdz-ri
+max_memory = 10000
+    CPU time for DF-ADC integral transformation      0.92 sec, wall time      0.08 sec
+Reference correlation energy (doubles): -0.37282004
+MP2 correlation energy of reference state (a.u.) = -0.37282004
+
+******** <class 'pyscf.adc.radc_ee.RADCEE'> ********
+max_space = 12
+max_cycle = 50
+conv_tol = 1e-05
+max_memory 10000 MB (current use 127 MB)
+
+WARN: Approximations for transition moments are requested...
+adc(2) transition properties will neglect second-order amplitudes...
+
+davidson 0 5  |r|= 0.751  e= [0.21582003 0.37029557 0.42246053 0.4413512  0.45176345]  max|de|= 0.452  lindep=    1
+davidson 1 10  |r|= 0.141  e= [0.06997631 0.21926507 0.27673935 0.3007485  0.30788359]  max|de|= -0.151  lindep= 0.983
+davidson 2 15  |r|= 0.0726  e= [0.06504264 0.21136557 0.27206286 0.29614231 0.30250914]  max|de|= -0.0079  lindep= 0.925
+davidson 3 20  |r|= 0.0349  e= [0.06260117 0.20320738 0.26850932 0.293542   0.29777676]  max|de|= -0.00816  lindep= 0.921
+davidson 4 25  |r|= 0.021  e= [0.06228711 0.20250905 0.2680904  0.29277144 0.29688573]  max|de|= -0.000891  lindep= 0.828
+davidson 5 30  |r|= 0.0356  e= [0.06233282 0.20209446 0.26802837 0.29195092 0.29661735]  max|de|= -0.000821  lindep= 0.883
+Old state -> New state
+    3     ->     4 
+davidson 6 35  |r|= 0.101  e= [0.06230439 0.20216566 0.26802402 0.28287091 0.2952751 ]  max|de|= -0.00908  lindep= 0.861
+davidson 7 5  |r|= 0.101  e= [0.06230439 0.20216566 0.26802402 0.28287091 0.2952751 ]  max|de|= 9.16e-16  lindep= 0.986
+root 0 converged  |r|= 0.000305  e= 0.062312939266420314  max|de|= 8.55e-06
+davidson 8 10  |r|= 0.047  e= [0.06231294 0.20211332 0.2680172  0.27920429 0.2946535 ]  max|de|= -0.00367  lindep= 0.874
+davidson 9 14  |r|= 0.0445  e= [0.06230183 0.20214367 0.26800545 0.27638935 0.29446105]  max|de|= -0.00281  lindep= 0.671
+root 0 converged  |r|= 5.99e-05  e= 0.06230897214091964  max|de|= 7.14e-06
+root 2 converged  |r|= 0.000534  e= 0.26801532496206104  max|de|= 9.88e-06
+davidson 10 19  |r|= 0.0205  e= [0.06230897 0.20212429 0.26801532 0.2744187  0.29422384]  max|de|= -0.00197  lindep= 0.829
+davidson 11 22  |r|= 0.0104  e= [0.06230877 0.20213691 0.26801462 0.27504212 0.29420373]  max|de|= 0.000623  lindep= 0.874
+root 1 converged  |r|= 5.51e-05  e= 0.20213018041089992  max|de|= -6.73e-06
+davidson 12 25  |r|= 0.00356  e= [0.06230881 0.20213018 0.26801488 0.27469255 0.2941914 ]  max|de|= -0.00035  lindep= 0.922
+davidson 13 27  |r|= 0.00181  e= [0.06230886 0.20213018 0.26801488 0.27473987 0.29422576]  max|de|= 4.73e-05  lindep= 0.862
+root 3 converged  |r|= 0.000715  e= 0.27473140269037616  max|de|= -8.47e-06
+davidson 14 29  |r|= 0.000715  e= [0.06230869 0.20213018 0.26801488 0.2747314  0.29419646]  max|de|= -2.93e-05  lindep= 0.867
+davidson 15 30  |r|= 0.000538  e= [0.06230892 0.20213018 0.26801488 0.27472256 0.29420766]  max|de|= 1.12e-05  lindep= 0.857
+root 4 converged  |r|= 5.97e-05  e= 0.2942033518064639  max|de|= -4.31e-06
+converged 16 31  |r|= 0.000538  e= [0.06230881 0.20213018 0.26801488 0.27472296 0.29420335]  max|de|= -4.31e-06
+
+*************************************************************
+        ADC calculation summary (singlet states only)
+*************************************************************
+adc(2) root 0  |  Energy (Eh) =   0.0623088057  |  Energy (eV) =   1.69550897  |  Osc. strength = 0.00045173  |  conv = True
+adc(2) root 1  |  Energy (Eh) =   0.2021301804  |  Energy (eV) =   5.50024237  |  Osc. strength = 0.02835713  |  conv = True
+adc(2) root 2  |  Energy (Eh) =   0.2680148817  |  Energy (eV) =   7.29305641  |  Osc. strength = 0.01870513  |  conv = True
+adc(2) root 3  |  Energy (Eh) =   0.2747229559  |  Energy (eV) =   7.47559240  |  Osc. strength = 0.00356309  |  conv = True
+adc(2) root 4  |  Energy (Eh) =   0.2942033518  |  Energy (eV) =   8.00568097  |  Osc. strength = 0.00111941  |  conv = True
+    CPU time for ADC     86.16 sec, wall time      7.21 sec
+
+*************************************************************
+           Eigenvector analysis summary
+*************************************************************
+Number of occupied orbitals = 8
+Number of virtual orbitals =  47
+Print eigenvector elements > 0.100000
+
+adc(2) | root 0 | Energy (eV) =   1.69550897 | norm(1p1h)  = 0.9469 | norm(2p2h) = 0.0531 
+
+1p1h block: 
+     i     a     U(i,a)
+------------------
+     8      2    0.9077
+     8      5   -0.2553
+     8      9    0.1832
+***************************************************************************************
+
+adc(2) | root 1 | Energy (eV) =   5.50024237 | norm(1p1h)  = 0.9142 | norm(2p2h) = 0.0858 
+
+1p1h block: 
+     i     a     U(i,a)
+------------------
+     8      1    0.8462
+     8      6   -0.3417
+     8      4   -0.1669
+     8      3    0.1023
+     8     10    0.1005
+***************************************************************************************
+
+adc(2) | root 2 | Energy (eV) =   7.29305641 | norm(1p1h)  = 0.9222 | norm(2p2h) = 0.0778 
+
+1p1h block: 
+     i     a     U(i,a)
+------------------
+     8      3    0.9176
+     8     12   -0.2149
+***************************************************************************************
+
+adc(2) | root 3 | Energy (eV) =   7.47559240 | norm(1p1h)  = 0.9294 | norm(2p2h) = 0.0706 
+
+1p1h block: 
+     i     a     U(i,a)
+------------------
+     6      2    0.8523
+     6      5   -0.2552
+     5      2   -0.1785
+     8      5    0.1752
+     6      9    0.1710
+     8      2    0.1611
+
+2p2h block: 
+     i     j     a     b     U(i,j,a,b)
+-------------------------------
+     8     7    10    10   0.1133
+     7     8    10    10   0.1133
+***************************************************************************************
+
+adc(2) | root 4 | Energy (eV) =   8.00568097 | norm(1p1h)  = 0.9254 | norm(2p2h) = 0.0746 
+
+1p1h block: 
+     i     a     U(i,a)
+------------------
+     8      5   -0.8877
+     6      2    0.2310
+     8      2   -0.2252
+     8     11   -0.1153
+***************************************************************************************
+
+
+*************************************************************
+          Spectroscopic amplitude analysis summary
+*************************************************************
+Print spectroscopic factors > 1.000000E-01
+
+adc(2) | root 0 | Energy (eV) =   1.69550897 
+
+     Hole_MO     Particle_MO     Spec. Contribution     Orbital symmetry
+-----------------------------------------------------------
+       8              10          1.56887120                A -> A
+       8              13          0.12325570                A -> A
+
+Partial spec. factor sum = 1.69212690
+***********************************************************
+
+adc(2) | root 1 | Energy (eV) =   5.50024237 
+
+     Hole_MO     Particle_MO     Spec. Contribution     Orbital symmetry
+-----------------------------------------------------------
+       8               9          1.40323300                A -> A
+       8              14          0.22778981                A -> A
+
+Partial spec. factor sum = 1.63102281
+***********************************************************
+
+adc(2) | root 2 | Energy (eV) =   7.29305641 
+
+     Hole_MO     Particle_MO     Spec. Contribution     Orbital symmetry
+-----------------------------------------------------------
+       8              11          1.65079546                A -> A
+
+Partial spec. factor sum = 1.65079546
+***********************************************************
+
+adc(2) | root 3 | Energy (eV) =   7.47559240 
+
+     Hole_MO     Particle_MO     Spec. Contribution     Orbital symmetry
+-----------------------------------------------------------
+       6              10          1.38535804                A -> A
+       6              13          0.12366399                A -> A
+
+Partial spec. factor sum = 1.50902203
+***********************************************************
+
+adc(2) | root 4 | Energy (eV) =   8.00568097 
+
+     Hole_MO     Particle_MO     Spec. Contribution     Orbital symmetry
+-----------------------------------------------------------
+       8              13          1.54354255                A -> A
+       6              10          0.10215332                A -> A
+       8              10          0.10043352                A -> A
+
+Partial spec. factor sum = 1.74612939
+***********************************************************
+
+
+
+------------------------------------------------------------------------------
+
+            PRISM: Open-Source implementation of ab initio methods
+                    for excited states and spectroscopy
+
+                               Version 0.9
+
+                   Copyright (C) 2026 Prism Developers
+                   Contributors: Nicholas Yiching Chiang
+                                 Carlos E. V. de Moura
+                                 Nishshanka M. Lakshan
+                                 Rajat S. Majumder
+                                 Ilia M. Mazin
+                                 Donna H. Odhiambo
+                                 Bryce Pickett
+                                 James D. Serna
+                                 Alexander Yu. Sokolov
+
+            Unless required by applicable law or agreed to in
+            writing, software distributed under the GNU General
+            Public License v3.0 and is distributed on an "AS IS"
+            BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+            either express or implied.
+
+            See the License for the specific language governing
+            permissions and limitations.
+
+            Available at https://github.com/sokolov-group/prism
+
+------------------------------------------------------------------------------
+
+Importing Pyscf objects...
+
+Collecting reference wavefunction information...
+Reference wavefunction: scf
+
+
+Computing NTOs...
+State 0 -> State 1:
+   Sum of SVs (Omega):                0.902474
+   Participation ratio (PR_NTO):      1.007133
+   Entanglement entropy (S_HE):       0.027561
+   Nr of entangled states (Z_HE):     1.027944
+   Renormalized S_HE/Z_HE:  0.026812 /  1.000000
+NTOs written to 04_sr_adc_nto_S0_S1.molden
+
+Computing NTOs...
+State 0 -> State 2:
+   Sum of SVs (Omega):                0.895776
+   Participation ratio (PR_NTO):      1.003868
+   Entanglement entropy (S_HE):       0.017081
+   Nr of entangled states (Z_HE):     1.017228
+   Renormalized S_HE/Z_HE:  0.016792 /  1.000000
+NTOs written to 04_sr_adc_nto_S0_S2.molden
+
+Computing NTOs...
+State 0 -> State 3:
+   Sum of SVs (Omega):                0.904476
+   Participation ratio (PR_NTO):      1.002951
+   Entanglement entropy (S_HE):       0.013131
+   Nr of entangled states (Z_HE):     1.013218
+   Renormalized S_HE/Z_HE:  0.012960 /  1.000000
+NTOs written to 04_sr_adc_nto_S0_S3.molden
+
+Computing NTOs...
+State 0 -> State 4:
+   Sum of SVs (Omega):                0.889475
+   Participation ratio (PR_NTO):      1.123727
+   Entanglement entropy (S_HE):       0.240188
+   Nr of entangled states (Z_HE):     1.271488
+   Renormalized S_HE/Z_HE:  0.188903 /  1.000000
+NTOs written to 04_sr_adc_nto_S0_S4.molden
+
+Computing NTOs...
+State 0 -> State 5:
+   Sum of SVs (Omega):                0.906299
+   Participation ratio (PR_NTO):      1.121987
+   Entanglement entropy (S_HE):       0.226274
+   Nr of entangled states (Z_HE):     1.253919
+   Renormalized S_HE/Z_HE:  0.180453 /  1.000000
+NTOs written to 04_sr_adc_nto_S0_S5.molden

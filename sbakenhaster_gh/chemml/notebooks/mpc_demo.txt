@@ -1,0 +1,762 @@
+
+
+-------------------------Model screening started at Mon Jul  6 10:48:41 2026-------------------------
+
+
+-------------------------Run parameters-------------------------
+  Featurization: False
+  Multi_core: False
+  Screener_type: regressor
+  Number of datapoints: 500
+
+------------------------- Screening started for feature set user_given at Mon Jul  6 10:48:41 2026 -------------------------
+split done!
+Running model no: 3; Name: ElasticNet
+Running model no: 0; Name: Ridge
+ElasticNet
+
+Ridge
+
+Running model no: 1; Name: Lasso
+Running model no: 4; Name: DecisionTreeRegressor
+Lasso
+
+Running model no: 2; Name: SVR0.6)	
+DecisionTreeRegressor
+, -9.210340371976182)	
+SVR
+Lasso:(-9.210340371976182, 'auto')	DecisionTreeRegressor:('squared_error', 'best', 2, 1, -9.210340371976182)	SVR:('linear', 1.0)	
+Exception occurred for model: Lasso
+Traceback (most recent call last):
+  File "C:\Users\nitin\Documents\UB\Hachmann_Group\chemml_dev_nitin\chemml\chemml\autoML\model_screener.py", line 286, in run_model
+    scores_list.append(ga(X_train, y_train, X_test, y_test, model_name=model_name, space_final=space_final, al=3))
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nitin\Documents\UB\Hachmann_Group\chemml_dev_nitin\chemml\chemml\autoML\model_screener.py", line 255, in ga
+    best_ind_df, best_individual = gann.search(n_generations=self.n_gen, early_stopping=10)                     # set pop_size<30, n_generations*pop_size = no. of times GA runs
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nitin\Documents\UB\Hachmann_Group\chemml_dev_nitin\chemml\chemml\optimization\genetic_algorithm.py", line 364, in search
+    fitness_dict = fit_eval(pop, fitness_dict)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nitin\Documents\UB\Hachmann_Group\chemml_dev_nitin\chemml\chemml\optimization\genetic_algorithm.py", line 348, in fit_eval
+    fitnesses = list(map(self.evaluate, invalid_ind))
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nitin\Documents\UB\Hachmann_Group\chemml_dev_nitin\chemml\chemml\autoML\model_screener.py", line 250, in ga_eval
+    ga_search = single_obj(model=model, x=X_train, y=y_train)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nitin\Documents\UB\Hachmann_Group\chemml_dev_nitin\chemml\chemml\autoML\model_screener.py", line 124, in single_obj
+    model.fit(x_training, y_training)
+  File "c:\Users\nitin\miniconda3\envs\nitin_py312_env\Lib\site-packages\sklearn\base.py", line 1336, in wrapper
+    return fit_method(estimator, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "c:\Users\nitin\miniconda3\envs\nitin_py312_env\Lib\site-packages\sklearn\linear_model\_coordinate_descent.py", line 1025, in fit
+    X, y = validate_data(
+           ^^^^^^^^^^^^^^
+  File "c:\Users\nitin\miniconda3\envs\nitin_py312_env\Lib\site-packages\sklearn\utils\validation.py", line 2919, in validate_data
+    X, y = check_X_y(X, y, **check_params)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "c:\Users\nitin\miniconda3\envs\nitin_py312_env\Lib\site-packages\sklearn\utils\validation.py", line 1331, in check_X_y
+    y = _check_y(y, multi_output=multi_output, y_numeric=y_numeric, estimator=estimator)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "c:\Users\nitin\miniconda3\envs\nitin_py312_env\Lib\site-packages\sklearn\utils\validation.py", line 1341, in _check_y
+    y = check_array(
+        ^^^^^^^^^^^^
+  File "c:\Users\nitin\miniconda3\envs\nitin_py312_env\Lib\site-packages\sklearn\utils\validation.py", line 1074, in check_array
+    _assert_all_finite(
+  File "c:\Users\nitin\miniconda3\envs\nitin_py312_env\Lib\site-packages\sklearn\utils\validation.py", line 133, in _assert_all_finite
+    _assert_all_finite_element_wise(
+  File "c:\Users\nitin\miniconda3\envs\nitin_py312_env\Lib\site-packages\sklearn\utils\validation.py", line 182, in _assert_all_finite_element_wise
+    raise ValueError(msg_err)
+ValueError: Input y contains NaN.
+
+.
+
+
+Exception occurred for model: SVR
+Traceback (most recent call last):
+  File "C:\Users\nitin\Documents\UB\Hachmann_Group\chemml_dev_nitin\chemml\chemml\autoML\model_screener.py", line 286, in run_model
+    scores_list.append(ga(X_train, y_train, X_test, y_test, model_name=model_name, space_final=space_final, al=3))
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nitin\Documents\UB\Hachmann_Group\chemml_dev_nitin\chemml\chemml\autoML\model_screener.py", line 255, in ga
+    best_ind_df, best_individual = gann.search(n_generations=self.n_gen, early_stopping=10)                     # set pop_size<30, n_generations*pop_size = no. of times GA runs
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nitin\Documents\UB\Hachmann_Group\chemml_dev_nitin\chemml\chemml\optimization\genetic_algorithm.py", line 364, in search
+    fitness_dict = fit_eval(pop, fitness_dict)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nitin\Documents\UB\Hachmann_Group\chemml_dev_nitin\chemml\chemml\optimization\genetic_algorithm.py", line 348, in fit_eval
+    fitnesses = list(map(self.evaluate, invalid_ind))
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nitin\Documents\UB\Hachmann_Group\chemml_dev_nitin\chemml\chemml\autoML\model_screener.py", line 250, in ga_eval
+    ga_search = single_obj(model=model, x=X_train, y=y_train)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nitin\Documents\UB\Hachmann_Group\chemml_dev_nitin\chemml\chemml\autoML\model_screener.py", line 124, in single_obj
+    model.fit(x_training, y_training)
+  File "c:\Users\nitin\miniconda3\envs\nitin_py312_env\Lib\site-packages\sklearn\base.py", line 1336, in wrapper
+    return fit_method(estimator, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "c:\Users\nitin\miniconda3\envs\nitin_py312_env\Lib\site-packages\sklearn\svm\_base.py", line 205, in fit
+    X, y = validate_data(
+           ^^^^^^^^^^^^^^
+  File "c:\Users\nitin\miniconda3\envs\nitin_py312_env\Lib\site-packages\sklearn\utils\validation.py", line 2919, in validate_data
+    X, y = check_X_y(X, y, **check_params)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "c:\Users\nitin\miniconda3\envs\nitin_py312_env\Lib\site-packages\sklearn\utils\validation.py", line 1331, in check_X_y
+    y = _check_y(y, multi_output=multi_output, y_numeric=y_numeric, estimator=estimator)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "c:\Users\nitin\miniconda3\envs\nitin_py312_env\Lib\site-packages\sklearn\utils\validation.py", line 1353, in _check_y
+    _assert_all_finite(y, input_name="y", estimator_name=estimator_name)
+  File "c:\Users\nitin\miniconda3\envs\nitin_py312_env\Lib\site-packages\sklearn\utils\validation.py", line 133, in _assert_all_finite
+    _assert_all_finite_element_wise(
+  File "c:\Users\nitin\miniconda3\envs\nitin_py312_env\Lib\site-packages\sklearn\utils\validation.py", line 182, in _assert_all_finite_element_wise
+    raise ValueError(msg_err)
+ValueError: Input y contains NaN.
+
+
+Exception occurred for model: DecisionTreeRegressor
+Traceback (most recent call last):
+  File "C:\Users\nitin\Documents\UB\Hachmann_Group\chemml_dev_nitin\chemml\chemml\autoML\model_screener.py", line 286, in run_model
+    scores_list.append(ga(X_train, y_train, X_test, y_test, model_name=model_name, space_final=space_final, al=3))
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nitin\Documents\UB\Hachmann_Group\chemml_dev_nitin\chemml\chemml\autoML\model_screener.py", line 255, in ga
+    best_ind_df, best_individual = gann.search(n_generations=self.n_gen, early_stopping=10)                     # set pop_size<30, n_generations*pop_size = no. of times GA runs
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nitin\Documents\UB\Hachmann_Group\chemml_dev_nitin\chemml\chemml\optimization\genetic_algorithm.py", line 364, in search
+    fitness_dict = fit_eval(pop, fitness_dict)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nitin\Documents\UB\Hachmann_Group\chemml_dev_nitin\chemml\chemml\optimization\genetic_algorithm.py", line 348, in fit_eval
+    fitnesses = list(map(self.evaluate, invalid_ind))
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nitin\Documents\UB\Hachmann_Group\chemml_dev_nitin\chemml\chemml\autoML\model_screener.py", line 250, in ga_eval
+    ga_search = single_obj(model=model, x=X_train, y=y_train)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nitin\Documents\UB\Hachmann_Group\chemml_dev_nitin\chemml\chemml\autoML\model_screener.py", line 124, in single_obj
+    model.fit(x_training, y_training)
+  File "c:\Users\nitin\miniconda3\envs\nitin_py312_env\Lib\site-packages\sklearn\base.py", line 1336, in wrapper
+    return fit_method(estimator, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "c:\Users\nitin\miniconda3\envs\nitin_py312_env\Lib\site-packages\sklearn\tree\_classes.py", line 1407, in fit
+    super()._fit(
+  File "c:\Users\nitin\miniconda3\envs\nitin_py312_env\Lib\site-packages\sklearn\tree\_classes.py", line 255, in _fit
+    X, y = validate_data(
+           ^^^^^^^^^^^^^^
+  File "c:\Users\nitin\miniconda3\envs\nitin_py312_env\Lib\site-packages\sklearn\utils\validation.py", line 2917, in validate_data
+    y = check_array(y, input_name="y", **check_y_params)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "c:\Users\nitin\miniconda3\envs\nitin_py312_env\Lib\site-packages\sklearn\utils\validation.py", line 1074, in check_array
+    _assert_all_finite(
+  File "c:\Users\nitin\miniconda3\envs\nitin_py312_env\Lib\site-packages\sklearn\utils\validation.py", line 133, in _assert_all_finite
+    _assert_all_finite_element_wise(
+  File "c:\Users\nitin\miniconda3\envs\nitin_py312_env\Lib\site-packages\sklearn\utils\validation.py", line 182, in _assert_all_finite_element_wise
+    raise ValueError(msg_err)
+ValueError: Input y contains NaN.
+
+Single-core complete 
+
+------------------------- Screening complete for feature set user_given, time taken: 7.528 seconds -------------------------
+
+
+-------------------------Model screening started at Mon Jul  6 10:50:33 2026-------------------------
+
+
+-------------------------Run parameters-------------------------
+  Featurization: False
+  Multi_core: False
+  Screener_type: regressor
+  Number of datapoints: 500
+
+------------------------- Screening started for feature set user_given at Mon Jul  6 10:50:33 2026 -------------------------
+split done!
+Running model no: 3; Name: ElasticNet
+ElasticNet
+
+Running model no: 1; Name: LassoElasticNet:(-9.210340371976182, 0.4)	
+Running model no: 0; Name: Ridge
+Lasso
+
+Ridge
+Lasso:(-9.210340371976182, 'svd')	Ridge:(117.7, -9.210340371976182)	
+Exception occurred for model: ElasticNet
+Traceback (most recent call last):
+  File "C:\Users\nitin\Documents\UB\Hachmann_Group\chemml_dev_nitin\chemml\chemml\autoML\model_screener.py", line 286, in run_model
+    scores_list.append(ga(X_train, y_train, X_test, y_test, model_name=model_name, space_final=space_final, al=3))
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nitin\Documents\UB\Hachmann_Group\chemml_dev_nitin\chemml\chemml\autoML\model_screener.py", line 255, in ga
+    best_ind_df, best_individual = gann.search(n_generations=self.n_gen, early_stopping=10)                     # set pop_size<30, n_generations*pop_size = no. of times GA runs
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nitin\Documents\UB\Hachmann_Group\chemml_dev_nitin\chemml\chemml\optimization\genetic_algorithm.py", line 364, in search
+    fitness_dict = fit_eval(pop, fitness_dict)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nitin\Documents\UB\Hachmann_Group\chemml_dev_nitin\chemml\chemml\optimization\genetic_algorithm.py", line 348, in fit_eval
+    fitnesses = list(map(self.evaluate, invalid_ind))
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nitin\Documents\UB\Hachmann_Group\chemml_dev_nitin\chemml\chemml\autoML\model_screener.py", line 250, in ga_eval
+    ga_search = single_obj(model=model, x=X_train, y=y_train)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nitin\Documents\UB\Hachmann_Group\chemml_dev_nitin\chemml\chemml\autoML\model_screener.py", line 124, in single_obj
+    model.fit(x_training, y_training)
+  File "c:\Users\nitin\miniconda3\envs\nitin_py312_env\Lib\site-packages\sklearn\base.py", line 1336, in wrapper
+    return fit_method(estimator, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "c:\Users\nitin\miniconda3\envs\nitin_py312_env\Lib\site-packages\sklearn\linear_model\_coordinate_descent.py", line 1025, in fit
+    X, y = validate_data(
+           ^^^^^^^^^^^^^^
+  File "c:\Users\nitin\miniconda3\envs\nitin_py312_env\Lib\site-packages\sklearn\utils\validation.py", line 2919, in validate_data
+    X, y = check_X_y(X, y, **check_params)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "c:\Users\nitin\miniconda3\envs\nitin_py312_env\Lib\site-packages\sklearn\utils\validation.py", line 1331, in check_X_y
+    y = _check_y(y, multi_output=multi_output, y_numeric=y_numeric, estimator=estimator)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "c:\Users\nitin\miniconda3\envs\nitin_py312_env\Lib\site-packages\sklearn\utils\validation.py", line 1341, in _check_y
+    y = check_array(
+        ^^^^^^^^^^^^
+  File "c:\Users\nitin\miniconda3\envs\nitin_py312_env\Lib\site-packages\sklearn\utils\validation.py", line 1074, in check_array
+    _assert_all_finite(
+  File "c:\Users\nitin\miniconda3\envs\nitin_py312_env\Lib\site-packages\sklearn\utils\validation.py", line 133, in _assert_all_finite
+    _assert_all_finite_element_wise(
+  File "c:\Users\nitin\miniconda3\envs\nitin_py312_env\Lib\site-packages\sklearn\utils\validation.py", line 182, in _assert_all_finite_element_wise
+    raise ValueError(msg_err)
+ValueError: Input y contains NaN.
+
+
+Exception occurred for model: Ridge
+Traceback (most recent call last):
+  File "C:\Users\nitin\Documents\UB\Hachmann_Group\chemml_dev_nitin\chemml\chemml\autoML\model_screener.py", line 286, in run_model
+    scores_list.append(ga(X_train, y_train, X_test, y_test, model_name=model_name, space_final=space_final, al=3))
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nitin\Documents\UB\Hachmann_Group\chemml_dev_nitin\chemml\chemml\autoML\model_screener.py", line 255, in ga
+    best_ind_df, best_individual = gann.search(n_generations=self.n_gen, early_stopping=10)                     # set pop_size<30, n_generations*pop_size = no. of times GA runs
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nitin\Documents\UB\Hachmann_Group\chemml_dev_nitin\chemml\chemml\optimization\genetic_algorithm.py", line 364, in search
+    fitness_dict = fit_eval(pop, fitness_dict)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nitin\Documents\UB\Hachmann_Group\chemml_dev_nitin\chemml\chemml\optimization\genetic_algorithm.py", line 348, in fit_eval
+    fitnesses = list(map(self.evaluate, invalid_ind))
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nitin\Documents\UB\Hachmann_Group\chemml_dev_nitin\chemml\chemml\autoML\model_screener.py", line 250, in ga_eval
+    ga_search = single_obj(model=model, x=X_train, y=y_train)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nitin\Documents\UB\Hachmann_Group\chemml_dev_nitin\chemml\chemml\autoML\model_screener.py", line 124, in single_obj
+    model.fit(x_training, y_training)
+  File "c:\Users\nitin\miniconda3\envs\nitin_py312_env\Lib\site-packages\sklearn\base.py", line 1336, in wrapper
+    return fit_method(estimator, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "c:\Users\nitin\miniconda3\envs\nitin_py312_env\Lib\site-packages\sklearn\linear_model\_ridge.py", line 1254, in fit
+    X, y = validate_data(
+           ^^^^^^^^^^^^^^
+  File "c:\Users\nitin\miniconda3\envs\nitin_py312_env\Lib\site-packages\sklearn\utils\validation.py", line 2919, in validate_data
+    X, y = check_X_y(X, y, **check_params)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "c:\Users\nitin\miniconda3\envs\nitin_py312_env\Lib\site-packages\sklearn\utils\validation.py", line 1331, in check_X_y
+    y = _check_y(y, multi_output=multi_output, y_numeric=y_numeric, estimator=estimator)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "c:\Users\nitin\miniconda3\envs\nitin_py312_env\Lib\site-packages\sklearn\utils\validation.py", line 1341, in _check_y
+    y = check_array(
+        ^^^^^^^^^^^^
+  File "c:\Users\nitin\miniconda3\envs\nitin_py312_env\Lib\site-packages\sklearn\utils\validation.py", line 1074, in check_array
+    _assert_all_finite(
+  File "c:\Users\nitin\miniconda3\envs\nitin_py312_env\Lib\site-packages\sklearn\utils\validation.py", line 133, in _assert_all_finite
+    _assert_all_finite_element_wise(
+  File "c:\Users\nitin\miniconda3\envs\nitin_py312_env\Lib\site-packages\sklearn\utils\validation.py", line 182, in _assert_all_finite_element_wise
+    raise ValueError(msg_err)
+ValueError: Input y contains NaN.
+
+
+Exception occurred for model: Lasso
+Traceback (most recent call last):
+  File "C:\Users\nitin\Documents\UB\Hachmann_Group\chemml_dev_nitin\chemml\chemml\autoML\model_screener.py", line 286, in run_model
+    scores_list.append(ga(X_train, y_train, X_test, y_test, model_name=model_name, space_final=space_final, al=3))
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nitin\Documents\UB\Hachmann_Group\chemml_dev_nitin\chemml\chemml\autoML\model_screener.py", line 255, in ga
+    best_ind_df, best_individual = gann.search(n_generations=self.n_gen, early_stopping=10)                     # set pop_size<30, n_generations*pop_size = no. of times GA runs
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nitin\Documents\UB\Hachmann_Group\chemml_dev_nitin\chemml\chemml\optimization\genetic_algorithm.py", line 364, in search
+    fitness_dict = fit_eval(pop, fitness_dict)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nitin\Documents\UB\Hachmann_Group\chemml_dev_nitin\chemml\chemml\optimization\genetic_algorithm.py", line 348, in fit_eval
+    fitnesses = list(map(self.evaluate, invalid_ind))
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nitin\Documents\UB\Hachmann_Group\chemml_dev_nitin\chemml\chemml\autoML\model_screener.py", line 250, in ga_eval
+    ga_search = single_obj(model=model, x=X_train, y=y_train)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nitin\Documents\UB\Hachmann_Group\chemml_dev_nitin\chemml\chemml\autoML\model_screener.py", line 124, in single_obj
+    model.fit(x_training, y_training)
+  File "c:\Users\nitin\miniconda3\envs\nitin_py312_env\Lib\site-packages\sklearn\base.py", line 1336, in wrapper
+    return fit_method(estimator, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "c:\Users\nitin\miniconda3\envs\nitin_py312_env\Lib\site-packages\sklearn\linear_model\_coordinate_descent.py", line 1025, in fit
+    X, y = validate_data(
+           ^^^^^^^^^^^^^^
+  File "c:\Users\nitin\miniconda3\envs\nitin_py312_env\Lib\site-packages\sklearn\utils\validation.py", line 2919, in validate_data
+    X, y = check_X_y(X, y, **check_params)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "c:\Users\nitin\miniconda3\envs\nitin_py312_env\Lib\site-packages\sklearn\utils\validation.py", line 1331, in check_X_y
+    y = _check_y(y, multi_output=multi_output, y_numeric=y_numeric, estimator=estimator)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "c:\Users\nitin\miniconda3\envs\nitin_py312_env\Lib\site-packages\sklearn\utils\validation.py", line 1341, in _check_y
+    y = check_array(
+        ^^^^^^^^^^^^
+  File "c:\Users\nitin\miniconda3\envs\nitin_py312_env\Lib\site-packages\sklearn\utils\validation.py", line 1074, in check_array
+    _assert_all_finite(
+  File "c:\Users\nitin\miniconda3\envs\nitin_py312_env\Lib\site-packages\sklearn\utils\validation.py", line 133, in _assert_all_finite
+    _assert_all_finite_element_wise(
+  File "c:\Users\nitin\miniconda3\envs\nitin_py312_env\Lib\site-packages\sklearn\utils\validation.py", line 182, in _assert_all_finite_element_wise
+    raise ValueError(msg_err)
+ValueError: Input y contains NaN.
+
+
+Running model no: 4; Name: DecisionTreeRegressor
+DecisionTreeRegressor
+DecisionTreeRegressor:('squared_error', 'random', 12, 71, -9.210340371976182)	
+Running model no: 2; Name: SVR
+SVR
+SVR:('rbf', 1.0)	
+Exception occurred for model: SVR
+Traceback (most recent call last):
+  File "C:\Users\nitin\Documents\UB\Hachmann_Group\chemml_dev_nitin\chemml\chemml\autoML\model_screener.py", line 286, in run_model
+    scores_list.append(ga(X_train, y_train, X_test, y_test, model_name=model_name, space_final=space_final, al=3))
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nitin\Documents\UB\Hachmann_Group\chemml_dev_nitin\chemml\chemml\autoML\model_screener.py", line 255, in ga
+    best_ind_df, best_individual = gann.search(n_generations=self.n_gen, early_stopping=10)                     # set pop_size<30, n_generations*pop_size = no. of times GA runs
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nitin\Documents\UB\Hachmann_Group\chemml_dev_nitin\chemml\chemml\optimization\genetic_algorithm.py", line 364, in search
+    fitness_dict = fit_eval(pop, fitness_dict)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nitin\Documents\UB\Hachmann_Group\chemml_dev_nitin\chemml\chemml\optimization\genetic_algorithm.py", line 348, in fit_eval
+    fitnesses = list(map(self.evaluate, invalid_ind))
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nitin\Documents\UB\Hachmann_Group\chemml_dev_nitin\chemml\chemml\autoML\model_screener.py", line 250, in ga_eval
+    ga_search = single_obj(model=model, x=X_train, y=y_train)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nitin\Documents\UB\Hachmann_Group\chemml_dev_nitin\chemml\chemml\autoML\model_screener.py", line 124, in single_obj
+    model.fit(x_training, y_training)
+  File "c:\Users\nitin\miniconda3\envs\nitin_py312_env\Lib\site-packages\sklearn\base.py", line 1336, in wrapper
+    return fit_method(estimator, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "c:\Users\nitin\miniconda3\envs\nitin_py312_env\Lib\site-packages\sklearn\svm\_base.py", line 205, in fit
+    X, y = validate_data(
+           ^^^^^^^^^^^^^^
+  File "c:\Users\nitin\miniconda3\envs\nitin_py312_env\Lib\site-packages\sklearn\utils\validation.py", line 2919, in validate_data
+    X, y = check_X_y(X, y, **check_params)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "c:\Users\nitin\miniconda3\envs\nitin_py312_env\Lib\site-packages\sklearn\utils\validation.py", line 1331, in check_X_y
+    y = _check_y(y, multi_output=multi_output, y_numeric=y_numeric, estimator=estimator)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "c:\Users\nitin\miniconda3\envs\nitin_py312_env\Lib\site-packages\sklearn\utils\validation.py", line 1353, in _check_y
+    _assert_all_finite(y, input_name="y", estimator_name=estimator_name)
+  File "c:\Users\nitin\miniconda3\envs\nitin_py312_env\Lib\site-packages\sklearn\utils\validation.py", line 133, in _assert_all_finite
+    _assert_all_finite_element_wise(
+  File "c:\Users\nitin\miniconda3\envs\nitin_py312_env\Lib\site-packages\sklearn\utils\validation.py", line 182, in _assert_all_finite_element_wise
+    raise ValueError(msg_err)
+ValueError: Input y contains NaN.
+
+
+Exception occurred for model: DecisionTreeRegressor
+Traceback (most recent call last):
+  File "C:\Users\nitin\Documents\UB\Hachmann_Group\chemml_dev_nitin\chemml\chemml\autoML\model_screener.py", line 286, in run_model
+    scores_list.append(ga(X_train, y_train, X_test, y_test, model_name=model_name, space_final=space_final, al=3))
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nitin\Documents\UB\Hachmann_Group\chemml_dev_nitin\chemml\chemml\autoML\model_screener.py", line 255, in ga
+    best_ind_df, best_individual = gann.search(n_generations=self.n_gen, early_stopping=10)                     # set pop_size<30, n_generations*pop_size = no. of times GA runs
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nitin\Documents\UB\Hachmann_Group\chemml_dev_nitin\chemml\chemml\optimization\genetic_algorithm.py", line 364, in search
+    fitness_dict = fit_eval(pop, fitness_dict)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nitin\Documents\UB\Hachmann_Group\chemml_dev_nitin\chemml\chemml\optimization\genetic_algorithm.py", line 348, in fit_eval
+    fitnesses = list(map(self.evaluate, invalid_ind))
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nitin\Documents\UB\Hachmann_Group\chemml_dev_nitin\chemml\chemml\autoML\model_screener.py", line 250, in ga_eval
+    ga_search = single_obj(model=model, x=X_train, y=y_train)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nitin\Documents\UB\Hachmann_Group\chemml_dev_nitin\chemml\chemml\autoML\model_screener.py", line 124, in single_obj
+    model.fit(x_training, y_training)
+  File "c:\Users\nitin\miniconda3\envs\nitin_py312_env\Lib\site-packages\sklearn\base.py", line 1336, in wrapper
+    return fit_method(estimator, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "c:\Users\nitin\miniconda3\envs\nitin_py312_env\Lib\site-packages\sklearn\tree\_classes.py", line 1407, in fit
+    super()._fit(
+  File "c:\Users\nitin\miniconda3\envs\nitin_py312_env\Lib\site-packages\sklearn\tree\_classes.py", line 255, in _fit
+    X, y = validate_data(
+           ^^^^^^^^^^^^^^
+  File "c:\Users\nitin\miniconda3\envs\nitin_py312_env\Lib\site-packages\sklearn\utils\validation.py", line 2917, in validate_data
+    y = check_array(y, input_name="y", **check_y_params)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "c:\Users\nitin\miniconda3\envs\nitin_py312_env\Lib\site-packages\sklearn\utils\validation.py", line 1074, in check_array
+    _assert_all_finite(
+  File "c:\Users\nitin\miniconda3\envs\nitin_py312_env\Lib\site-packages\sklearn\utils\validation.py", line 133, in _assert_all_finite
+    _assert_all_finite_element_wise(
+  File "c:\Users\nitin\miniconda3\envs\nitin_py312_env\Lib\site-packages\sklearn\utils\validation.py", line 182, in _assert_all_finite_element_wise
+    raise ValueError(msg_err)
+ValueError: Input y contains NaN.
+
+Single-core complete 
+
+------------------------- Screening complete for feature set user_given, time taken: 6.183 seconds -------------------------
+
+
+-------------------------Model screening started at Mon Jul  6 10:52:44 2026-------------------------
+
+
+-------------------------Run parameters-------------------------
+  Featurization: False
+  Multi_core: False
+  Screener_type: regressor
+  Number of datapoints: 500
+
+------------------------- Screening started for feature set user_given at Mon Jul  6 10:52:44 2026 -------------------------
+split done!
+Running model no: 2; Name: SVR
+Running model no: 4; Name: DecisionTreeRegressor
+DecisionTreeRegressor
+SVR:('linear', 1.0)	DecisionTreeRegressor:('absolute_error', 'random', 2, 1, -9.210340371976182)	
+Running model no: 0; Name: Ridge
+Running model no: 1; Name: Lasso
+Ridge
+ model no: 3; Name: ElasticNet
+Lasso
+
+ElasticNet
+Ridge:(152.0, -9.210340371976182)	Lasso:(-9.210340371976182, 'auto')	ElasticNet:(-9.210340371976182, 0.5)	Ridge:(63.800000000000004, -8.846774304661333)	Ridge:(186.3, -8.483208237346483)	Lasso:(-8.846774304661333, 'svd')	ElasticNet:(-8.846774304661333, 0.6)	Ridge:(147.1, -8.119642170031634)	Ridge:(142.20000000000002, -7.756076102716785)	Ridge:(24.6, -7.392510035401935)	ElasticNet:(-8.483208237346483, 0.6)	Lasso:(-8.483208237346483, 'svd')	Ridge:(117.7, -7.028943968087086)	Ridge:(14.8, -6.665377900772237)	Ridge:(103.0, -6.301811833457387)	Lasso:(-8.119642170031634, 'eigen')	ElasticNet:(-8.119642170031634, 0.6)	Ridge:(24.6, -5.938245766142538)	DecisionTreeRegressor:('absolute_error', 'best', 32, 71, -8.846774304661333)	Ridge:(161.8, -5.574679698827689)	Ridge:(98.1, -5.2111136315128395)	Ridge:(58.900000000000006, -4.84754756419799)	ElasticNet:(-7.756076102716785, 0.6)	Ridge:(78.5, -4.483981496883141)	Ridge:(147.1, -4.1204154295682915)	DecisionTreeRegressor:('poisson', 'random', 12, 1, -8.483208237346483)	
+Exception occurred for model: DecisionTreeRegressor
+Traceback (most recent call last):
+  File "C:\Users\nitin\Documents\UB\Hachmann_Group\chemml_dev_nitin\chemml\chemml\autoML\model_screener.py", line 286, in run_model
+    scores_list.append(ga(X_train, y_train, X_test, y_test, model_name=model_name, space_final=space_final, al=3))
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nitin\Documents\UB\Hachmann_Group\chemml_dev_nitin\chemml\chemml\autoML\model_screener.py", line 255, in ga
+    best_ind_df, best_individual = gann.search(n_generations=self.n_gen, early_stopping=10)                     # set pop_size<30, n_generations*pop_size = no. of times GA runs
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nitin\Documents\UB\Hachmann_Group\chemml_dev_nitin\chemml\chemml\optimization\genetic_algorithm.py", line 364, in search
+    fitness_dict = fit_eval(pop, fitness_dict)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nitin\Documents\UB\Hachmann_Group\chemml_dev_nitin\chemml\chemml\optimization\genetic_algorithm.py", line 348, in fit_eval
+    fitnesses = list(map(self.evaluate, invalid_ind))
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nitin\Documents\UB\Hachmann_Group\chemml_dev_nitin\chemml\chemml\autoML\model_screener.py", line 250, in ga_eval
+    ga_search = single_obj(model=model, x=X_train, y=y_train)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nitin\Documents\UB\Hachmann_Group\chemml_dev_nitin\chemml\chemml\autoML\model_screener.py", line 124, in single_obj
+    model.fit(x_training, y_training)
+  File "c:\Users\nitin\miniconda3\envs\nitin_py312_env\Lib\site-packages\sklearn\base.py", line 1336, in wrapper
+    return fit_method(estimator, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "c:\Users\nitin\miniconda3\envs\nitin_py312_env\Lib\site-packages\sklearn\tree\_classes.py", line 1407, in fit
+    super()._fit(
+  File "c:\Users\nitin\miniconda3\envs\nitin_py312_env\Lib\site-packages\sklearn\tree\_classes.py", line 272, in _fit
+    raise ValueError(
+ValueError: Some value(s) of y are negative which is not allowed for Poisson regression.
+
+Ridge:(9.9, -3.7568493622534422)	Lasso:(-7.392510035401935, 'eigen')	ElasticNet:(-7.392510035401935, 0.6)	Ridge:(14.8, -3.393283294938593)	Ridge:(34.400000000000006, -3.0297172276237436)	Ridge:(127.5, -2.6661511603088943)	ElasticNet:(-7.028943968087086, 0.5)	Lasso:(-7.028943968087086, 'auto')	Ridge:(122.60000000000001, -2.3025850929940455)	Ridge:(68.7, -3.965604768656275)	ElasticNet:(-6.665377900772237, 0.5)	Ridge:(19.700000000000003, -3.9583009552198307)	Lasso:(-6.665377900772237, 'eigen')	Ridge:(171.6, -8.119642170031634)	Ridge:(73.6, -7.134481933763133)	ElasticNet:(-6.301811833457387, 0.5)	Lasso:(-6.301811833457387, 'eigen')	Ridge:(19.700000000000003, -5.479879926076041)	Ridge:(54.00000000000001, -8.119642170031634)	Ridge:(137.3, -8.261677547977454)	ElasticNet:(-5.938245766142538, 0.7)	Lasso:(-5.938245766142538, 'eigen')	Ridge:(181.4, -8.801695105588138)	Ridge:(73.6, -9.070246394189503)	Ridge:(122.60000000000001, -8.926937227517568)	ElasticNet:(-5.574679698827689, 0.5)	Lasso:(-5.574679698827689, 'svd')	Ridge:(24.6, -8.497119126618827)	Ridge:(58.900000000000006, -8.801695105588138)	ElasticNet:(-5.2111136315128395, 0.4)	Ridge:(161.8, -8.261143256292764)	Lasso:(-5.2111136315128395, 'auto')	Ridge:(34.400000000000006, -8.503101562199591)	Ridge:(147.1, -8.322578456452069)	ElasticNet:(-4.84754756419799, 0.4)	Ridge:(29.500000000000004, -8.775979841158172)	Lasso:(-4.84754756419799, 'eigen')	Ridge:(54.00000000000001, -8.430270277689095)	Ridge:(152.0, -9.152818763288433)	ElasticNet:(-4.483981496883141, 0.6)	Lasso:(-4.483981496883141, 'svd')	Ridge:(191.20000000000002, -8.852404449478788)	Ridge:(88.3, -8.631060969605766)	Ridge:(103.0, -5.574679698827689)	Lasso:(-4.1204154295682915, 'svd')	ElasticNet:(-4.1204154295682915, 0.5)	Ridge:(142.20000000000002, -8.886848611666005)	Ridge:(103.0, -8.814585729409858)	Ridge:(88.3, -7.897884138432441)	Lasso:(-3.7568493622534422, 'eigen')	ElasticNet:(-3.7568493622534422, 0.5)	Ridge:(107.9, -8.824211048223685)	Ridge:(93.2, -8.697539042043184)	Ridge:(63.800000000000004, -9.032934937836057)	Lasso:(-3.393283294938593, 'eigen')	ElasticNet:(-3.393283294938593, 0.5)	Ridge:(49.1, -6.968422034594513)	Ridge:(49.1, -6.165064981808969)	Lasso:(-3.0297172276237436, 'eigen')	Ridge:(186.3, -8.824211048223685)	ElasticNet:(-3.0297172276237436, 0.5)	Ridge: GeneticAlgorithm - completeModel: Ridge
+GA time(hours): 0.0005729350116517809
+Lasso:(-2.6661511603088943, 'auto')	ElasticNet:(-2.6661511603088943, 0.7)	Lasso:(-2.3025850929940455, 'svd')	ElasticNet:(-2.3025850929940455, 0.5)	Lasso:(-6.928935677688178, 'eigen')	ElasticNet:(-5.509538757203706, 0.6)	Lasso:(-2.6222476258366134, 'auto')	ElasticNet:(-6.477869679058801, 0.7)	Lasso:(-4.937707132342446, 'eigen')	ElasticNet:(-8.839108701572737, 0.7)	Lasso:(-8.601897871384875, 'eigen')	ElasticNet:(-7.3784719612779455, 0.6)	--------------------------------------------------------------------------------
+------------------------- Ridge search complete, time taken: 2.722 seconds ------------------------ 
+Lasso:(-6.272848294419602, 'eigen')	ElasticNet:(-6.155377190643356, 0.5)	Lasso:(-8.119642170031634, 'auto')	ElasticNet:(-4.087785747077938, 0.7)	Lasso:(-7.430155547043638, 'svd')	ElasticNet:(-3.3399217896400533, 0.4)	Lasso:(-6.893575706122762, 'auto')	ElasticNet:(-4.856679141349874, 0.7)	Lasso:(-7.726575685244961, 'eigen')	ElasticNet:(-9.182652498566238, 0.5)	Lasso:(-7.180178931388535, 'eigen')	ElasticNet:(-5.547448473342478, 0.4)	Lasso:(-7.490142937779639, 'auto')	ElasticNet:(-3.593112996474685, 0.5)	Lasso:(-6.983340056371151, 'auto')	ElasticNet:(-4.610421209449686, 0.6)	Lasso:(-7.176863575655012, 'eigen')	ElasticNet:(-6.897529857400271, 0.5)	Lasso:(-7.401504282932993, 'svd')	ElasticNet:(-8.522238495384611, 0.7)	Lasso:(-6.191524918302639, 'eigen')	ElasticNet:(-9.210340371976182, 0.4)	Lasso:(-7.39299719678485, 'eigen')	ElasticNet:(-8.822531105265709, 0.5)	Lasso:(-7.3934394380938535, 'svd')	ElasticNet:(-8.741451126398328, 0.7)	Lasso:(-7.028943968087086, 'svd')	ElasticNet:(-5.2111136315128395, 0.6)	ElasticNet:(-4.443160141177481, 0.4)	Lasso:(-7.321250649770933, 'eigen')	ElasticNet:(-6.785413665751404, 0.7)	Lasso:(-7.399578842071741, 'eigen')	ElasticNet:(-8.318218003690305, 0.5)	Lasso:(-9.197244597144502, 'auto')	ElasticNet:(-3.519324518700765, 0.7)	Lasso:(-7.420182529571792, 'svd')	ElasticNet:(-6.571024240288001, 0.6)	Lasso:(-7.41279047125891, 'eigen')	ElasticNet:(-9.203355729435271, 0.6)	Lasso:(-8.045687173217726, 'svd')	ElasticNet:(-8.881996698770575, 0.6)	Lasso:(-7.392942089723296, 'svd')	ElasticNet:(-8.853980051868717, 0.5)	Lasso:(-7.398188163007523, 'auto')	ElasticNet:(-8.842445095872147, 0.5)	Lasso:(-7.392510035401935, 'auto')	ElasticNet:(-9.048552386593691, 0.4)	Lasso:(-7.445952317780087, 'auto')	ElasticNet:(-8.914161653187524, 0.5)	Lasso:(-7.425352808835187, 'svd')	ElasticNet:(-6.7981767429559445, 0.7)	Lasso:(-7.3401257990800195, 'auto')	ElasticNet: GeneticAlgorithm - completeLasso: GeneticAlgorithm - completeModel: ElasticNet
+GA time(hours): 0.001564258999294705
+--------------------------------------------------------------------------------
+------------------------- ElasticNet search complete, time taken: 5.668 seconds ------------------------ 
+Model: Lasso
+GA time(hours): 0.001568205157915751
+--------------------------------------------------------------------------------
+------------------------- Lasso search complete, time taken: 5.678 seconds ------------------------ 
+
+
+-------------------------Model screening started at Mon Jul  6 10:56:23 2026-------------------------
+
+
+-------------------------Run parameters-------------------------
+  Featurization: False
+  Multi_core: False
+  Screener_type: regressor
+  Number of datapoints: 500
+
+------------------------- Screening started for feature set user_given at Mon Jul  6 10:56:23 2026 -------------------------
+split done!
+Running model no: 3; Name: ElasticNet
+ElasticNet
+ElasticNet:(-9.210340371976182, 0.5)	
+Running model no: 0; Name: Ridge
+Ridge
+
+Running model no: 1; Name: Lasso
+Running model no: 2; Name: SVRRidge:(156.9, -9.210340371976182)	
+Lasso
+SVR:('poly', 1.0)	Lasso:(-9.210340371976182, 'auto')	
+Running model no: 4; Name: DecisionTreeRegressor
+DecisionTreeRegressor
+DecisionTreeRegressor:('poisson', 'best', 12, 71, -9.210340371976182)	Ridge:(78.5, -8.846774304661333)	SVR:('rbf', 6.2105263157894735)	
+Exception occurred for model: DecisionTreeRegressor
+Traceback (most recent call last):
+  File "C:\Users\nitin\Documents\UB\Hachmann_Group\chemml_dev_nitin\chemml\chemml\autoML\model_screener.py", line 286, in run_model
+    scores_list.append(ga(X_train, y_train, X_test, y_test, model_name=model_name, space_final=space_final, al=3))
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nitin\Documents\UB\Hachmann_Group\chemml_dev_nitin\chemml\chemml\autoML\model_screener.py", line 255, in ga
+    best_ind_df, best_individual = gann.search(n_generations=self.n_gen, early_stopping=10)                     # set pop_size<30, n_generations*pop_size = no. of times GA runs
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nitin\Documents\UB\Hachmann_Group\chemml_dev_nitin\chemml\chemml\optimization\genetic_algorithm.py", line 364, in search
+    fitness_dict = fit_eval(pop, fitness_dict)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nitin\Documents\UB\Hachmann_Group\chemml_dev_nitin\chemml\chemml\optimization\genetic_algorithm.py", line 348, in fit_eval
+    fitnesses = list(map(self.evaluate, invalid_ind))
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nitin\Documents\UB\Hachmann_Group\chemml_dev_nitin\chemml\chemml\autoML\model_screener.py", line 250, in ga_eval
+    ga_search = single_obj(model=model, x=X_train, y=y_train)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nitin\Documents\UB\Hachmann_Group\chemml_dev_nitin\chemml\chemml\autoML\model_screener.py", line 124, in single_obj
+    model.fit(x_training, y_training)
+  File "c:\Users\nitin\miniconda3\envs\nitin_py312_env\Lib\site-packages\sklearn\base.py", line 1336, in wrapper
+    return fit_method(estimator, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "c:\Users\nitin\miniconda3\envs\nitin_py312_env\Lib\site-packages\sklearn\tree\_classes.py", line 1407, in fit
+    super()._fit(
+  File "c:\Users\nitin\miniconda3\envs\nitin_py312_env\Lib\site-packages\sklearn\tree\_classes.py", line 272, in _fit
+    raise ValueError(
+ValueError: Some value(s) of y are negative which is not allowed for Poisson regression.
+
+Ridge:(73.6, -8.483208237346483)	Ridge:(196.1, -8.119642170031634)	SVR:('poly', 11.421052631578947)	Lasso:(-8.846774304661333, 'auto')	ElasticNet:(-8.846774304661333, 0.5)	Ridge:(152.0, -7.756076102716785)	SVR:('poly', 16.63157894736842)	Ridge:(14.8, -7.392510035401935)	Ridge:(161.8, -7.028943968087086)	SVR:('linear', 21.842105263157894)	Lasso:(-8.483208237346483, 'auto')	ElasticNet:(-8.483208237346483, 0.5)	Ridge:(29.500000000000004, -6.665377900772237)	Ridge:(83.4, -6.301811833457387)	Ridge:(156.9, -5.938245766142538)	Lasso:(-8.119642170031634, 'auto')	Ridge:(196.1, -5.574679698827689)	ElasticNet:(-8.119642170031634, 0.5)	Ridge:(29.500000000000004, -5.2111136315128395)	Ridge:(127.5, -4.84754756419799)	Ridge:(93.2, -4.483981496883141)	Lasso:(-7.756076102716785, 'auto')	ElasticNet:(-7.756076102716785, 0.7)	Ridge:(103.0, -4.1204154295682915)	Ridge:(137.3, -3.7568493622534422)	Ridge:(147.1, -3.393283294938593)	Lasso:(-7.392510035401935, 'auto')	Ridge:(68.7, -3.0297172276237436)	ElasticNet:(-7.392510035401935, 0.4)	Ridge:(68.7, -2.6661511603088943)	Ridge:(5.0, -2.3025850929940455)	Lasso:(-7.028943968087086, 'auto')	Ridge:(9.9, -5.3397484121656085)	ElasticNet:(-7.028943968087086, 0.4)	Ridge:(9.9, -4.5312997990160815)	Ridge:(14.8, -8.67894102483564)	Lasso:(-6.665377900772237, 'auto')	Ridge:(196.1, -8.013104251519817)	ElasticNet:(-6.665377900772237, 0.5)	Ridge:(181.4, -7.718139283745006)	Ridge:(152.0, -7.87728681610284)	Lasso:(-6.301811833457387, 'auto')	Ridge:(0.1, -7.8912045099096595)	ElasticNet:(-6.301811833457387, 0.5)	Ridge:(5.0, -9.195122257079726)	Ridge:(196.1, -9.058716256618286)	Lasso:(-5.938245766142538, 'auto')	Ridge:(9.9, -8.76125285436539)	ElasticNet:(-5.938245766142538, 0.5)	Ridge:(58.900000000000006, -8.236098135749591)	Ridge:(132.4, -7.81014935752924)	Lasso:(-5.574679698827689, 'auto')	Ridge:(161.8, -7.4650807318941155)	ElasticNet:(-5.574679698827689, 0.6)	Ridge:(9.9, -7.227003328055466)	Ridge:(156.9, -8.119642170031634)	Lasso:(-5.2111136315128395, 'eigen')	Ridge:(19.700000000000003, -7.696455816667665)	ElasticNet:(-5.2111136315128395, 0.5)	Ridge:(0.1, -7.831926683781466)	Ridge:(166.70000000000002, -6.516689620394035)	Lasso:(-4.84754756419799, 'svd')	Ridge:(196.1, -7.020003092236308)	Ridge:(186.3, -7.440298024370469)	ElasticNet:(-4.84754756419799, 0.7)	Ridge:(196.1, -7.893294652735853)	Lasso:(-4.483981496883141, 'auto')	Ridge:(73.6, -8.13946080002894)	Ridge:(68.7, -7.900400209219689)	ElasticNet:(-4.483981496883141, 0.7)	Ridge:(166.70000000000002, -8.927132142847006)	Lasso:(-4.1204154295682915, 'svd')	Ridge:(103.0, -7.4172115823959945)	Ridge:(44.2, -7.843304853174176)	ElasticNet:(-4.1204154295682915, 0.6)	Ridge:(0.1, -8.585314317667843)	Lasso:(-3.7568493622534422, 'svd')	Ridge:(137.3, -7.435073998541441)	Ridge:(171.6, -7.417313625480963)	ElasticNet:(-3.7568493622534422, 0.7)	Ridge:(0.1, -7.871186560666559)	Lasso:(-3.393283294938593, 'auto')	Ridge: GeneticAlgorithm - completeModel: Ridge
+GA time(hours): 0.0005682059129079183
+ElasticNet:(-3.393283294938593, 0.6)	Lasso:(-3.0297172276237436, 'eigen')	Lasso:(-2.6661511603088943, 'auto')	ElasticNet:(-3.0297172276237436, 0.6)	Lasso:(-2.3025850929940455, 'svd')	ElasticNet:(-2.6661511603088943, 0.6)	Lasso:(-8.483032366696996, 'svd')	ElasticNet:(-2.3025850929940455, 0.4)	Lasso:(-8.590614770952474, 'auto')	ElasticNet:(-3.7972792415407692, 0.7)	--------------------------------------------------------------------------------
+------------------------- Ridge search complete, time taken: 2.722 seconds ------------------------ 
+Lasso:(-7.392510035401935, 'eigen')	ElasticNet:(-3.926739754872092, 0.4)	Lasso:(-8.470964638219732, 'eigen')	ElasticNet:(-8.032438660189918, 0.7)	Lasso:(-8.198270437472013, 'auto')	ElasticNet:(-3.9087818238736594, 0.7)	Lasso:(-9.210340371976182, 'svd')	ElasticNet:(-8.524420097329156, 0.7)	Lasso:(-7.940113877123199, 'auto')	ElasticNet:(-8.748745647980728, 0.5)	Lasso:(-7.984916159349157, 'auto')	ElasticNet:(-4.115964787388864, 0.4)	Lasso:(-7.642355654064639, 'eigen')	ElasticNet:(-3.853285248898336, 0.6)	Lasso:(-8.040075223485072, 'eigen')	ElasticNet:(-4.1204154295682915, 0.4)	Lasso:(-8.019075816215933, 'auto')	ElasticNet:(-7.313865316294868, 0.7)	Lasso:(-7.2131174248924514, 'svd')	ElasticNet:(-8.875476972049306, 0.7)	Lasso:(-8.062174938018837, 'auto')	ElasticNet:(-2.4977398955770163, 0.6)	Lasso:(-8.096580929118284, 'auto')	ElasticNet:(-7.081832869003831, 0.5)	Lasso:(-8.700752384008295, 'eigen')	ElasticNet:(-5.415207548497001, 0.4)	Lasso:(-6.6681630449802896, 'auto')	ElasticNet:(-8.483208237346483, 0.4)	Lasso:(-8.066796274867203, 'auto')	ElasticNet:(-5.296100046937359, 0.6)	Lasso:(-7.362589491033727, 'eigen')	ElasticNet:(-8.551641796237856, 0.4)	Lasso:(-7.915340407091883, 'auto')	ElasticNet:(-3.9087818238736594, 0.5)	Lasso:(-7.997955708851651, 'svd')	ElasticNet:(-7.2583294861480585, 0.7)	Lasso:(-7.728687432715748, 'svd')	ElasticNet:(-2.8077032063556846, 0.7)	Lasso:(-7.314621853447372, 'auto')	ElasticNet:(-9.199104133400715, 0.5)	Lasso:(-6.7584910875363695, 'svd')	ElasticNet:(-9.026761971641493, 0.5)	Lasso:(-7.756076102716785, 'svd')	ElasticNet:(-7.1240273042902125, 0.7)	Lasso:(-7.858144977172628, 'eigen')	ElasticNet:(-8.610998059568542, 0.7)	Lasso:(-7.497617481468145, 'auto')	ElasticNet:(-8.324220197489051, 0.6)	Lasso:(-8.394925207443368, 'svd')	Lasso:(-7.291814886830159, 'eigen')	ElasticNet:(-8.667001324392277, 0.7)	Lasso:(-6.926919382409551, 'svd')	ElasticNet:(-7.622267495182056, 0.6)	Lasso:(-7.53660137139703, 'eigen')	ElasticNet:(-8.796120893203264, 0.4)	Lasso: GeneticAlgorithm - completeElasticNet:(-8.87816866725715, 0.5)	Model: Lasso
+GA time(hours): 0.0017299690511491563
+--------------------------------------------------------------------------------
+------------------------- Lasso search complete, time taken: 6.267 seconds ------------------------ 
+ElasticNet:(-8.707834056761971, 0.5)	ElasticNet: GeneticAlgorithm - completeModel: ElasticNet
+GA time(hours): 0.0018049861325158012
+--------------------------------------------------------------------------------
+------------------------- ElasticNet search complete, time taken: 6.533 seconds ------------------------ 
+
+
+-------------------------Model screening started at Mon Jul  6 10:59:37 2026-------------------------
+
+
+-------------------------Run parameters-------------------------
+  Featurization: False
+  Multi_core: False
+  Screener_type: regressor
+  Number of datapoints: 500
+
+------------------------- Screening started for feature set user_given at Mon Jul  6 10:59:37 2026 -------------------------
+split done!
+Running model no: 2; Name: SVR
+SVR
+
+Running model no: 0; Name: Ridge
+Running model no: 1; Name: Lasso
+Running model no: 3; Name: ElasticNet
+Lasso
+SVR:('rbf', 1.0)	
+Ridge
+Net
+Lasso:(-9.210340371976182, 'svd')	ElasticNet:(-9.210340371976182, 0.5)	Ridge:(73.6, -9.210340371976182)	
+Running model no: 4; Name: DecisionTreeRegressor
+DecisionTreeRegressor
+DecisionTreeRegressor:('squared_error', 'best', 12, 1, -9.210340371976182)	Ridge:(54.00000000000001, -8.846774304661333)	SVR:('poly', 6.2105263157894735)	Ridge:(152.0, -8.483208237346483)	Ridge:(161.8, -8.119642170031634)	SVR:('linear', 11.421052631578947)	Lasso:(-8.846774304661333, 'eigen')	ElasticNet:(-8.846774304661333, 0.7)	Ridge:(122.60000000000001, -7.756076102716785)	Ridge:(132.4, -7.392510035401935)	DecisionTreeRegressor:('absolute_error', 'best', 2, 21, -8.846774304661333)	Ridge:(166.70000000000002, -7.028943968087086)	Ridge:(166.70000000000002, -6.665377900772237)	ElasticNet:(-8.483208237346483, 0.7)	Ridge:(161.8, -6.301811833457387)	Ridge:(176.5, -5.938245766142538)	Ridge:(5.0, -5.574679698827689)	Ridge:(161.8, -5.2111136315128395)	ElasticNet:(-8.119642170031634, 0.5)	Lasso:(-8.119642170031634, 'auto')	Ridge:(161.8, -4.84754756419799)	Ridge:(93.2, -4.483981496883141)	DecisionTreeRegressor:('squared_error', 'best', 22, 81, -8.483208237346483)	Ridge:(5.0, -4.1204154295682915)	DecisionTreeRegressor:('squared_error', 'random', 12, 81, -8.119642170031634)	Ridge:(122.60000000000001, -3.7568493622534422)	DecisionTreeRegressor:('poisson', 'random', 12, 61, -7.756076102716785)	ElasticNet:(-7.756076102716785, 0.5)	Lasso:(-7.756076102716785, 'auto')	
+Exception occurred for model: DecisionTreeRegressor
+Traceback (most recent call last):
+  File "C:\Users\nitin\Documents\UB\Hachmann_Group\chemml_dev_nitin\chemml\chemml\autoML\model_screener.py", line 286, in run_model
+    scores_list.append(ga(X_train, y_train, X_test, y_test, model_name=model_name, space_final=space_final, al=3))
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nitin\Documents\UB\Hachmann_Group\chemml_dev_nitin\chemml\chemml\autoML\model_screener.py", line 255, in ga
+    best_ind_df, best_individual = gann.search(n_generations=self.n_gen, early_stopping=10)                     # set pop_size<30, n_generations*pop_size = no. of times GA runs
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nitin\Documents\UB\Hachmann_Group\chemml_dev_nitin\chemml\chemml\optimization\genetic_algorithm.py", line 364, in search
+    fitness_dict = fit_eval(pop, fitness_dict)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nitin\Documents\UB\Hachmann_Group\chemml_dev_nitin\chemml\chemml\optimization\genetic_algorithm.py", line 348, in fit_eval
+    fitnesses = list(map(self.evaluate, invalid_ind))
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nitin\Documents\UB\Hachmann_Group\chemml_dev_nitin\chemml\chemml\autoML\model_screener.py", line 250, in ga_eval
+    ga_search = single_obj(model=model, x=X_train, y=y_train)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\nitin\Documents\UB\Hachmann_Group\chemml_dev_nitin\chemml\chemml\autoML\model_screener.py", line 124, in single_obj
+    model.fit(x_training, y_training)
+  File "c:\Users\nitin\miniconda3\envs\nitin_py312_env\Lib\site-packages\sklearn\base.py", line 1336, in wrapper
+    return fit_method(estimator, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "c:\Users\nitin\miniconda3\envs\nitin_py312_env\Lib\site-packages\sklearn\tree\_classes.py", line 1407, in fit
+    super()._fit(
+  File "c:\Users\nitin\miniconda3\envs\nitin_py312_env\Lib\site-packages\sklearn\tree\_classes.py", line 272, in _fit
+    raise ValueError(
+ValueError: Some value(s) of y are negative which is not allowed for Poisson regression.
+
+Ridge:(191.20000000000002, -3.393283294938593)	Ridge:(103.0, -3.0297172276237436)	Ridge:(78.5, -2.6661511603088943)	Ridge:(49.1, -2.3025850929940455)	ElasticNet:(-7.392510035401935, 0.5)	Lasso:(-7.392510035401935, 'auto')	Ridge:(9.9, -4.721188659014418)	Ridge:(152.0, -7.079590529689536)	Ridge:(161.8, -7.914771502056441)	Lasso:(-7.028943968087086, 'eigen')	ElasticNet:(-7.028943968087086, 0.5)	Ridge:(58.900000000000006, -8.26842982245065)	Ridge:(34.400000000000006, -7.999876467265534)	Ridge:(83.4, -7.15277741432644)	Lasso:(-6.665377900772237, 'auto')	ElasticNet:(-6.665377900772237, 0.7)	Ridge:(58.900000000000006, -7.069094891500654)	Ridge:(127.5, -7.886866572534661)	Ridge:(112.8, -8.485109561555676)	Lasso:(-6.301811833457387, 'svd')	Ridge:(83.4, -6.045576195592238)	ElasticNet:(-6.301811833457387, 0.6)	Ridge:(161.8, -7.305596251465562)	Ridge:(161.8, -7.390507723635626)	Ridge:(186.3, -8.808276163022686)	Lasso:(-5.938245766142538, 'svd')	ElasticNet:(-5.938245766142538, 0.4)	Ridge:(88.3, -5.943819989790727)	Ridge:(132.4, -7.305596251465562)	Lasso:(-5.574679698827689, 'auto')	Ridge:(93.2, -7.765324546994534)	ElasticNet:(-5.574679698827689, 0.5)	Ridge:(166.70000000000002, -8.756350468917928)	Ridge:(14.8, -7.028943968087086)	Ridge:(5.0, -7.299477070613756)	Lasso:(-5.2111136315128395, 'auto')	Ridge:(147.1, -7.467794214879656)	ElasticNet:(-5.2111136315128395, 0.5)	Ridge:(0.1, -6.009533740737223)	Ridge:(186.3, -6.8767242344672885)	Lasso:(-4.84754756419799, 'auto')	Ridge:(63.800000000000004, -6.233329025899565)	ElasticNet:(-4.84754756419799, 0.6)	Ridge:(127.5, -5.967901524037654)	Lasso:(-4.483981496883141, 'auto')	Ridge:(171.6, -7.2455893669122045)	Ridge:(14.8, -5.872021293355495)	ElasticNet:(-4.483981496883141, 0.6)	Ridge:(117.7, -8.808276163022686)	Ridge:(83.4, -5.754901550917541)	Lasso:(-4.1204154295682915, 'eigen')	Ridge:(142.20000000000002, -7.312673273281435)	ElasticNet:(-4.1204154295682915, 0.4)	Ridge:(88.3, -3.393283294938593)	Lasso:(-3.7568493622534422, 'auto')	Ridge: GeneticAlgorithm - completeModel: Ridge
+GA time(hours): 0.0005136757426791721
+ElasticNet:(-3.7568493622534422, 0.4)	Lasso:(-3.393283294938593, 'auto')	ElasticNet:(-3.393283294938593, 0.7)	Lasso:(-3.0297172276237436, 'auto')	ElasticNet:(-3.0297172276237436, 0.6)	Lasso:(-2.6661511603088943, 'svd')	ElasticNet:(-2.6661511603088943, 0.4)	Lasso:(-2.3025850929940455, 'auto')	ElasticNet:(-2.3025850929940455, 0.6)	Lasso:(-6.3106972432082316, 'auto')	--------------------------------------------------------------------------------
+------------------------- Ridge search complete, time taken: 2.448 seconds ------------------------ 
+ElasticNet:(-3.2479872473616043, 0.4)	Lasso:(-7.8745098764153205, 'svd')	ElasticNet:(-3.0897529080160617, 0.6)	Lasso:(-7.275456530688423, 'auto')	ElasticNet:(-6.665377900772237, 0.6)	Lasso:(-8.455389413808083, 'auto')	ElasticNet:(-6.050921712945363, 0.4)	Lasso:(-5.657447111350757, 'auto')	ElasticNet:(-6.052801185316415, 0.6)	Lasso:(-5.042591327146913, 'eigen')	ElasticNet:(-6.301811833457387, 0.4)	Lasso:(-5.910877367280866, 'svd')	ElasticNet:(-3.3535684637544985, 0.6)	Lasso:(-5.946984153171868, 'eigen')	ElasticNet:(-4.213783127719969, 0.7)	Lasso:(-6.9843678950884875, 'eigen')	ElasticNet:(-4.749095919635473, 0.6)	Lasso:(-6.280601283807931, 'eigen')	ElasticNet:(-6.705751581996735, 0.7)	Lasso:(-6.237202340196334, 'eigen')	ElasticNet:(-8.834240662743744, 0.5)	Lasso:(-7.206792700165709, 'svd')	ElasticNet:(-6.75918322292878, 0.4)	Lasso:(-6.950718663004965, 'svd')	ElasticNet:(-6.7528888110395835, 0.5)	Lasso:(-6.733777050170145, 'eigen')	ElasticNet:(-6.082355823897526, 0.7)	Lasso:(-7.028943968087086, 'auto')	ElasticNet:(-6.507562086797762, 0.7)	Lasso:(-7.385317504135848, 'svd')	ElasticNet:(-3.658579380428022, 0.4)	Lasso:(-7.232967597162885, 'auto')	ElasticNet:(-3.2955998601158774, 0.6)	Lasso:(-6.501560020310261, 'svd')	ElasticNet:(-9.169505099949072, 0.5)	Lasso:(-6.571945781449158, 'svd')	ElasticNet:(-5.578616854172893, 0.4)	Lasso:(-6.970627921177286, 'svd')	ElasticNet:(-6.348221754637894, 0.7)	Lasso:(-4.225658189195967, 'eigen')	ElasticNet:(-9.210340371976182, 0.4)	Lasso:(-6.33935778038858, 'auto')	ElasticNet:(-5.712906786388946, 0.7)	Lasso:(-7.356275625042314, 'auto')	ElasticNet:(-5.833531713958734, 0.6)	Lasso:(-5.962436746883038, 'eigen')	ElasticNet:(-7.060516352940147, 0.4)	Lasso:(-7.126638026411116, 'auto')	ElasticNet:(-8.133409223197933, 0.7)	Lasso:(-6.493470829931894, 'eigen')	Lasso:(-6.733777050170145, 'svd')	ElasticNet:(-7.589343235333459, 0.6)	Lasso:(-8.86514561282278, 'auto')	ElasticNet:(-6.303951301797444, 0.7)	Lasso:(-8.586344460724774, 'svd')	ElasticNet:(-6.825404016709617, 0.7)	ElasticNet:(-6.017674700912418, 0.7)	Lasso:(-3.596120679842675, 'eigen')	Lasso: GeneticAlgorithm - completeElasticNet:(-4.174621349819148, 0.6)	Model: Lasso
+GA time(hours): 0.0016248757971657646
+--------------------------------------------------------------------------------
+------------------------- Lasso search complete, time taken: 5.881 seconds ------------------------ 
+ElasticNet: GeneticAlgorithm - completeModel: ElasticNet
+GA time(hours): 0.0016540624035729303
+--------------------------------------------------------------------------------
+------------------------- ElasticNet search complete, time taken: 5.988 seconds ------------------------ 
+
+
+-------------------------Model screening started at Mon Jul  6 11:01:55 2026-------------------------
+
+
+-------------------------Run parameters-------------------------
+  Featurization: False
+  Multi_core: False
+  Screener_type: regressor
+  Number of datapoints: 500
+
+------------------------- Screening started for feature set user_given at Mon Jul  6 11:01:55 2026 -------------------------
+split done!
+Running model no: 0; Name: Ridge
+Ridge
+
+Running model no: 2; Name: SVR
+SVR
+
+Running model no: 4; Name: DecisionTreeRegressorRidge:(34.400000000000006, -9.210340371976182)	
+DecisionTreeRegressor
+SVR:('linear', 1.0)	
+Running model no: 3; Name: ElasticNet
+Running model no: 1; Name: Lasso
+ElasticNet
+DecisionTreeRegressor:('poisson', 'random', 32, 91, -9.210340371976182)	
+Lasso
+ElasticNet:(-9.210340371976182, 0.4)	Lasso:(-9.210340371976182, 'svd')	Ridge:(181.4, -8.846774304661333)	DecisionTreeRegressor:('squared_error', 'random', 2, 41, -8.846774304661333)	Ridge:(9.9, -8.483208237346483)	DecisionTreeRegressor:('squared_error', 'random', 2, 31, -8.483208237346483)	ElasticNet:(-8.846774304661333, 0.4)	Lasso:(-8.846774304661333, 'auto')	DecisionTreeRegressor:('squared_error', 'random', 2, 61, -8.119642170031634)	Ridge:(9.9, -8.119642170031634)	DecisionTreeRegressor:('poisson', 'random', 32, 51, -7.756076102716785)	Ridge:(181.4, -7.756076102716785)	DecisionTreeRegressor:('friedman_mse', 'random', 2, 1, -7.392510035401935)	Ridge:(39.300000000000004, -7.392510035401935)	Ridge:(29.500000000000004, -7.028943968087086)	Lasso:(-8.483208237346483, 'eigen')	DecisionTreeRegressor:('absolute_error', 'random', 32, 1, -7.028943968087086)	ElasticNet:(-8.483208237346483, 0.4)	Ridge:(152.0, -6.665377900772237)	Ridge:(78.5, -6.301811833457387)	Ridge:(112.8, -5.938245766142538)	Lasso:(-8.119642170031634, 'eigen')	Ridge:(58.900000000000006, -5.574679698827689)	ElasticNet:(-8.119642170031634, 0.4)	Ridge:(112.8, -5.2111136315128395)	Ridge:(29.500000000000004, -4.84754756419799)	Lasso:(-7.756076102716785, 'svd')	Ridge:(78.5, -4.483981496883141)	DecisionTreeRegressor:('friedman_mse', 'random', 42, 51, -6.665377900772237)	ElasticNet:(-7.756076102716785, 0.4)	DecisionTreeRegressor:('friedman_mse', 'random', 42, 81, -6.301811833457387)	Ridge:(73.6, -4.1204154295682915)	DecisionTreeRegressor:('friedman_mse', 'best', 42, 21, -5.938245766142538)	Ridge:(5.0, -3.7568493622534422)	Lasso:(-7.392510035401935, 'eigen')	Ridge:(127.5, -3.393283294938593)	ElasticNet:(-7.392510035401935, 0.5)	DecisionTreeRegressor:('friedman_mse', 'best', 22, 21, -5.574679698827689)	Ridge:(156.9, -3.0297172276237436)	Lasso:(-7.028943968087086, 'eigen')	Ridge:(93.2, -2.6661511603088943)	DecisionTreeRegressor:('absolute_error', 'random', 12, 11, -5.2111136315128395)	Ridge:(29.500000000000004, -2.3025850929940455)	ElasticNet:(-7.028943968087086, 0.4)	Ridge:(156.9, -5.242701046327912)	Lasso:(-6.665377900772237, 'auto')	Ridge:(93.2, -4.25757825153787)	DecisionTreeRegressor:('absolute_error', 'best', 32, 31, -4.84754756419799)	ElasticNet:(-6.665377900772237, 0.5)	Ridge:(112.8, -6.301811833457387)	Lasso:(-6.301811833457387, 'svd')	Ridge:(39.300000000000004, -5.527077080784487)	Ridge:(112.8, -6.241317156866418)	ElasticNet:(-6.301811833457387, 0.5)	Ridge:(127.5, -4.9496054677353625)	Lasso:(-5.938245766142538, 'svd')	Ridge:(63.800000000000004, -5.195381461006475)	ElasticNet:(-5.938245766142538, 0.4)	Ridge:(58.900000000000006, -5.302512506424542)	DecisionTreeRegressor:('friedman_mse', 'random', 12, 31, -4.483981496883141)	Lasso:(-5.574679698827689, 'svd')	Ridge:(112.8, -5.801017633920626)	DecisionTreeRegressor:('squared_error', 'random', 12, 91, -4.1204154295682915)	DecisionTreeRegressor:('friedman_mse', 'random', 2, 51, -3.7568493622534422)	Ridge:(181.4, -8.596489717793837)	DecisionTreeRegressor:('poisson', 'best', 12, 91, -3.393283294938593)	ElasticNet:(-5.574679698827689, 0.7)	Ridge:(78.5, -7.687065706994977)	Lasso:(-5.2111136315128395, 'eigen')	DecisionTreeRegressor:('friedman_mse', 'best', 2, 21, -3.0297172276237436)	Ridge:(122.60000000000001, -3.898481531655753)	ElasticNet:(-5.2111136315128395, 0.7)	Ridge:(14.8, -6.576420245861786)	Lasso:(-4.84754756419799, 'auto')	DecisionTreeRegressor:('poisson', 'random', 22, 31, -2.6661511603088943)	Ridge:(14.8, -7.001997652545769)	DecisionTreeRegressor:('squared_error', 'random', 2, 11, -2.3025850929940455)	Ridge:(39.300000000000004, -6.572348258838017)	ElasticNet:(-4.84754756419799, 0.6)	DecisionTreeRegressor:('squared_error', 'random', 2, 11, -6.19079106178763)	Lasso:(-4.483981496883141, 'auto')	Ridge:(166.70000000000002, -8.596979250776203)	DecisionTreeRegressor:('squared_error', 'random', 32, 61, -6.791028957310296)	Ridge:(54.00000000000001, -8.54061098777804)	DecisionTreeRegressor:('friedman_mse', 'best', 32, 21, -5.940523176688316)	ElasticNet:(-4.483981496883141, 0.6)	Ridge:(93.2, -6.576420245861786)	Lasso:(-4.1204154295682915, 'svd')	Ridge:(78.5, -3.051426934945253)	DecisionTreeRegressor:('squared_error', 'random', 12, 1, -6.96570706853213)	Ridge:(117.7, -5.169919149385171)	ElasticNet:(-4.1204154295682915, 0.5)	Lasso:(-3.7568493622534422, 'svd')	DecisionTreeRegressor:('squared_error', 'best', 2, 81, -5.090827611497261)	Ridge:(191.20000000000002, -6.665377900772237)	DecisionTreeRegressor:('absolute_error', 'random', 2, 81, -5.009381418968686)	Lasso:(-3.393283294938593, 'eigen')	Ridge:(29.500000000000004, -4.961339204603455)	ElasticNet:(-3.7568493622534422, 0.7)	DecisionTreeRegressor:('absolute_error', 'random', 12, 31, -5.447967241988952)	Ridge:(58.900000000000006, -8.569069797393285)	Lasso:(-3.0297172276237436, 'eigen')	Ridge:(132.4, -8.846774304661333)	DecisionTreeRegressor:('friedman_mse', 'best', 2, 71, -3.6902320989661637)	Lasso:(-2.6661511603088943, 'auto')	ElasticNet:(-3.393283294938593, 0.4)	Ridge:(137.3, -8.846774304661333)	Lasso:(-2.3025850929940455, 'auto')	DecisionTreeRegressor:('friedman_mse', 'best', 32, 41, -6.310600900836825)	Ridge:(39.300000000000004, -8.846774304661333)	Lasso:(-4.502400866119266, 'auto')	Ridge:(181.4, -8.941121725747873)	ElasticNet:(-3.0297172276237436, 0.5)	DecisionTreeRegressor:('friedman_mse', 'best', 42, 71, -3.9960665455552675)	Ridge:(5.0, -8.846774304661333)	ElasticNet:(-2.6661511603088943, 0.7)	Ridge:(19.700000000000003, -8.846774304661333)	Lasso:(-8.519672516527216, 'svd')	DecisionTreeRegressor:('friedman_mse', 'random', 12, 41, -4.670071351295394)	DecisionTreeRegressor:('friedman_mse', 'best', 2, 71, -2.6515078306467785)	ElasticNet:(-2.3025850929940455, 0.4)	Ridge:(127.5, -8.596979250776203)	Ridge: GeneticAlgorithm - completeElasticNet:(-4.309088909377755, 0.6)	DecisionTreeRegressor:('squared_error', 'random', 22, 41, -2.642847417277329)	Model: Ridge
+GA time(hours): 0.0005915194087558322
+Lasso:(-6.785620747813296, 'svd')	DecisionTreeRegressor:('poisson', 'random', 12, 11, -2.4539356196444593)	DecisionTreeRegressor:('squared_error', 'best', 2, 11, -4.475707691406963)	ElasticNet:(-5.015803484501332, 0.7)	Lasso:(-8.313568910916054, 'auto')	DecisionTreeRegressor:('poisson', 'random', 2, 1, -2.3311861891616177)	ElasticNet:(-4.889334131119373, 0.4)	Lasso:(-8.09956273490458, 'auto')	DecisionTreeRegressor:('friedman_mse', 'best', 2, 31, -2.362473141609529)	ElasticNet:(-8.384136157337977, 0.4)	DecisionTreeRegressor:('squared_error', 'random', 42, 1, -6.19079106178763)	Lasso:(-8.519672516527216, 'auto')	DecisionTreeRegressor:('friedman_mse', 'best', 2, 31, -2.541795816257395)	ElasticNet:(-8.45743194600289, 0.6)	DecisionTreeRegressor:('poisson', 'random', 12, 91, -2.7009905995732804)	DecisionTreeRegressor:('poisson', 'best', 22, 31, -3.3451595916753565)	Lasso:(-8.595394747687541, 'auto')	ElasticNet:(-2.9753041441145585, 0.5)	DecisionTreeRegressor:('poisson', 'random', 42, 41, -5.919962850232723)	DecisionTreeRegressor:('absolute_error', 'random', 2, 91, -6.160980365115351)	Lasso:(-8.833532781856338, 'auto')	ElasticNet:(-4.097761927897371, 0.7)	DecisionTreeRegressor:('poisson', 'best', 22, 51, -2.642847417277329)	--------------------------------------------------------------------------------
+------------------------- Ridge search complete, time taken: 2.787 seconds ------------------------ 
+DecisionTreeRegressor:('friedman_mse', 'random', 42, 31, -2.467528713022204)	ElasticNet:(-9.172466418097532, 0.6)	Lasso:(-8.119642170031634, 'auto')	DecisionTreeRegressor:('friedman_mse', 'random', 12, 71, -2.538836154080387)	DecisionTreeRegressor:('friedman_mse', 'best', 32, 81, -6.362119703928378)	DecisionTreeRegressor:('poisson', 'random', 12, 21, -2.6473105696932544)	Lasso:(-8.836186482728687, 'eigen')	ElasticNet:(-7.241319460692296, 0.5)	DecisionTreeRegressor:('squared_error', 'random', 42, 41, -2.6655915805387385)	DecisionTreeRegressor:('absolute_error', 'best', 22, 41, -2.6661511603088943)	Lasso:(-8.594133331936066, 'eigen')	ElasticNet:(-3.740986095936101, 0.7)	ElasticNet:(-2.9330731529531606, 0.7)	Lasso:(-4.632223695531098, 'auto')	ElasticNet:(-3.2745992987994477, 0.6)	DecisionTreeRegressor: GeneticAlgorithm - completeModel: DecisionTreeRegressor
+GA time(hours): 0.0009041766987906562
+--------------------------------------------------------------------------------
+------------------------- DecisionTreeRegressor search complete, time taken: 3.266 seconds ------------------------ 
+ElasticNet:(-2.9572191553686635, 0.7)	Lasso:(-8.500172860710393, 'auto')	ElasticNet:(-2.6100949837942413, 0.7)	ElasticNet:(-7.890775532143781, 0.4)	Lasso:(-8.513824146732027, 'svd')	ElasticNet:(-2.8457887832436697, 0.5)	Lasso:(-8.067965135068803, 'auto')	ElasticNet:(-2.838654595605264, 0.7)	ElasticNet:(-8.100712139135414, 0.7)	Lasso:(-8.600822729649162, 'svd')	ElasticNet:(-6.629409684253227, 0.7)	Lasso:(-8.495662902902849, 'auto')	ElasticNet:(-2.7640679388494593, 0.5)	Lasso:(-8.595394747687541, 'eigen')	ElasticNet:(-8.150662029355617, 0.7)	Lasso:(-8.488016716780512, 'svd')	ElasticNet:(-2.400058719358844, 0.4)	ElasticNet:(-2.34264226189469, 0.7)	Lasso:(-8.486897503135607, 'svd')	ElasticNet:(-7.770682932314424, 0.6)	Lasso:(-7.092784734510728, 'eigen')	ElasticNet:(-2.893937058101848, 0.7)	ElasticNet:(-2.8935563478886213, 0.6)	Lasso:(-8.594642624634034, 'auto')	ElasticNet:(-4.288406333792942, 0.6)	ElasticNet:(-6.01050414872442, 0.7)	Lasso:(-8.59455633877678, 'svd')	ElasticNet:(-4.659754349345097, 0.5)	Lasso:(-8.467740536136969, 'auto')	ElasticNet:(-5.594325665960256, 0.5)	Lasso:(-8.466094470465586, 'auto')	ElasticNet: GeneticAlgorithm - completeModel: ElasticNet
+GA time(hours): 0.001277333829138014
+--------------------------------------------------------------------------------
+------------------------- ElasticNet search complete, time taken: 4.633 seconds ------------------------ 
+Lasso:(-8.609003527317547, 'svd')	Lasso:(-9.162457201093467, 'eigen')	Lasso:(-8.513570795697875, 'eigen')	Lasso:(-8.50276003082602, 'auto')	Lasso:(-8.668882791650741, 'auto')	Lasso: GeneticAlgorithm - completeModel: Lasso
+GA time(hours): 0.0014332001739078097
+--------------------------------------------------------------------------------
+------------------------- Lasso search complete, time taken: 5.166 seconds ------------------------ 
+
+
+-------------------------Model screening started at Mon Jul  6 11:03:47 2026-------------------------
+
+
+-------------------------Run parameters-------------------------
+  Featurization: False
+  Multi_core: False
+  Screener_type: regressor
+  Number of datapoints: 2000
+  Note: Dataset > 1000 samples; GradientBoostingRegressor and SVR are excluded from screening due to inefficiency.
+
+------------------------- Screening started for feature set user_given at Mon Jul  6 11:03:47 2026 -------------------------
+split done!
+Running model no: 2; Name: ElasticNet
+Running model no: 3; Name: DecisionTreeRegressor
+Lasso
+
+ElasticNet
+Regressor
+Lasso:(-9.210340371976182, 'svd')	DecisionTreeRegressor:('poisson', 'best', 2, 31, -9.210340371976182)	ElasticNet:(-9.210340371976182, 0.6)	
+Running model no: 0; Name: Ridge
+Ridge
+Ridge:(166.70000000000002, -9.210340371976182)	Ridge:(58.900000000000006, -8.846774304661333)	Ridge:(112.8, -8.483208237346483)	Ridge:(196.1, -8.119642170031634)	Ridge:(107.9, -7.756076102716785)	Ridge:(49.1, -7.392510035401935)	Ridge:(152.0, -7.028943968087086)	Lasso:(-8.846774304661333, 'auto')	ElasticNet:(-8.846774304661333, 0.6)	Ridge:(63.800000000000004, -6.665377900772237)	DecisionTreeRegressor:('friedman_mse', 'random', 42, 81, -8.846774304661333)	Ridge:(137.3, -6.301811833457387)	DecisionTreeRegressor:('friedman_mse', 'random', 2, 41, -8.483208237346483)	Ridge:(0.1, -5.938245766142538)	DecisionTreeRegressor:('squared_error', 'best', 22, 1, -8.119642170031634)	Ridge:(19.700000000000003, -5.574679698827689)	Ridge:(107.9, -5.2111136315128395)	Ridge:(34.400000000000006, -4.84754756419799)	Lasso:(-8.483208237346483, 'svd')	Ridge:(196.1, -4.483981496883141)	ElasticNet:(-8.483208237346483, 0.7)	Ridge:(0.1, -4.1204154295682915)	Ridge:(0.1, -3.7568493622534422)	Ridge:(39.300000000000004, -3.393283294938593)	Ridge:(117.7, -3.0297172276237436)	Ridge:(98.1, -2.6661511603088943)	DecisionTreeRegressor:('friedman_mse', 'random', 32, 11, -7.756076102716785)	Lasso:(-8.119642170031634, 'eigen')	Ridge:(68.7, -2.3025850929940455)	DecisionTreeRegressor:('squared_error', 'random', 22, 61, -7.392510035401935)	Ridge:(44.2, -8.122098201406512)	ElasticNet:(-8.119642170031634, 0.5)	DecisionTreeRegressor:('poisson', 'random', 22, 71, -7.028943968087086)	Ridge:(137.3, -9.205422808288434)	DecisionTreeRegressor:('friedman_mse', 'random', 42, 71, -6.665377900772237)	Ridge:(117.7, -2.3155911651741503)	DecisionTreeRegressor:('friedman_mse', 'best', 12, 21, -6.301811833457387)	Ridge:(191.20000000000002, -6.482308295247908)	Ridge:(5.0, -6.502277048249083)	Lasso:(-7.756076102716785, 'auto')	Ridge:(196.1, -8.074444530581763)	Ridge:(39.300000000000004, -7.2584926227503725)	ElasticNet:(-7.756076102716785, 0.4)	Ridge:(196.1, -8.1987854032043)	Ridge:(24.6, -9.210340371976182)	DecisionTreeRegressor:('friedman_mse', 'random', 22, 51, -5.938245766142538)	Ridge:(103.0, -6.383327682906852)	DecisionTreeRegressor:('poisson', 'best', 12, 31, -5.574679698827689)	Ridge:(191.20000000000002, -6.252247818465148)	Lasso:(-7.392510035401935, 'svd')	Ridge:(112.8, -7.028943968087086)	Ridge:(98.1, -9.103364061808248)	Ridge:(63.800000000000004, -6.704757469390056)	ElasticNet:(-7.392510035401935, 0.6)	Ridge:(58.900000000000006, -3.791695897309444)	Ridge:(103.0, -6.383858860650103)	Lasso:(-7.028943968087086, 'eigen')	Ridge:(112.8, -6.735363339544497)	DecisionTreeRegressor:('poisson', 'best', 32, 71, -5.2111136315128395)	Ridge:(63.800000000000004, -6.28899372754887)	Ridge:(68.7, -6.550889785179385)	ElasticNet:(-7.028943968087086, 0.7)	Ridge:(181.4, -6.913345756028579)	Ridge:(103.0, -7.453130130255045)	Lasso:(-6.665377900772237, 'auto')	Ridge:(117.7, -6.5859305109505515)	DecisionTreeRegressor:('friedman_mse', 'best', 22, 81, -4.84754756419799)	Ridge:(166.70000000000002, -8.553999355450395)	Ridge:(44.2, -6.482308295247908)	Ridge:(132.4, -6.701504907773648)	ElasticNet:(-6.665377900772237, 0.6)	Ridge:(49.1, -6.8283155763555925)	DecisionTreeRegressor:('absolute_error', 'best', 22, 61, -4.483981496883141)	Ridge:(137.3, -9.210340371976182)	Lasso:(-6.301811833457387, 'eigen')	Ridge:(78.5, -6.564158509317899)	Ridge:(58.900000000000006, -7.915376271017305)	Ridge:(196.1, -8.269608085277424)	Ridge: GeneticAlgorithm - completeModel: Ridge
+GA time(hours): 0.000985312263170878
+ElasticNet:(-6.301811833457387, 0.5)	Lasso:(-5.938245766142538, 'eigen')	ElasticNet:(-5.938245766142538, 0.5)	Lasso:(-5.574679698827689, 'eigen')	--------------------------------------------------------------------------------
+------------------------- Ridge search complete, time taken: 4.381 seconds ------------------------ 
+ElasticNet:(-5.574679698827689, 0.6)	Lasso:(-5.2111136315128395, 'eigen')	DecisionTreeRegressor:('friedman_mse', 'best', 22, 81, -4.1204154295682915)	Lasso:(-4.84754756419799, 'auto')	ElasticNet:(-5.2111136315128395, 0.6)	DecisionTreeRegressor:('poisson', 'random', 2, 51, -3.7568493622534422)	DecisionTreeRegressor:('absolute_error', 'random', 32, 71, -3.393283294938593)	Lasso:(-4.483981496883141, 'svd')	DecisionTreeRegressor:('poisson', 'best', 12, 41, -3.0297172276237436)	ElasticNet:(-4.84754756419799, 0.7)	Lasso:(-4.1204154295682915, 'eigen')	ElasticNet:(-4.483981496883141, 0.4)	Lasso:(-3.7568493622534422, 'auto')	DecisionTreeRegressor:('squared_error', 'best', 2, 71, -2.6661511603088943)	Lasso:(-3.393283294938593, 'svd')	Lasso:(-3.0297172276237436, 'svd')	Lasso:(-2.6661511603088943, 'svd')	DecisionTreeRegressor:('absolute_error', 'best', 32, 51, -2.3025850929940455)	ElasticNet:(-4.1204154295682915, 0.6)	Lasso:(-2.3025850929940455, 'svd')	Lasso:(-5.401249963393664, 'auto')	ElasticNet:(-3.7568493622534422, 0.7)	Lasso:(-6.695352321058661, 'eigen')	ElasticNet:(-3.393283294938593, 0.5)	ElasticNet:(-3.0297172276237436, 0.4)	Lasso:(-8.331611996030269, 'eigen')	ElasticNet:(-2.6661511603088943, 0.5)	ElasticNet:(-2.3025850929940455, 0.5)	ElasticNet:(-7.8295602406711495, 0.4)	Lasso:(-5.92237531627791, 'auto')	DecisionTreeRegressor:('friedman_mse', 'best', 2, 41, -6.091462080405224)	ElasticNet:(-6.443793179450918, 0.5)	Lasso:(-7.7389535533517995, 'eigen')	DecisionTreeRegressor:('friedman_mse', 'random', 22, 81, -6.417782765319523)	DecisionTreeRegressor:('friedman_mse', 'random', 12, 31, -9.210340371976182)	DecisionTreeRegressor:('poisson', 'best', 2, 41, -3.394872503875911)	ElasticNet:(-7.414417352653531, 0.5)	Lasso:(-5.878571489817261, 'svd')	DecisionTreeRegressor:('absolute_error', 'best', 12, 31, -7.217358133492481)	ElasticNet:(-6.098672807910865, 0.7)	Lasso:(-6.94319343096014, 'auto')	ElasticNet:(-6.112919464964946, 0.4)	Lasso:(-7.209081081003504, 'svd')	ElasticNet:(-5.540559821760583, 0.7)	Lasso:(-7.7389535533517995, 'svd')	ElasticNet:(-7.17211151922505, 0.5)	Lasso:(-6.9264496484720794, 'eigen')	ElasticNet:(-6.5298613238461, 0.6)	DecisionTreeRegressor:('absolute_error', 'best', 22, 1, -6.091462080405224)	Lasso:(-6.757417945638305, 'svd')	ElasticNet:(-7.115297883223066, 0.5)	Lasso:(-8.425002493093888, 'eigen')	ElasticNet:(-6.879851633628119, 0.6)	Lasso:(-7.596780781631378, 'eigen')	ElasticNet:(-6.609211235964974, 0.6)	Lasso:(-7.500332503983153, 'svd')	ElasticNet:(-8.440890822205342, 0.5)	Lasso:(-7.209081081003504, 'eigen')	ElasticNet:(-6.819640555340111, 0.4)	Lasso:(-7.3046684697945015, 'svd')	ElasticNet:(-6.414408202625217, 0.6)	DecisionTreeRegressor:('poisson', 'best', 32, 81, -7.501279488868816)	Lasso:(-7.543754693309604, 'svd')	ElasticNet:(-7.028943968087086, 0.4)	DecisionTreeRegressor:('squared_error', 'best', 2, 71, -7.448023251242377)	Lasso:(-8.119642170031634, 'svd')	DecisionTreeRegressor:('absolute_error', 'random', 12, 81, -3.394872503875911)	ElasticNet:(-6.588951440413009, 0.6)	Lasso:(-7.419956482078756, 'eigen')	DecisionTreeRegressor:('friedman_mse', 'best', 12, 11, -6.986912365403219)	ElasticNet:(-6.267537495840485, 0.7)	Lasso:(-8.249593893775659, 'eigen')	DecisionTreeRegressor:('friedman_mse', 'random', 32, 1, -6.816673500734673)	ElasticNet:(-7.17211151922505, 0.6)	DecisionTreeRegressor:('friedman_mse', 'random', 22, 41, -6.805039150134125)	DecisionTreeRegressor:('absolute_error', 'best', 12, 1, -5.034787316758907)	Lasso:(-7.596780781631378, 'svd')	ElasticNet:(-6.816007511630283, 0.4)	Lasso:(-7.413998145296487, 'eigen')	ElasticNet:(-6.6658903688981255, 0.6)	Lasso:(-7.39260802856818, 'svd')	ElasticNet:(-2.6684128924254717, 0.4)	Lasso:(-8.471064511230775, 'auto')	ElasticNet:(-6.902744064819291, 0.5)	Lasso:(-7.586628264036153, 'auto')	ElasticNet:(-6.9076125091323215, 0.7)	ElasticNet:(-4.275281542399859, 0.6)	Lasso:(-7.5392737540392085, 'eigen')	ElasticNet:(-7.16913507746101, 0.4)	Lasso:(-7.63563236371785, 'auto')	DecisionTreeRegressor:('friedman_mse', 'best', 32, 31, -7.020874816989548)	ElasticNet:(-7.3119342835953045, 0.7)	Lasso:(-7.794577385138972, 'eigen')	DecisionTreeRegressor:('friedman_mse', 'random', 42, 81, -9.174298439644753)	DecisionTreeRegressor:('poisson', 'best', 22, 61, -7.099737393097506)	ElasticNet:(-6.4347038928345, 0.4)	Lasso:(-7.79401090183362, 'eigen')	DecisionTreeRegressor:('friedman_mse', 'best', 42, 31, -6.971837391857178)	ElasticNet:(-6.85012769015718, 0.4)	Lasso:(-7.586628264036153, 'eigen')	DecisionTreeRegressor:('friedman_mse', 'best', 12, 1, -7.708413310190531)	ElasticNet:(-7.204050798753979, 0.4)	Lasso: GeneticAlgorithm - completeModel: Lasso
+GA time(hours): 0.0047663305203119915
+--------------------------------------------------------------------------------
+------------------------- Lasso search complete, time taken: 17.273 seconds ------------------------ 
+ElasticNet:(-4.57160352558162, 0.5)	DecisionTreeRegressor:('friedman_mse', 'best', 12, 21, -7.474992075359302)	ElasticNet: GeneticAlgorithm - completeModel: ElasticNet
+GA time(hours): 0.004921158817079332
+--------------------------------------------------------------------------------
+------------------------- ElasticNet search complete, time taken: 17.812 seconds ------------------------ 
+DecisionTreeRegressor:('poisson', 'random', 2, 51, -7.432882341498481)	DecisionTreeRegressor:('absolute_error', 'best', 22, 21, -6.512068994226358)	DecisionTreeRegressor:('friedman_mse', 'random', 32, 61, -7.752699385142297)	DecisionTreeRegressor:('squared_error', 'random', 12, 11, -7.739601161211631)	DecisionTreeRegressor:('absolute_error', 'best', 12, 51, -8.26190607595847)	DecisionTreeRegressor:('friedman_mse', 'best', 22, 31, -7.647407115195401)	DecisionTreeRegressor:('squared_error', 'best', 12, 91, -8.865272248945875)	DecisionTreeRegressor:('squared_error', 'best', 2, 51, -7.970693072374144)	DecisionTreeRegressor:('absolute_error', 'best', 42, 1, -8.948770782808971)	DecisionTreeRegressor:('friedman_mse', 'best', 2, 31, -8.5078126813204)	DecisionTreeRegressor:('squared_error', 'random', 2, 21, -6.301811833457387)	DecisionTreeRegressor: GeneticAlgorithm - completeModel: DecisionTreeRegressor
+GA time(hours): 0.00644771695137024
+--------------------------------------------------------------------------------
+------------------------- DecisionTreeRegressor search complete, time taken: 23.241 seconds ------------------------ 
+Single-core complete 
+
+------------------------- Screening complete for feature set user_given, time taken: 30.19 seconds -------------------------
+
+
+-------------------------Model screening started at Mon Jul  6 11:04:36 2026-------------------------
+
+
+-------------------------Run parameters-------------------------
+  Featurization: False
+  Multi_core: True
+  Screener_type: regressor
+  Number of datapoints: 2000
+  Note: Dataset > 1000 samples; GradientBoostingRegressor and SVR are excluded from screening due to inefficiency.
+
+------------------------- Screening started for feature set user_given at Mon Jul  6 11:04:36 2026 -------------------------
+split done!
+Running model no: 0; Name: Ridge
+Running model no: 1; Name: Lasso
+Ridge
+
+Running model no: 2; Name: ElasticNet
+Lasso
+
+ElasticNet
+Ridge:(181.4, -9.210340371976182)	Lasso:(-9.210340371976182, 'auto')	ElasticNet:(-9.210340371976182, 0.4)	Ridge:(19.700000000000003, -8.846774304661333)	
+Running model no: 3; Name: DecisionTreeRegressor
+DecisionTreeRegressor
+DecisionTreeRegressor:('absolute_error', 'random', 2, 11, -9.210340371976182)	Ridge:(0.1, -8.483208237346483)	Ridge:(137.3, -8.119642170031634)	Ridge:(161.8, -7.756076102716785)	Ridge:(19.700000000000003, -7.392510035401935)	Lasso:(-8.846774304661333, 'auto')	ElasticNet:(-8.846774304661333, 0.4)	Ridge:(44.2, -7.028943968087086)	Ridge:(29.500000000000004, -6.665377900772237)	Ridge:(147.1, -6.301811833457387)	Ridge:(54.00000000000001, -5.938245766142538)	Ridge:(34.400000000000006, -5.574679698827689)	Ridge:(88.3, -5.2111136315128395)	Lasso:(-8.483208237346483, 'svd')	Ridge:(98.1, -4.84754756419799)	ElasticNet:(-8.483208237346483, 0.7)	Ridge:(117.7, -4.483981496883141)	Ridge:(171.6, -4.1204154295682915)	DecisionTreeRegressor:('squared_error', 'best', 2, 81, -8.846774304661333)	Ridge:(24.6, -3.7568493622534422)	Ridge:(73.6, -3.393283294938593)	Ridge:(132.4, -3.0297172276237436)	Lasso:(-8.119642170031634, 'eigen')	Ridge:(34.400000000000006, -2.6661511603088943)	DecisionTreeRegressor:('squared_error', 'best', 32, 61, -8.483208237346483)	ElasticNet:(-8.119642170031634, 0.4)	Ridge:(186.3, -2.3025850929940455)	Ridge:(44.2, -3.758541783670058)	Ridge:(112.8, -5.2384194978051255)	Ridge:(181.4, -9.141107629291808)	Ridge:(196.1, -8.074816750958444)	DecisionTreeRegressor:('poisson', 'best', 32, 1, -8.119642170031634)	Lasso:(-7.756076102716785, 'eigen')	Ridge:(196.1, -8.076408115375148)	ElasticNet:(-7.756076102716785, 0.7)	Ridge:(34.400000000000006, -9.210340371976182)	Ridge:(54.00000000000001, -8.175463517586971)	Ridge:(88.3, -7.241795770604026)	Ridge:(166.70000000000002, -6.301811833457387)	Lasso:(-7.392510035401935, 'eigen')	Ridge:(93.2, -7.117582541840278)	Ridge:(98.1, -7.167970955279302)	ElasticNet:(-7.392510035401935, 0.7)	Ridge:(132.4, -8.074816750958444)	Ridge:(196.1, -6.608224873704818)	Ridge:(83.4, -4.742353525214256)	DecisionTreeRegressor:('absolute_error', 'best', 2, 21, -7.756076102716785)	Ridge:(29.500000000000004, -8.03905089208971)	Lasso:(-7.028943968087086, 'svd')	Ridge:(122.60000000000001, -6.319898659039525)	Ridge:(83.4, -5.030613383293248)	ElasticNet:(-7.028943968087086, 0.4)	Ridge:(142.20000000000002, -9.17837455416692)	Ridge:(49.1, -7.658906973430113)	Ridge:(196.1, -8.061468973058084)	Lasso:(-6.665377900772237, 'eigen')	Ridge:(171.6, -3.466335147157112)	Ridge:(132.4, -7.809507371759813)	ElasticNet:(-6.665377900772237, 0.4)	Ridge:(0.1, -7.486488385950241)	Ridge:(147.1, -7.756076102716785)	Lasso:(-6.301811833457387, 'eigen')	Ridge:(103.0, -6.006898081303473)	Ridge:(29.500000000000004, -6.639288507120436)	Ridge:(137.3, -4.1204154295682915)	Ridge:(0.1, -7.654137003418106)	ElasticNet:(-6.301811833457387, 0.7)	Ridge:(5.0, -7.119411270327844)	Lasso:(-5.938245766142538, 'auto')	Ridge:(44.2, -6.807738449632963)	Ridge: GeneticAlgorithm - completeModel: Ridge
+GA time(hours): 0.0010199262036217583
+ElasticNet:(-5.938245766142538, 0.7)	Lasso:(-5.574679698827689, 'auto')	ElasticNet:(-5.574679698827689, 0.4)	DecisionTreeRegressor:('squared_error', 'random', 42, 1, -7.392510035401935)	Lasso:(-5.2111136315128395, 'eigen')	DecisionTreeRegressor:('poisson', 'best', 32, 91, -7.028943968087086)	--------------------------------------------------------------------------------
+------------------------- Ridge search complete, time taken: 4.44 seconds ------------------------ 
+ElasticNet:(-5.2111136315128395, 0.4)	Lasso:(-4.84754756419799, 'eigen')	DecisionTreeRegressor:('squared_error', 'random', 42, 21, -6.665377900772237)	DecisionTreeRegressor:('squared_error', 'best', 12, 91, -6.301811833457387)	ElasticNet:(-4.84754756419799, 0.5)	Lasso:(-4.483981496883141, 'svd')	DecisionTreeRegressor:('squared_error', 'best', 32, 81, -5.938245766142538)	Lasso:(-4.1204154295682915, 'eigen')	ElasticNet:(-4.483981496883141, 0.6)	Lasso:(-3.7568493622534422, 'eigen')	DecisionTreeRegressor:('poisson', 'random', 22, 91, -5.574679698827689)	Lasso:(-3.393283294938593, 'svd')	DecisionTreeRegressor:('poisson', 'random', 12, 41, -5.2111136315128395)	ElasticNet:(-4.1204154295682915, 0.4)	DecisionTreeRegressor:('friedman_mse', 'random', 32, 11, -4.84754756419799)	Lasso:(-3.0297172276237436, 'svd')	DecisionTreeRegressor:('squared_error', 'best', 12, 1, -4.483981496883141)	Lasso:(-2.6661511603088943, 'auto')	Lasso:(-2.3025850929940455, 'svd')	Lasso:(-5.531432956799244, 'eigen')	ElasticNet:(-3.7568493622534422, 0.5)	Lasso:(-6.030274221206512, 'auto')	ElasticNet:(-3.393283294938593, 0.6)	DecisionTreeRegressor:('absolute_error', 'best', 12, 51, -4.1204154295682915)	ElasticNet:(-3.0297172276237436, 0.4)	ElasticNet:(-2.6661511603088943, 0.4)	Lasso:(-7.3635768039850245, 'auto')	ElasticNet:(-2.3025850929940455, 0.5)	ElasticNet:(-7.2438127557186345, 0.5)	Lasso:(-5.506245335733815, 'eigen')	ElasticNet:(-8.76545484584624, 0.7)	Lasso:(-7.06437695959325, 'svd')	ElasticNet:(-5.446466800067087, 0.5)	Lasso:(-8.119642170031634, 'svd')	DecisionTreeRegressor:('friedman_mse', 'best', 32, 71, -3.7568493622534422)	ElasticNet:(-6.636875726423773, 0.7)	Lasso:(-6.391398873318032, 'eigen')	DecisionTreeRegressor:('absolute_error', 'random', 12, 91, -3.393283294938593)	ElasticNet:(-6.293654924762335, 0.5)	Lasso:(-6.025221900843125, 'eigen')	DecisionTreeRegressor:('poisson', 'random', 12, 21, -3.0297172276237436)	DecisionTreeRegressor:('absolute_error', 'random', 32, 21, -2.6661511603088943)	ElasticNet:(-7.609198411786842, 0.4)	Lasso:(-7.392510035401935, 'svd')	ElasticNet:(-7.333129222864351, 0.7)	Lasso:(-6.553776338617362, 'svd')	DecisionTreeRegressor:('squared_error', 'random', 2, 21, -2.3025850929940455)	DecisionTreeRegressor:('squared_error', 'random', 2, 11, -7.8078087841201675)	DecisionTreeRegressor:('absolute_error', 'random', 12, 61, -2.6305344070198906)	Lasso:(-6.559205357929384, 'svd')	ElasticNet:(-6.4912801830707005, 0.5)	DecisionTreeRegressor:('absolute_error', 'random', 32, 31, -2.6661511603088943)	Lasso:(-7.944145045310303, 'eigen')	ElasticNet:(-6.7760269818162415, 0.6)	DecisionTreeRegressor:('squared_error', 'random', 12, 81, -6.585068827914338)	Lasso:(-7.486166510638886, 'eigen')	DecisionTreeRegressor:('squared_error', 'best', 12, 21, -7.83932396577457)	ElasticNet:(-6.617353350199936, 0.5)	Lasso:(-7.130629754054123, 'eigen')	ElasticNet:(-6.938834451939131, 0.6)	DecisionTreeRegressor:('poisson', 'best', 12, 21, -4.84754756419799)	Lasso:(-6.391398873318032, 'auto')	ElasticNet:(-6.653153906642053, 0.6)	DecisionTreeRegressor:('absolute_error', 'random', 2, 21, -6.721050692721833)	Lasso:(-7.458081616628344, 'svd')	ElasticNet:(-6.632147262330436, 0.5)	Lasso:(-7.955260864399035, 'eigen')	DecisionTreeRegressor:('absolute_error', 'best', 2, 21, -7.826047510753055)	ElasticNet:(-6.8740283531348565, 0.4)	Lasso:(-6.665377900772237, 'svd')	ElasticNet:(-6.665377900772237, 0.5)	Lasso:(-7.260551139960053, 'auto')	ElasticNet:(-7.453196997672612, 0.5)	Lasso:(-7.289556344116789, 'svd')	ElasticNet:(-7.354971486189138, 0.5)	Lasso:(-7.620996292931757, 'svd')	ElasticNet:(-7.67347660842087, 0.5)	DecisionTreeRegressor:('absolute_error', 'best', 2, 11, -8.382284393279454)	Lasso:(-7.2606551617816635, 'svd')	ElasticNet:(-7.080161664663562, 0.5)	Lasso:(-7.250309717139198, 'auto')	ElasticNet:(-7.027651512494032, 0.4)	Lasso:(-8.057933381110416, 'svd')	ElasticNet:(-7.71449541578835, 0.5)	Lasso:(-7.2516842442649345, 'eigen')	ElasticNet:(-7.12117360659638, 0.6)	Lasso:(-7.430365137714855, 'eigen')	ElasticNet:(-7.392658925527824, 0.7)	Lasso:(-7.952296287897583, 'eigen')	DecisionTreeRegressor:('poisson', 'best', 32, 31, -7.808997562829434)	ElasticNet:(-7.1701624110733855, 0.5)	Lasso:(-8.047237856864095, 'eigen')	DecisionTreeRegressor:('absolute_error', 'random', 2, 1, -7.823313184362147)	ElasticNet:(-7.773249824005713, 0.4)	Lasso:(-8.050086352709869, 'eigen')	ElasticNet:(-7.591655521973932, 0.5)	Lasso:(-8.832983679067244, 'auto')	ElasticNet:(-6.85544341509225, 0.4)	Lasso: GeneticAlgorithm - completeModel: Lasso
+GA time(hours): 0.004575430817074246
+--------------------------------------------------------------------------------
+------------------------- Lasso search complete, time taken: 16.578 seconds ------------------------ 
+ElasticNet:(-7.313759205309626, 0.7)	ElasticNet:(-7.276088412640189, 0.5)	ElasticNet:(-6.3387120913079125, 0.7)	ElasticNet: GeneticAlgorithm - completeDecisionTreeRegressor:('friedman_mse', 'random', 42, 71, -3.0297172276237436)	Model: ElasticNet
+GA time(hours): 0.004916322761111789
+--------------------------------------------------------------------------------
+------------------------- ElasticNet search complete, time taken: 17.78 seconds ------------------------ 
+DecisionTreeRegressor:('absolute_error', 'random', 32, 11, -6.510768085837084)	DecisionTreeRegressor:('absolute_error', 'random', 2, 31, -5.978511916908369)	DecisionTreeRegressor:('poisson', 'random', 2, 31, -7.808997562829434)	DecisionTreeRegressor:('friedman_mse', 'random', 22, 61, -5.56550193078471)	DecisionTreeRegressor:('squared_error', 'random', 42, 71, -3.021996543250827)	DecisionTreeRegressor:('friedman_mse', 'best', 22, 11, -4.317229647070102)	DecisionTreeRegressor:('poisson', 'best', 22, 11, -6.0536069890721365)	DecisionTreeRegressor:('friedman_mse', 'random', 2, 31, -7.462699907356916)	DecisionTreeRegressor:('squared_error', 'best', 22, 91, -9.17117077181353)	DecisionTreeRegressor:('friedman_mse', 'random', 22, 21, -2.3521598544448175)	DecisionTreeRegressor:('absolute_error', 'random', 32, 11, -2.3114358397336994)	DecisionTreeRegressor:('absolute_error', 'best', 32, 91, -7.462699907356916)	DecisionTreeRegressor:('absolute_error', 'random', 2, 51, -2.4356175360440204)	DecisionTreeRegressor:('squared_error', 'random', 42, 11, -4.4498397279014625)	DecisionTreeRegressor:('poisson', 'best', 32, 71, -4.84754756419799)	DecisionTreeRegressor:('friedman_mse', 'random', 22, 51, -7.163353563585401)	DecisionTreeRegressor:('absolute_error', 'random', 42, 91, -4.373943644554771)	DecisionTreeRegressor:('squared_error', 'best', 2, 21, -3.2190882629972855)	DecisionTreeRegressor: GeneticAlgorithm - completeModel: DecisionTreeRegressor
+GA time(hours): 0.006259312563472324
+--------------------------------------------------------------------------------
+------------------------- DecisionTreeRegressor search complete, time taken: 22.552 seconds ------------------------ 
+Single-core complete 
+
+Running model no: 1; Name: MLPRegressor
+MLPRegressor
+MLPRegressor:(-9.210340371976182, 'identity', 200, 180, 200)	MLPRegressor:(-8.846774304661333, 'tanh', 200, 20, 200)	MLPRegressor:(-8.483208237346483, 'relu', 40, 160, 80)	MLPRegressor:(-8.119642170031634, 'relu', 0, 60, 120)	MLPRegressor:(-7.756076102716785, 'logistic', 180, 60, 20)	MLPRegressor:(-7.392510035401935, 'identity', 160, 20, 20)	MLPRegressor:(-7.028943968087086, 'identity', 120, 180, 200)	MLPRegressor:(-6.665377900772237, 'relu', 180, 0, 120)	MLPRegressor:(-6.301811833457387, 'tanh', 20, 0, 60)	MLPRegressor:(-5.938245766142538, 'logistic', 0, 180, 200)	MLPRegressor:(-5.574679698827689, 'logistic', 40, 120, 120)	MLPRegressor:(-5.2111136315128395, 'relu', 140, 0, 80)	MLPRegressor:(-4.84754756419799, 'logistic', 0, 200, 100)	MLPRegressor:(-4.483981496883141, 'relu', 40, 80, 0)	MLPRegressor:(-4.1204154295682915, 'tanh', 140, 40, 80)	MLPRegressor:(-3.7568493622534422, 'logistic', 0, 60, 100)	MLPRegressor:(-3.393283294938593, 'logistic', 20, 200, 60)	
+
+-------------------------Model screening started at Mon Jul  6 11:08:44 2026-------------------------
+
+
+-------------------------Run parameters-------------------------
+  Featurization: False
+  Multi_core: False
+  Screener_type: regressor
+  Number of datapoints: 2000
+  Note: Dataset > 1000 samples; GradientBoostingRegressor and SVR are excluded from screening due to inefficiency.
+
+------------------------- Screening started for feature set user_given at Mon Jul  6 11:08:44 2026 -------------------------
+split done!
+Running model no: 2; Name: ElasticNet
+ElasticNet
+
+Running model no: 0; Name: RidgeElasticNet:(-9.210340371976182, 0.7)	
+Ridge
+
+Running model no: 3; Name: DecisionTreeRegressor
+Running model no: 1; Name: Lasso
+DecisionTreeRegressor
+Ridge:(107.9, -9.210340371976182)	Lasso:(-9.210340371976182, 'eigen')	DecisionTreeRegressor:('poisson', 'best', 2, 11, -9.210340371976182)	Ridge:(137.3, -8.846774304661333)	Ridge:(117.7, -8.483208237346483)	Ridge:(176.5, -8.119642170031634)	Ridge:(19.700000000000003, -7.756076102716785)	Ridge:(117.7, -7.392510035401935)	Ridge:(127.5, -7.028943968087086)	Lasso:(-8.846774304661333, 'svd')	ElasticNet:(-8.846774304661333, 0.4)	Ridge:(93.2, -6.665377900772237)	Ridge:(171.6, -6.301811833457387)	Ridge:(166.70000000000002, -5.938245766142538)	DecisionTreeRegressor:('friedman_mse', 'best', 2, 21, -8.846774304661333)	Ridge:(78.5, -5.574679698827689)	Ridge:(191.20000000000002, -5.2111136315128395)	Ridge:(58.900000000000006, -4.84754756419799)	Lasso:(-8.483208237346483, 'eigen')	ElasticNet:(-8.483208237346483, 0.4)	Ridge:(14.8, -4.483981496883141)	Ridge:(39.300000000000004, -4.1204154295682915)	Ridge:(191.20000000000002, -3.7568493622534422)	DecisionTreeRegressor:('friedman_mse', 'random', 42, 21, -8.483208237346483)	Ridge:(19.700000000000003, -3.393283294938593)	DecisionTreeRegressor:('squared_error', 'random', 22, 1, -8.119642170031634)	Ridge:(83.4, -3.0297172276237436)	Ridge:(186.3, -2.6661511603088943)	DecisionTreeRegressor:('friedman_mse', 'random', 42, 1, -7.756076102716785)	Lasso:(-8.119642170031634, 'auto')	ElasticNet:(-8.119642170031634, 0.7)	Ridge:(14.8, -2.3025850929940455)	DecisionTreeRegressor:('absolute_error', 'random', 12, 11, -7.392510035401935)	Ridge:(142.20000000000002, -7.915926634861564)	Ridge:(63.800000000000004, -5.451717647211885)	Ridge:(44.2, -6.276711352762781)	Ridge:(0.1, -2.5705927812147547)	Ridge:(73.6, -5.2418955193218215)	Lasso:(-7.756076102716785, 'eigen')	ElasticNet:(-7.756076102716785, 0.5)	Ridge:(196.1, -3.533941847254537)	Ridge:(122.60000000000001, -8.612447172549786)	Ridge:(191.20000000000002, -2.696210044120834)	Ridge:(152.0, -7.915926634861564)	Ridge:(107.9, -6.927065541689568)	DecisionTreeRegressor:('friedman_mse', 'best', 42, 61, -7.028943968087086)	Lasso:(-7.392510035401935, 'eigen')	Ridge:(93.2, -4.810796473325937)	ElasticNet:(-7.392510035401935, 0.7)	Ridge:(63.800000000000004, -5.938245766142538)	Ridge:(98.1, -5.947683181823893)	Ridge:(117.7, -6.136231383745433)	DecisionTreeRegressor:('squared_error', 'random', 12, 51, -6.665377900772237)	Ridge:(14.8, -8.119642170031634)	DecisionTreeRegressor:('poisson', 'random', 22, 31, -6.301811833457387)	Ridge:(0.1, -9.004993059154101)	Lasso:(-7.028943968087086, 'eigen')	ElasticNet:(-7.028943968087086, 0.7)	Ridge:(0.1, -7.121898706847019)	DecisionTreeRegressor:('poisson', 'random', 22, 1, -5.938245766142538)	Ridge:(117.7, -7.615887431692155)	DecisionTreeRegressor:('absolute_error', 'random', 2, 61, -5.574679698827689)	Ridge:(98.1, -5.365344981092117)	Ridge:(49.1, -5.555047520423866)	Ridge:(98.1, -5.2111136315128395)	Lasso:(-6.665377900772237, 'svd')	ElasticNet:(-6.665377900772237, 0.4)	Ridge:(19.700000000000003, -5.057330526563247)	DecisionTreeRegressor:('absolute_error', 'best', 12, 31, -5.2111136315128395)	Ridge:(24.6, -4.239845383911698)	Ridge:(161.8, -6.3267905078209905)	Ridge:(127.5, -5.884892243504875)	Ridge:(147.1, -5.548235259218008)	Lasso:(-6.301811833457387, 'auto')	Ridge:(191.20000000000002, -4.8387758867018285)	ElasticNet:(-6.301811833457387, 0.5)	Ridge:(161.8, -3.0351235139313433)	Ridge:(14.8, -8.513505112738638)	Ridge:(171.6, -6.34838996507997)	Ridge: GeneticAlgorithm - completeModel: Ridge
+GA time(hours): 0.001038160522778829
+Lasso:(-5.938245766142538, 'eigen')	ElasticNet:(-5.938245766142538, 0.7)	Lasso:(-5.574679698827689, 'eigen')	ElasticNet:(-5.574679698827689, 0.6)	Lasso:(-5.2111136315128395, 'auto')	--------------------------------------------------------------------------------
+------------------------- Ridge search complete, time taken: 4.527 seconds ------------------------ 
+ElasticNet:(-5.2111136315128395, 0.4)	DecisionTreeRegressor:('absolute_error', 'random', 32, 81, -4.84754756419799)	Lasso:(-4.84754756419799, 'auto')	ElasticNet:(-4.84754756419799, 0.4)	DecisionTreeRegressor:('squared_error', 'best', 32, 71, -4.483981496883141)	Lasso:(-4.483981496883141, 'svd')	ElasticNet:(-4.483981496883141, 0.7)	DecisionTreeRegressor:('poisson', 'random', 2, 11, -4.1204154295682915)	DecisionTreeRegressor:('poisson', 'best', 42, 91, -3.7568493622534422)	Lasso:(-4.1204154295682915, 'auto')	ElasticNet:(-4.1204154295682915, 0.6)	Lasso:(-3.7568493622534422, 'svd')	DecisionTreeRegressor:('squared_error', 'best', 42, 1, -3.393283294938593)	Lasso:(-3.393283294938593, 'auto')	Lasso:(-3.0297172276237436, 'auto')	ElasticNet:(-3.7568493622534422, 0.4)	Lasso:(-2.6661511603088943, 'eigen')	Lasso:(-2.3025850929940455, 'auto')	Lasso:(-8.45636878848864, 'eigen')	DecisionTreeRegressor:('absolute_error', 'random', 22, 21, -3.0297172276237436)	ElasticNet:(-3.393283294938593, 0.5)	ElasticNet:(-3.0297172276237436, 0.7)	ElasticNet:(-2.6661511603088943, 0.5)	Lasso:(-8.94344158011183, 'auto')	ElasticNet:(-2.3025850929940455, 0.7)	ElasticNet:(-5.905279764431757, 0.7)	DecisionTreeRegressor:('absolute_error', 'random', 22, 1, -2.6661511603088943)	Lasso:(-6.0164849567809435, 'eigen')	ElasticNet:(-6.174987674063983, 0.4)	Lasso:(-7.859162214935068, 'svd')	ElasticNet:(-4.1204154295682915, 0.5)	Lasso:(-6.258497575902723, 'auto')	ElasticNet:(-5.902403514904191, 0.7)	Lasso:(-5.792043957837605, 'auto')	ElasticNet:(-6.5229751613983495, 0.4)	Lasso:(-7.75914228777721, 'eigen')	ElasticNet:(-7.028943968087086, 0.4)	DecisionTreeRegressor:('squared_error', 'random', 2, 81, -2.3025850929940455)	DecisionTreeRegressor:('poisson', 'best', 22, 31, -7.6243635259479365)	Lasso:(-8.167034827698801, 'auto')	ElasticNet:(-6.914069401533462, 0.6)	DecisionTreeRegressor:('absolute_error', 'random', 12, 31, -4.4383272932947415)	Lasso:(-8.324604088828659, 'eigen')	ElasticNet:(-7.275669243651575, 0.4)	Lasso:(-8.421104083227174, 'auto')	DecisionTreeRegressor:('poisson', 'random', 32, 41, -4.8033624004978615)	DecisionTreeRegressor:('friedman_mse', 'best', 12, 1, -7.731176875819015)	ElasticNet:(-6.910515206912522, 0.6)	Lasso:(-7.658639977226092, 'eigen')	ElasticNet:(-6.30860071268964, 0.4)	DecisionTreeRegressor:('friedman_mse', 'best', 12, 61, -8.953638084170395)	Lasso:(-6.855099608194642, 'eigen')	DecisionTreeRegressor:('poisson', 'best', 2, 21, -8.846774304661333)	ElasticNet:(-6.644151598896983, 0.5)	Lasso:(-7.182614510153819, 'auto')	ElasticNet:(-7.295529304966875, 0.7)	Lasso:(-8.394545521077553, 'eigen')	DecisionTreeRegressor:('friedman_mse', 'random', 2, 91, -7.946994621873593)	DecisionTreeRegressor:('friedman_mse', 'random', 22, 11, -4.281471333264615)	DecisionTreeRegressor:('poisson', 'random', 42, 81, -7.6243635259479365)	DecisionTreeRegressor:('friedman_mse', 'random', 22, 81, -5.691771489732837)	DecisionTreeRegressor:('squared_error', 'random', 22, 31, -7.8027003894711875)	ElasticNet:(-7.396650596797436, 0.5)	Lasso:(-5.593913949027691, 'svd')	DecisionTreeRegressor:('squared_error', 'random', 42, 21, -8.483208237346483)	DecisionTreeRegressor:('poisson', 'random', 2, 21, -8.818564089810755)	DecisionTreeRegressor:('absolute_error', 'best', 12, 71, -6.788172274615052)	Lasso:(-8.415486520588045, 'auto')	ElasticNet:(-7.301227270873831, 0.6)	Lasso:(-8.104286886560951, 'auto')	ElasticNet:(-7.18217090497273, 0.7)	Lasso:(-5.4598066896783575, 'eigen')	ElasticNet:(-6.5932319420769225, 0.5)	DecisionTreeRegressor:('poisson', 'best', 2, 11, -4.302817930682807)	Lasso:(-7.898229229707674, 'eigen')	ElasticNet:(-6.539818502431424, 0.5)	Lasso:(-7.383542392959399, 'svd')	ElasticNet:(-7.884893849081914, 0.6)	DecisionTreeRegressor:('friedman_mse', 'random', 32, 91, -5.433404658654949)	DecisionTreeRegressor:('friedman_mse', 'random', 22, 21, -5.9438241339204625)	DecisionTreeRegressor:('friedman_mse', 'best', 32, 1, -4.318926027282561)	Lasso:(-7.859162214935068, 'auto')	ElasticNet:(-7.48840736137173, 0.4)	Lasso:(-7.849580880930812, 'svd')	DecisionTreeRegressor:('squared_error', 'best', 42, 51, -4.314465865916181)	ElasticNet:(-7.016641071052894, 0.7)	DecisionTreeRegressor:('squared_error', 'random', 22, 1, -4.268314801930814)	Lasso:(-8.274247285477472, 'auto')	DecisionTreeRegressor:('absolute_error', 'random', 42, 91, -7.6243635259479365)	ElasticNet:(-4.982641817006636, 0.5)	DecisionTreeRegressor:('absolute_error', 'random', 42, 61, -6.797249334932676)	Lasso:(-7.748084866977338, 'eigen')	ElasticNet:(-6.838086954221687, 0.6)	DecisionTreeRegressor:('friedman_mse', 'random', 42, 81, -5.896570420096239)	DecisionTreeRegressor:('poisson', 'best', 42, 81, -7.392510035401935)	Lasso:(-7.8797914167821155, 'svd')	ElasticNet:(-6.643521781725645, 0.4)	DecisionTreeRegressor:('poisson', 'random', 2, 61, -6.788322239991001)	Lasso:(-8.013052400764675, 'eigen')	DecisionTreeRegressor:('poisson', 'random', 42, 1, -6.833418751297788)	DecisionTreeRegressor:('absolute_error', 'random', 42, 21, -5.9438241339204625)	ElasticNet:(-7.396650596797436, 0.6)	Lasso:(-8.36658859047011, 'svd')	ElasticNet:(-7.5359675522214875, 0.6)	DecisionTreeRegressor:('friedman_mse', 'random', 22, 61, -6.542317015285627)	DecisionTreeRegressor:('absolute_error', 'random', 42, 1, -6.572700908587012)	Lasso:(-8.150257557908745, 'svd')	ElasticNet:(-7.288317493171701, 0.4)	Lasso:(-8.220800366005772, 'auto')	ElasticNet:(-5.33337390546221, 0.6)	Lasso:(-7.8797914167821155, 'eigen')	ElasticNet:(-7.363551112633001, 0.5)	Lasso: GeneticAlgorithm - completeModel: Lasso
+GA time(hours): 0.004742351373036703
+--------------------------------------------------------------------------------
+------------------------- Lasso search complete, time taken: 17.18 seconds ------------------------ 
+ElasticNet:(-7.336518700920433, 0.5)	DecisionTreeRegressor:('poisson', 'best', 2, 11, -6.788322239991001)	ElasticNet:(-6.914069401533462, 0.7)	DecisionTreeRegressor: GeneticAlgorithm - completeElasticNet: GeneticAlgorithm - completeModel: ElasticNet
+GA time(hours): 0.004975174003177219
+--------------------------------------------------------------------------------
+------------------------- ElasticNet search complete, time taken: 18.006 seconds ------------------------ 
+Model: DecisionTreeRegressor
+GA time(hours): 0.00497361057334476
+--------------------------------------------------------------------------------
+------------------------- DecisionTreeRegressor search complete, time taken: 18.024 seconds ------------------------ 
+Single-core complete 
+
+------------------------- Screening complete for feature set user_given, time taken: 25.237 seconds -------------------------

@@ -1,0 +1,1182 @@
+#INFO: **** input file is /vscratch/grp-cyberwksp21/sbakenhaster/tues_7_7/cybertraining_examples/pyscf_prism_examples/09_cvs_ip_mr_adc/09_cvs_ip_mr_adc.py ****
+from pyscf import gto, scf, mcscf
+import prism.interface
+import prism.mr_adc
+import numpy as np
+
+# Specify geometry and molecular information
+mol = gto.Mole()
+mol.atom = """
+O    0.0000000000     0.0000000000     -0.4477034680
+O    0.0000000000     1.0918051524      0.2238517340
+O    0.0000000000    -1.0918051524      0.2238517340
+"""
+mol.basis = "cc-pcvdz"
+mol.verbose = 4
+mol.charge = 0
+mol.max_memory = 10000
+mol.build()
+
+# Run RHF calculation as guess for CASSCF
+mf = scf.RHF(mol).density_fit()
+mf.kernel()
+
+# CASSCF(6e,6o) calculation
+mc = mcscf.CASSCF(mf, 6, 6).density_fit()
+emc = mc.mc1step()[0]
+
+# CVS-IP-MR-ADC calculation to simulate the ground-state oxyten K-edge XPS
+interface = prism.interface.PYSCF(mf, mc, backend = 'opt_einsum').density_fit()
+mr_adc = prism.mr_adc.MRADC(interface)
+mr_adc.method = "mr-adc(2)-x"
+mr_adc.method_type = "cvs-ip"
+mr_adc.ncvs = 3
+mr_adc.nroots = 8
+
+e_diff, intensity, x = mr_adc.kernel()
+
+# For spectrum
+from prism.tools.spectrum import plot
+plot(e_diff, intensity, broadening = 0.5, omega_min = 540, omega_max = 550, plot = True, x_label = "Energy, eV", y_label = "Intensity", title = "XPS spectrum", filename = "mr_adc")
+
+# Next run state-averaged CASSCF calculation for the two lowest states
+n_states = 2
+weights = np.ones(n_states)/n_states
+mc = mcscf.CASSCF(mf, 6, 6).state_average_(weights).density_fit()
+mc.fix_spin_(ss=0) # Singlet states only
+emc = mc.mc1step()[0]
+
+state1_ci = mc.ci[0]
+state2_ci = mc.ci[1]
+mo = mc.mo_coeff.copy()
+
+# Run reference calculation for the two lowest states
+mc = mcscf.CASCI(mf, 6, 6).density_fit()
+emc = mc.casci(mo_coeff=mo, ci0=state1_ci)[0]
+
+interface = prism.interface.PYSCF(mf, mc, backend = 'opt_einsum').density_fit()
+mr_adc = prism.mr_adc.MRADC(interface)
+mr_adc.method = "mr-adc(2)-x"
+mr_adc.method_type = "cvs-ip"
+mr_adc.max_cycle = 100
+mr_adc.ncvs = 3
+mr_adc.nroots = 8
+
+e_diff, intensity, x = mr_adc.kernel()
+
+plot(e_diff, intensity, broadening = 0.5, omega_min = 540, omega_max = 550, plot = True, x_label = "Energy, eV", y_label = "Intensity", title = "XPS spectrum", filename = "mr_adc_S0")
+
+mc = mcscf.CASCI(mf, 6, 6).density_fit()
+emc = mc.casci(mo_coeff=mo, ci0=state2_ci)[0]
+
+interface = prism.interface.PYSCF(mf, mc, backend = 'opt_einsum').density_fit()
+mr_adc = prism.mr_adc.MRADC(interface)
+mr_adc.method = "mr-adc(2)-x"
+mr_adc.method_type = "cvs-ip"
+mr_adc.max_cycle = 100
+mr_adc.ncvs = 3
+mr_adc.nroots = 8
+
+e_diff, intensity, x = mr_adc.kernel()
+
+plot(e_diff, intensity, broadening = 0.5, omega_min = 540, omega_max = 550, plot = True, x_label = "Energy, eV", y_label = "Intensity", title = "XPS spectrum", filename = "mr_adc_S1")
+#INFO: ******************** input file end ********************
+
+
+System: uname_result(system='Linux', node='cpn-b02-31-01.core.ccr.buffalo.edu', release='6.8.0-124-generic', version='#124-Ubuntu SMP PREEMPT_DYNAMIC Tue May 26 13:00:45 UTC 2026', machine='x86_64')  Threads 12
+Python 3.13.14 | packaged by Anaconda, Inc. | (main, Jun 17 2026, 20:12:46) [GCC 14.3.0]
+numpy 2.4.6  scipy 1.18.0  h5py 3.16.0
+Date: Tue Jul  7 11:30:36 2026
+PySCF version 2.13.1
+PySCF path  /projects/academic/cyberwksp21/SOFTWARE_2026/conda/miniconda3/envs/pyscf/lib/python3.13/site-packages/pyscf
+
+[CONFIG] conf_file None
+[INPUT] verbose = 4
+[INPUT] num. atoms = 3
+[INPUT] num. electrons = 24
+[INPUT] charge = 0
+[INPUT] spin (= nelec alpha-beta = 2S) = 0
+[INPUT] symmetry False subgroup None
+[INPUT] Mole.unit = angstrom
+[INPUT] Symbol           X                Y                Z      unit          X                Y                Z       unit  Magmom
+[INPUT]  1 O      0.000000000000   0.000000000000  -0.447703468000 AA    0.000000000000   0.000000000000  -0.846036939538 Bohr   0.0
+[INPUT]  2 O      0.000000000000   1.091805152400   0.223851734000 AA    0.000000000000   2.063212719425   0.423018469769 Bohr   0.0
+[INPUT]  3 O      0.000000000000  -1.091805152400   0.223851734000 AA    0.000000000000  -2.063212719425   0.423018469769 Bohr   0.0
+
+nuclear repulsion = 68.3529826341996
+number of shells = 21
+number of NR pGTOs = 90
+number of NR cGTOs = 54
+basis = cc-pcvdz
+ecp = {}
+CPU time:         1.98
+
+
+******** <class 'pyscf.df.df_jk.DFRHF'> ********
+method = DFRHF
+initial guess = minao
+damping factor = 0
+level_shift factor = 0
+DIIS = <class 'pyscf.scf.diis.CDIIS'>
+diis_start_cycle = 1
+diis_space = 8
+diis_damp = 0
+SCF conv_tol = 1e-09
+SCF conv_tol_grad = None
+SCF max_cycles = 50
+direct_scf = False
+chkfile to save SCF result = /scratch/25175018/tmpfcephowz
+max_memory 10000 MB (current use 99 MB)
+Set gradient conv threshold to 3.16228e-05
+Initial guess from minao.
+******** <class 'pyscf.df.df.DF'> ********
+auxbasis = None
+max_memory = 10000
+ETB for O: l = 0, exps = 0.6046 * 2^n , n = 0..12
+ETB for O: l = 1, exps = 0.5769685953325363 * 2^n , n = 0..9
+ETB for O: l = 2, exps = 0.5506 * 2^n , n = 0..7
+ETB for O: l = 3, exps = 1.1423318256968944 * 2^n , n = 0..3
+ETB for O: l = 4, exps = 2.37 * 2^n , n = 0..0
+
+WARN: Even tempered Gaussians are generated as DF auxbasis for  O
+
+init E= -224.543325955681
+  HOMO = -0.341803436508273  LUMO = -0.185080804158737
+cycle= 1 E= -224.094931651185  delta_E= 0.448  |g|= 0.958  |ddm|= 2.22
+  HOMO = -0.484731091572442  LUMO = -0.136231604397373
+cycle= 2 E= -224.121580217059  delta_E= -0.0266  |g|= 0.945  |ddm|= 0.961
+  HOMO = -0.496096464563024  LUMO = -0.0691620856020023
+cycle= 3 E= -224.260261454634  delta_E= -0.139  |g|= 0.0665  |ddm|= 0.464
+  HOMO = -0.475701693225645  LUMO = -0.045826784198411
+cycle= 4 E= -224.261987855323  delta_E= -0.00173  |g|= 0.0273  |ddm|= 0.0882
+  HOMO = -0.480193261460272  LUMO = -0.0469465639675093
+cycle= 5 E= -224.262436503389  delta_E= -0.000449  |g|= 0.0104  |ddm|= 0.0526
+  HOMO = -0.479754458239569  LUMO = -0.045472013386842
+cycle= 6 E= -224.262526663319  delta_E= -9.02e-05  |g|= 0.00456  |ddm|= 0.0236
+  HOMO = -0.48074519676387  LUMO = -0.0454207543265994
+cycle= 7 E= -224.262549198895  delta_E= -2.25e-05  |g|= 0.00183  |ddm|= 0.0112
+  HOMO = -0.481107553064732  LUMO = -0.0451624847716658
+cycle= 8 E= -224.262552721394  delta_E= -3.52e-06  |g|= 0.000359  |ddm|= 0.00549
+  HOMO = -0.481162418342656  LUMO = -0.0452001301821312
+cycle= 9 E= -224.262552769016  delta_E= -4.76e-08  |g|= 3.71e-05  |ddm|= 0.000529
+  HOMO = -0.481162938810925  LUMO = -0.0451959560849886
+cycle= 10 E= -224.262552769609  delta_E= -5.93e-10  |g|= 9.48e-06  |ddm|= 5.24e-05
+  HOMO = -0.48116284117382  LUMO = -0.0451962602506413
+Extra cycle  E= -224.262552769651  delta_E= -4.18e-11  |g|= 5.01e-06  |ddm|= 1.24e-05
+converged SCF energy = -224.262552769651
+
+******** <class 'pyscf.mcscf.df.DFCASSCF'> ********
+CAS (3e+3e, 6o), ncore = 9, nvir = 39
+max_cycle_macro = 50
+max_cycle_micro = 4
+conv_tol = 1e-07
+conv_tol_grad = None
+orbital rotation max_stepsize = 0.02
+orbital rotation threshold for CI restart = 0.01
+augmented hessian ah_max_cycle = 30
+augmented hessian ah_conv_tol = 1e-12
+augmented hessian ah_linear dependence = 1e-14
+augmented hessian ah_level shift = 1e-08
+augmented hessian ah_start_tol = 2.5
+augmented hessian ah_start_cycle = 3
+augmented hessian ah_grad_trust_region = 3
+kf_trust_region = 3
+kf_interval = 4
+ci_response_space = 4
+ci_grad_trust_region = 3
+with_dep4 0
+natorb = False
+canonicalization = True
+sorting_mo_energy = False
+ao2mo_level = 2
+chkfile = /scratch/25175018/tmpfcephowz
+max_memory 10000 MB (current use 129 MB)
+internal_rotation = False
+******** <class 'pyscf.fci.direct_spin1.FCISolver'> ********
+max. cycles = 50
+conv_tol = 1e-08
+davidson only = False
+linear dependence = 1e-12
+level shift = 0.001
+max iter space = 12
+max_memory 10000 MB
+nroots = 1
+pspace_size = 400
+spin = None
+DFCASCI/DFCASSCF: density fitting for JK matrix and 2e integral transformation
+CASCI E = -224.338926701621  S^2 = 0.0000000
+Set conv_tol_grad to 0.000316228
+macro iter   1 ( 21 JK    4 micro), CASSCF E = -224.394648057082  dE = -5.57213555e-02  S^2 = 0.0000000
+               |grad[o]|=0.132  |grad[c]|=0.117  |ddm|=0.145  |maxRot[o]|=0.289
+macro iter   2 ( 21 JK    4 micro), CASSCF E = -224.412405787609  dE = -1.77577305e-02  S^2 = 0.0000000
+               |grad[o]|=0.0705  |grad[c]|=0.0895  |ddm|=0.0879  |maxRot[o]|=0.216
+macro iter   3 ( 21 JK    4 micro), CASSCF E = -224.429210469126  dE = -1.68046815e-02  S^2 = 0.0000000
+               |grad[o]|=0.0304  |grad[c]|=0.0951  |ddm|=0.0695  |maxRot[o]|=0.247
+macro iter   4 ( 21 JK    4 micro), CASSCF E = -224.440309590152  dE = -1.10991210e-02  S^2 = 0.0000000
+               |grad[o]|=0.0375  |grad[c]|=0.0515  |ddm|= 0.04  |maxRot[o]|=0.214
+macro iter   5 ( 19 JK    4 micro), CASSCF E = -224.442180323973  dE = -1.87073382e-03  S^2 = 0.0000000
+               |grad[o]|=0.0313  |grad[c]|=0.022  |ddm|=0.0172  |maxRot[o]|=0.0563
+macro iter   6 ( 15 JK    4 micro), CASSCF E = -224.443213999679  dE = -1.03367571e-03  S^2 = 0.0000000
+               |grad[o]|=0.0131  |grad[c]|=0.0111  |ddm|=0.00576  |maxRot[o]|=0.0468
+macro iter   7 ( 13 JK    4 micro), CASSCF E = -224.443634840734  dE = -4.20841055e-04  S^2 = 0.0000000
+               |grad[o]|=0.00745  |grad[c]|=0.00511  |ddm|=0.00329  |maxRot[o]|=0.0402
+macro iter   8 ( 12 JK    4 micro), CASSCF E = -224.443744723520  dE = -1.09882786e-04  S^2 = 0.0000000
+               |grad[o]|=0.00393  |grad[c]|=0.00134  |ddm|=0.00168  |maxRot[o]|=0.0282
+macro iter   9 (  7 JK    2 micro), CASSCF E = -224.443751439848  dE = -6.71632779e-06  S^2 = 0.0000000
+               |grad[o]|=0.000983  |grad[c]|=0.000202  |ddm|=0.000505  |maxRot[o]|=0.00827
+macro iter  10 (  4 JK    1 micro), CASSCF E = -224.443751488841  dE = -4.89928311e-08  S^2 = 0.0000000
+               |grad[o]|=0.000126  |grad[c]|=0.000124  |ddm|=8.27e-05  |maxRot[o]|=0.000563
+1-step CASSCF converged in  10 macro (154 JK  35 micro) steps
+CASSCF canonicalization
+Density matrix diagonal elements [1.95471845 1.95319986 1.65743591 0.34257615 0.05508039 0.03698924]
+CASSCF energy = -224.443751488841
+CASCI E = -224.443751488841  E(CI) = -12.2177939971472  S^2 = 0.0000000
+
+
+------------------------------------------------------------------------------
+
+            PRISM: Open-Source implementation of ab initio methods
+                    for excited states and spectroscopy
+
+                               Version 0.9
+
+                   Copyright (C) 2026 Prism Developers
+                   Contributors: Nicholas Yiching Chiang
+                                 Carlos E. V. de Moura
+                                 Nishshanka M. Lakshan
+                                 Rajat S. Majumder
+                                 Ilia M. Mazin
+                                 Donna H. Odhiambo
+                                 Bryce Pickett
+                                 James D. Serna
+                                 Alexander Yu. Sokolov
+
+            Unless required by applicable law or agreed to in
+            writing, software distributed under the GNU General
+            Public License v3.0 and is distributed on an "AS IS"
+            BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+            either express or implied.
+
+            See the License for the specific language governing
+            permissions and limitations.
+
+            Available at https://github.com/sokolov-group/prism
+
+------------------------------------------------------------------------------
+
+Importing Pyscf objects...
+
+Collecting reference wavefunction information...
+Reference wavefunction: casscf
+Canonicalizing molecular orbitals using reference wavefunction manifold...
+
+Summary of reference wavefunction manifold:
+Total number of reference states: 1
+  State       S^2        S      (2S+1)        E(total)              E(CAS)
+-----------------------------------------------------------------------------------
+    1       0.00000     0.0        1     -224.443751488841     -12.217793997147
+-----------------------------------------------------------------------------------
+
+Importing Pyscf density-fitting objects...
+
+Initializing MR-ADC...
+
+Computing MR-ADC excitation energies...
+
+Method:                                            cvs-ip-mr-adc(2)-x
+Nuclear repulsion energy:                         68.352982634200
+Number of electrons:                               24
+Number of basis functions:                         54
+Reference wavefunction type:                       casscf
+Number of core orbitals:                           9
+Number of active orbitals:                         6
+Number of external orbitals:                       39
+Number of active electrons:                        [(3, 3)]
+Reference state active-space energy:             -12.217793997147
+Reference state spin multiplicity:                 [1]
+Number of MR-ADC roots requested:                  8
+Number of CVS orbitals:                            3
+Number of valence (non-CVS) orbitals:              6
+Reference density fitting?                         True
+Correlation density fitting?                       True
+Temporary directory path:                          /scratch/25175018
+
+Internal contraction:                              Full
+Overlap truncation parameter (singles):            1.00e-05
+Overlap truncation parameter (doubles):            1.00e-10
+Projector for the semi-internal amplitudes:        gno
+
+Einsum Backend:                                    opt_einsum
+
+Transforming integrals to MO basis...
+******** <class 'pyscf.df.df.DF'> ********
+auxbasis = None
+max_memory = 10000
+ETB for O: l = 0, exps = 0.6046 * 2^n , n = 0..12
+ETB for O: l = 1, exps = 0.5769685953325363 * 2^n , n = 0..9
+ETB for O: l = 2, exps = 0.5506 * 2^n , n = 0..7
+ETB for O: l = 3, exps = 1.1423318256968944 * 2^n , n = 0..3
+ETB for O: l = 4, exps = 2.37 * 2^n , n = 0..0
+
+WARN: Even tempered Gaussians are generated as DF auxbasis for  O
+
+
+Computing reference wavefunction RDMs...
+
+Computing NEVPT2 amplitudes...
+Correlation energy [0']:                          -0.106159376143
+Correlation energy [+1']:                         -0.031435385414
+Correlation energy [-1']:                         -0.018548030450
+Correlation energy [0]:                           -0.201192523351
+Correlation energy [+1]:                          -0.047797236847
+Correlation energy [-1]:                          -0.105817979829
+Correlation energy [+2]:                          -0.008277425579
+Correlation energy [-2]:                          -0.025551923053
+
+Reference energy:                               -224.443751488841
+NEVPT2 correlation energy:                        -0.544779880665
+Total NEVPT2 energy:                            -224.988531369506
+
+Transforming integrals for the CVS calculation...
+
+Dimension of h0 excitation manifold:                       3
+Dimension of h1 excitation manifold:                       5400
+Total dimension of the excitation manifold:                5403
+Dimension of the orthogonalized excitation manifold:       5394
+
+tol 1e-08  toloose 1e-05
+max_cycle 50  max_space 128  max_memory 4000  incore True
+davidson 0 8  |r|= 2.09  e= [20.71939702 20.71944576 20.8396159  20.96969012 20.96972906 21.02212746
+ 21.02215974 21.02408878]  max|de|=   21  lindep=    1
+Old state -> New state
+    7     ->     5 
+    5     ->     6 
+    6     ->     7 
+davidson 1 16  |r|= 0.743  e= [20.04358719 20.04368341 20.13445767 20.47353169 20.47355717 20.51975089
+ 20.54609754 20.54614747]  max|de|= -0.705  lindep= 0.978
+Old state -> New state
+    6     ->     5 
+    7     ->     6 
+    5     ->     7 
+davidson 2 24  |r|= 0.233  e= [19.98323948 19.98334209 20.07328692 20.39763146 20.39763291 20.4567434
+ 20.45678333 20.45756388]  max|de|= -0.0894  lindep= 0.986
+Old state -> New state
+    4     ->     3 
+    3     ->     4 
+davidson 3 32  |r|= 0.198  e= [19.9697696  19.96987463 20.0667081  20.3720925  20.37211056 20.41854844
+ 20.41856473 20.44156334]  max|de|= -0.0382  lindep= 0.952
+Old state -> New state
+    6     ->     5 
+    5     ->     6 
+davidson 4 40  |r|= 0.139  e= [19.96446602 19.96456789 20.06517498 20.3575233  20.35755778 20.39437388
+ 20.39438267 20.43723647]  max|de|= -0.0242  lindep= 0.932
+davidson 5 48  |r|= 0.0933  e= [19.96340608 19.96350701 20.06504131 20.34962484 20.34966872 20.38258901
+ 20.38260901 20.43577319]  max|de|= -0.0118  lindep= 0.929
+davidson 6 56  |r|= 0.0746  e= [19.96324951 19.96335025 20.06501654 20.3468093  20.34685542 20.37755327
+ 20.37758473 20.43519791]  max|de|= -0.00504  lindep= 0.969
+davidson 7 64  |r|= 0.243  e= [19.96322578 19.96332648 20.06501236 20.34619193 20.3462383  20.37440803
+ 20.37445076 20.41961052]  max|de|= 20.4  lindep= 0.961
+davidson 8 72  |r|= 0.119  e= [19.96322252 19.96332318 20.06501169 20.34606398 20.3461104  20.37141593
+ 20.37146083 20.40318185]  max|de|= -0.0164  lindep= 0.971
+Old state -> New state
+    6     ->     5 
+    5     ->     6 
+davidson 9 80  |r|= 0.0935  e= [19.96322202 19.9633227  20.06501164 20.34604145 20.34608786 20.36917303
+ 20.3691856  20.3978059 ]  max|de|= -0.00538  lindep= 0.945
+davidson 10 88  |r|= 0.049  e= [19.96322195 19.96332264 20.06501164 20.34603601 20.34608242 20.36776114
+ 20.36778872 20.39522541]  max|de|= -0.00258  lindep= 0.953
+Old state -> New state
+    6     ->     5 
+    5     ->     6 
+davidson 11 96  |r|= 0.0275  e= [19.96322194 19.96332263 20.06501164 20.34603448 20.34608089 20.36733558
+ 20.36734145 20.39448714]  max|de|= -0.000738  lindep= 0.895
+davidson 12 104  |r|= 0.0101  e= [19.96322194 19.96332263 20.06501164 20.34603362 20.34608004 20.36724172
+ 20.36725939 20.39432869]  max|de|= -0.000158  lindep= 0.747
+root 0 converged  |r|= 5.32e-06  e= 19.963221941240878  max|de|= -5.83e-11
+root 1 converged  |r|= 5.46e-06  e= 19.96332263270699  max|de|= -4.71e-11
+root 2 converged  |r|= 5.81e-06  e= 20.06501163993383  max|de|= -2.06e-11
+davidson 13 112  |r|= 0.00458  e= [19.96322194 19.96332263 20.06501164 20.34603321 20.34607963 20.36721758
+ 20.36724366 20.39429559]  max|de|= -3.31e-05  lindep= 0.964
+davidson 14 117  |r|= 0.00145  e= [19.96322194 19.96332263 20.06501164 20.34603314 20.34607955 20.36721436
+ 20.36724165 20.39429123]  max|de|= -4.36e-06  lindep= 0.945
+davidson 15 122  |r|= 0.000623  e= [19.96322194 19.96332263 20.06501164 20.34603313 20.34607954 20.36721395
+ 20.36724134 20.39429057]  max|de|= -6.66e-07  lindep= 0.907
+davidson 16 8  |r|= 0.000623  e= [19.96322201 19.9633227  20.06501084 20.34603581 20.34608222 20.36721663
+ 20.36724402 20.39429439]  max|de|= 3.82e-06  lindep= 0.99
+root 0 converged  |r|= 2.13e-06  e= 19.96322201317622  max|de|= -7.22e-12
+root 1 converged  |r|= 1.79e-06  e= 19.963322704979394  max|de|= -6.11e-12
+root 2 converged  |r|= 2.07e-06  e= 20.06501084270457  max|de|= -7.15e-12
+davidson 17 16  |r|= 0.000412  e= [19.96322201 19.9633227  20.06501084 20.34603581 20.34608222 20.36721658
+ 20.36724397 20.39429427]  max|de|= -1.17e-07  lindep= 0.962
+davidson 18 21  |r|= 0.000284  e= [19.96322201 19.9633227  20.06501084 20.34603581 20.34608222 20.36721655
+ 20.36724395 20.39429419]  max|de|= -7.4e-08  lindep= 0.977
+davidson 19 26  |r|= 0.000137  e= [19.96322201 19.9633227  20.06501084 20.34603581 20.34608222 20.36721655
+ 20.36724394 20.39429417]  max|de|= -2.37e-08  lindep= 0.859
+root 3 converged  |r|= 4.15e-06  e= 20.346035808746716  max|de|= -4.59e-11
+root 4 converged  |r|= 5.6e-06  e= 20.34608222051191  max|de|= -6.7e-11
+davidson 20 31  |r|= 8.72e-05  e= [19.96322201 19.9633227  20.06501084 20.34603581 20.34608222 20.36721655
+ 20.36724394 20.39429416]  max|de|= -6.47e-09  lindep= 0.947
+davidson 21 34  |r|= 0.000101  e= [19.96322201 19.9633227  20.06501084 20.34603581 20.34608222 20.36721655
+ 20.36724394 20.39429416]  max|de|= -5.43e-09  lindep= 0.69
+davidson 22 37  |r|= 6.85e-05  e= [19.96322201 19.9633227  20.06501084 20.34603581 20.34608222 20.36721655
+ 20.36724394 20.39429415]  max|de|= -3.99e-09  lindep= 0.487
+root 5 converged  |r|= 5.82e-06  e= 20.36721654541285  max|de|= -2.04e-11
+root 6 converged  |r|= 8.53e-06  e= 20.36724393848892  max|de|= -4.3e-11
+davidson 23 40  |r|= 5.15e-05  e= [19.96322201 19.9633227  20.06501084 20.34603581 20.34608222 20.36721655
+ 20.36724394 20.39429415]  max|de|= -2.07e-09  lindep= 0.958
+davidson 24 41  |r|= 2.66e-05  e= [19.96322201 19.9633227  20.06501084 20.34603581 20.34608222 20.36721655
+ 20.36724394 20.39429415]  max|de|= -8.67e-10  lindep= 0.909
+davidson 25 42  |r|= 2.11e-05  e= [19.96322201 19.9633227  20.06501084 20.34603581 20.34608222 20.36721655
+ 20.36724394 20.39429415]  max|de|= -3.37e-10  lindep= 0.859
+davidson 26 43  |r|= 1.55e-05  e= [19.96322201 19.9633227  20.06501084 20.34603581 20.34608222 20.36721655
+ 20.36724394 20.39429415]  max|de|= -1.8e-10  lindep= 0.802
+davidson 27 44  |r|= 1.36e-05  e= [19.96322201 19.9633227  20.06501084 20.34603581 20.34608222 20.36721655
+ 20.36724394 20.39429415]  max|de|= -1.2e-10  lindep= 0.785
+davidson 28 45  |r|= 1.27e-05  e= [19.96322201 19.9633227  20.06501084 20.34603581 20.34608222 20.36721655
+ 20.36724394 20.39429415]  max|de|= -1.01e-10  lindep= 0.738
+davidson 29 46  |r|= 1.27e-05  e= [19.96322201 19.9633227  20.06501084 20.34603581 20.34608222 20.36721655
+ 20.36724394 20.39429415]  max|de|= -8.3e-11  lindep= 0.672
+davidson 30 47  |r|= 1.16e-05  e= [19.96322201 19.9633227  20.06501084 20.34603581 20.34608222 20.36721655
+ 20.36724394 20.39429415]  max|de|= -7.16e-11  lindep= 0.611
+root 7 converged  |r|= 9.27e-06  e= 20.394294151093757  max|de|= -5.11e-11
+converged 31 48  |r|= 9.27e-06  e= [19.96322201 19.9633227  20.06501084 20.34603581 20.34608222 20.36721655
+ 20.36724394 20.39429415]  max|de|= -5.11e-11
+
+Summary of results for the CVS-IP-MR-ADC(2)-X calculation with the CASSCF reference:
+------------------------------------------------------------------------------------------------
+  State        dE(a.u.)        dE(eV)      dE(nm)       dE(cm-1)       Intensity
+------------------------------------------------------------------------------------------------
+    1        19.96322201      543.2269     2.2824    4381420.7922      1.365140
+    2        19.96332270      543.2297     2.2824    4381442.8915      1.365126
+    3        20.06501084      545.9968     2.2708    4403760.8580      1.483694
+    4        20.34603581      553.6438     2.2394    4465438.7088      0.000000
+    5        20.34608222      553.6451     2.2394    4465448.8950      0.000000
+    6        20.36721655      554.2202     2.2371    4470087.3432      0.066603
+    7        20.36724394      554.2209     2.2371    4470093.3553      0.066600
+    8        20.39429415      554.9570     2.2341    4476030.1907      0.048395
+------------------------------------------------------------------------------------------------
+> CPU time for total CVS-IP-MR-ADC(2)-X calculation   1254.79 sec, wall time    288.81 sec
+
+******** <class 'pyscf.mcscf.addons.StateAverageDFCASSCF'> ********
+CAS (3e+3e, 6o), ncore = 9, nvir = 39
+max_cycle_macro = 50
+max_cycle_micro = 4
+conv_tol = 1e-07
+conv_tol_grad = None
+orbital rotation max_stepsize = 0.02
+orbital rotation threshold for CI restart = 0.01
+augmented hessian ah_max_cycle = 30
+augmented hessian ah_conv_tol = 1e-12
+augmented hessian ah_linear dependence = 1e-14
+augmented hessian ah_level shift = 1e-08
+augmented hessian ah_start_tol = 2.5
+augmented hessian ah_start_cycle = 3
+augmented hessian ah_grad_trust_region = 3
+kf_trust_region = 3
+kf_interval = 4
+ci_response_space = 4
+ci_grad_trust_region = 3
+with_dep4 0
+natorb = False
+canonicalization = True
+sorting_mo_energy = False
+ao2mo_level = 2
+chkfile = /scratch/25175018/tmpfcephowz
+max_memory 10000 MB (current use 227 MB)
+internal_rotation = False
+******** <class 'pyscf.fci.addons.SpinPenaltyStateAverageFCISolver'> ********
+max. cycles = 50
+conv_tol = 1e-08
+davidson only = True
+linear dependence = 1e-12
+level shift = 0.001
+max iter space = 12
+max_memory 10000 MB
+nroots = 2
+pspace_size = 400
+spin = None
+State-average over 2 states with weights [0.5 0.5]
+DFCASCI/DFCASSCF: density fitting for JK matrix and 2e integral transformation
+CASCI E = -224.295199835055  S^2 = 0.0000000
+Set conv_tol_grad to 0.000316228
+macro iter   1 ( 21 JK    4 micro), CASSCF E = -224.334238420352  dE = -3.90385853e-02  S^2 = 0.0000000
+               |grad[o]|=0.191  |ddm|=0.106  |maxRot[o]|=0.313
+macro iter   2 ( 21 JK    4 micro), CASSCF E = -224.345600009968  dE = -1.13615896e-02  S^2 = 0.0000000
+               |grad[o]|=0.0837  |ddm|=0.0589  |maxRot[o]|=0.314
+macro iter   3 ( 20 JK    4 micro), CASSCF E = -224.348599857433  dE = -2.99984746e-03  S^2 = 0.0000000
+               |grad[o]|=0.0155  |ddm|=0.0374  |maxRot[o]|=0.295
+macro iter   4 ( 18 JK    4 micro), CASSCF E = -224.349756806557  dE = -1.15694912e-03  S^2 = 0.0000000
+               |grad[o]|=0.00856  |ddm|=0.0232  |maxRot[o]|=0.256
+macro iter   5 ( 10 JK    4 micro), CASSCF E = -224.349831203890  dE = -7.43973331e-05  S^2 = 0.0000000
+               |grad[o]|=0.00393  |ddm|=0.00645  |maxRot[o]|=0.0829
+macro iter   6 (  5 JK    2 micro), CASSCF E = -224.349831636742  dE = -4.32851806e-07  S^2 = 0.0000000
+               |grad[o]|=0.000395  |ddm|=0.000493  |maxRot[o]|=0.00551
+macro iter   7 (  3 JK    1 micro), CASSCF E = -224.349831649288  dE = -1.25463089e-08  S^2 = 0.0000000
+               |grad[o]|=7.24e-05  |ddm|=6.39e-05  |maxRot[o]|=0.000661
+1-step CASSCF converged in   7 macro ( 98 JK  23 micro) steps
+CASSCF canonicalization
+Density matrix diagonal elements [1.84793814 1.63043594 1.65897828 0.84134972 0.01202541 0.00927252]
+CASSCF energy = -224.349831649288
+CASCI E = -224.349831649288  E(CI) = -10.1638766364695  S^2 = 0.0000000
+CASCI state-averaged energy = -224.349831649288
+CASCI energy for each state
+  State 0 weight 0.5  E = -224.384896456206 S^2 = 0.0000000
+  State 1 weight 0.5  E = -224.314766842369 S^2 = 0.0000000
+
+******** <class 'pyscf.mcscf.df.DFCASCI'> ********
+CAS (3e+3e, 6o), ncore = 9, nvir = 39
+natorb = False
+canonicalization = True
+sorting_mo_energy = False
+max_memory 10000 MB (current use 251 MB)
+******** <class 'pyscf.fci.direct_spin1.FCISolver'> ********
+max. cycles = 200
+conv_tol = 1e-08
+davidson only = False
+linear dependence = 1e-12
+level shift = 0.001
+max iter space = 12
+max_memory 10000 MB
+nroots = 1
+pspace_size = 400
+spin = None
+DFCASCI/DFCASSCF: density fitting for JK matrix and 2e integral transformation
+Density matrix diagonal elements [1.98822868 1.9820139  1.60067045 0.40028377 0.01650548 0.01229772]
+CASCI converged
+CASCI E = -224.384896456243  E(CI) = -10.1989414434241  S^2 = 0.0000000
+
+
+------------------------------------------------------------------------------
+
+            PRISM: Open-Source implementation of ab initio methods
+                    for excited states and spectroscopy
+
+                               Version 0.9
+
+                   Copyright (C) 2026 Prism Developers
+                   Contributors: Nicholas Yiching Chiang
+                                 Carlos E. V. de Moura
+                                 Nishshanka M. Lakshan
+                                 Rajat S. Majumder
+                                 Ilia M. Mazin
+                                 Donna H. Odhiambo
+                                 Bryce Pickett
+                                 James D. Serna
+                                 Alexander Yu. Sokolov
+
+            Unless required by applicable law or agreed to in
+            writing, software distributed under the GNU General
+            Public License v3.0 and is distributed on an "AS IS"
+            BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+            either express or implied.
+
+            See the License for the specific language governing
+            permissions and limitations.
+
+            Available at https://github.com/sokolov-group/prism
+
+------------------------------------------------------------------------------
+
+Importing Pyscf objects...
+
+Collecting reference wavefunction information...
+Reference wavefunction: casci
+Canonicalizing molecular orbitals using reference wavefunction manifold...
+
+Summary of reference wavefunction manifold:
+Total number of reference states: 1
+  State       S^2        S      (2S+1)        E(total)              E(CAS)
+-----------------------------------------------------------------------------------
+    1       0.00000     0.0        1     -224.384896456243     -10.198941443424
+-----------------------------------------------------------------------------------
+
+Importing Pyscf density-fitting objects...
+
+Initializing MR-ADC...
+
+Computing MR-ADC excitation energies...
+
+Method:                                            cvs-ip-mr-adc(2)-x
+Nuclear repulsion energy:                         68.352982634200
+Number of electrons:                               24
+Number of basis functions:                         54
+Reference wavefunction type:                       casci
+Number of core orbitals:                           9
+Number of active orbitals:                         6
+Number of external orbitals:                       39
+Number of active electrons:                        [(3, 3)]
+Reference state active-space energy:             -10.198941443424
+Reference state spin multiplicity:                 [1]
+Number of MR-ADC roots requested:                  8
+Number of CVS orbitals:                            3
+Number of valence (non-CVS) orbitals:              6
+Reference density fitting?                         True
+Correlation density fitting?                       True
+Temporary directory path:                          /scratch/25175018
+
+Internal contraction:                              Full
+Overlap truncation parameter (singles):            1.00e-05
+Overlap truncation parameter (doubles):            1.00e-10
+Projector for the semi-internal amplitudes:        gno
+
+Einsum Backend:                                    opt_einsum
+
+Transforming integrals to MO basis...
+******** <class 'pyscf.df.df.DF'> ********
+auxbasis = None
+max_memory = 10000
+ETB for O: l = 0, exps = 0.6046 * 2^n , n = 0..12
+ETB for O: l = 1, exps = 0.5769685953325363 * 2^n , n = 0..9
+ETB for O: l = 2, exps = 0.5506 * 2^n , n = 0..7
+ETB for O: l = 3, exps = 1.1423318256968944 * 2^n , n = 0..3
+ETB for O: l = 4, exps = 2.37 * 2^n , n = 0..0
+
+WARN: Even tempered Gaussians are generated as DF auxbasis for  O
+
+
+Computing reference wavefunction RDMs...
+
+Computing NEVPT2 amplitudes...
+Correlation energy [0']:                          -0.097076174746
+Correlation energy [+1']:                         -0.009961593519
+Correlation energy [-1']:                         -0.018903185897
+Correlation energy [0]:                           -0.278538607377
+Correlation energy [+1]:                          -0.065435102315
+Correlation energy [-1]:                          -0.092349052146
+Correlation energy [+2]:                          -0.007201001157
+Correlation energy [-2]:                          -0.031007724053
+
+Reference energy:                               -224.384896456243
+NEVPT2 correlation energy:                        -0.600472441210
+Total NEVPT2 energy:                            -224.985368897453
+
+Transforming integrals for the CVS calculation...
+
+Dimension of h0 excitation manifold:                       3
+Dimension of h1 excitation manifold:                       5400
+Total dimension of the excitation manifold:                5403
+Dimension of the orthogonalized excitation manifold:       5394
+
+tol 1e-08  toloose 1e-05
+max_cycle 100  max_space 128  max_memory 4000  incore True
+davidson 0 8  |r|= 2.14  e= [20.74431232 20.74435034 20.82811949 21.04123354 21.04128332 21.04832573
+ 21.17679036 21.23243969]  max|de|= 21.2  lindep=    1
+Old state -> New state
+    2     ->     0 
+    0     ->     2 
+    6     ->     3 
+    7     ->     4 
+    4     ->     5 
+    3     ->     6 
+    5     ->     7 
+davidson 1 16  |r|= 0.829  e= [20.06770672 20.07160472 20.07245561 20.46824705 20.53781006 20.59027775
+ 20.59028443 20.76603898]  max|de|= -0.76  lindep= 0.965
+Old state -> New state
+    1     ->     0 
+    2     ->     1 
+    0     ->     2 
+davidson 2 24  |r|= 0.211  e= [19.9776177  19.97762677 20.02887278 20.38167029 20.44736576 20.47339789
+ 20.47341182 20.69944762]  max|de|= -0.117  lindep= 0.99
+Old state -> New state
+    1     ->     0 
+    0     ->     1 
+davidson 3 32  |r|= 0.226  e= [19.9593371  19.95939634 20.02648153 20.34591983 20.38910095 20.43942862
+ 20.43943922 20.68563872]  max|de|= -0.0583  lindep= 0.933
+davidson 4 40  |r|= 0.763  e= [19.95394602 19.95400781 20.02623895 20.32688499 20.36458766 20.4213585
+ 20.42136162 20.59031704]  max|de|= 20.6  lindep= 0.973
+Old state -> New state
+    6     ->     5 
+    5     ->     6 
+davidson 5 48  |r|= 0.484  e= [19.95232877 19.95241104 20.02622058 20.32101283 20.35719056 20.41196404
+ 20.41196941 20.43470524]  max|de|= -0.156  lindep= 0.885
+Old state -> New state
+    7     ->     5 
+    5     ->     6 
+    6     ->     7 
+davidson 6 56  |r|= 0.195  e= [19.95203461 19.95213044 20.02621865 20.32016882 20.3544585  20.39788433
+ 20.40294067 20.40296508]  max|de|= -0.0368  lindep= 0.975
+davidson 7 64  |r|= 0.137  e= [19.95197962 19.95207928 20.0262185  20.31994079 20.35269818 20.38510319
+ 20.38605526 20.38613179]  max|de|= -0.0169  lindep= 0.933
+Old state -> New state
+    6     ->     5 
+    7     ->     6 
+    5     ->     7 
+davidson 8 72  |r|= 0.119  e= [19.95196933 19.95207002 20.02621848 20.31989447 20.35164579 20.37021184
+ 20.37031819 20.37891103]  max|de|= -0.0158  lindep= 0.967
+davidson 9 80  |r|= 0.0656  e= [19.95196756 19.95206843 20.02621847 20.31988365 20.35121848 20.36383774
+ 20.36395602 20.37622064]  max|de|= -0.00637  lindep= 0.948
+davidson 10 88  |r|= 0.0842  e= [19.95196713 19.95206818 20.02621847 20.31987966 20.35102744 20.35945243
+ 20.35959157 20.37374459]  max|de|= -0.00439  lindep= 0.928
+davidson 11 96  |r|= 0.122  e= [19.95196705 19.95206814 20.02621847 20.3198775  20.35097704 20.3558493
+ 20.35601564 20.36672629]  max|de|= -0.00702  lindep= 0.957
+root 2 converged  |r|= 5.19e-06  e= 20.026218472104542  max|de|= -3.96e-11
+davidson 12 104  |r|= 0.11  e= [19.95196704 19.95206814 20.02621847 20.31987709 20.35096356 20.35203446
+ 20.35223936 20.3586382 ]  max|de|= -0.00809  lindep= 0.956
+Old state -> New state
+    5     ->     4 
+    6     ->     5 
+    4     ->     6 
+davidson 13 111  |r|= 0.117  e= [19.95196703 19.95206814 20.02621847 20.31987702 20.34404833 20.3443043
+ 20.35096058 20.35366896]  max|de|= -0.00799  lindep= 0.846
+root 1 converged  |r|= 9.43e-06  e= 19.952068138468945  max|de|= -5.88e-11
+davidson 14 118  |r|= 0.153  e= [19.95196703 19.95206814 20.02621847 20.31987701 20.32871855 20.32887132
+ 20.35095979 20.35151594]  max|de|= -0.0154  lindep= 0.768
+root 0 converged  |r|= 7.25e-06  e= 19.95196703412952  max|de|= -2.84e-11
+davidson 15 124  |r|= 0.0442  e= [19.95196703 19.95206814 20.02621847 20.319877   20.32341194 20.32349184
+ 20.35095961 20.35106872]  max|de|= -0.00538  lindep= 0.96
+davidson 16 8  |r|= 0.0442  e= [19.95196602 19.95206712 20.0262185  20.31987619 20.3234117  20.32349159
+ 20.35096033 20.35107145]  max|de|= 2.73e-06  lindep= 0.964
+root 0 converged  |r|= 2.41e-06  e= 19.95196602487917  max|de|= -1.3e-11
+root 1 converged  |r|= 2.3e-06  e= 19.952067117903443  max|de|= -1.17e-11
+root 2 converged  |r|= 6.94e-07  e= 20.026218495445246  max|de|= -8.67e-13
+davidson 17 16  |r|= 0.0221  e= [19.95196602 19.95206712 20.0262185  20.31987618 20.32254265 20.32260865
+ 20.3509603  20.35099464]  max|de|= -0.000883  lindep= 0.988
+Old state -> New state
+    7     ->     6 
+    6     ->     7 
+davidson 18 21  |r|= 0.0137  e= [19.95196602 19.95206712 20.0262185  20.31987618 20.32212154 20.3221795
+ 20.35095765 20.35096029]  max|de|= -0.000429  lindep= 0.976
+davidson 19 26  |r|= 0.00818  e= [19.95196602 19.95206712 20.0262185  20.31987618 20.32202733 20.32208271
+ 20.35094535 20.35096028]  max|de|= -9.68e-05  lindep= 0.971
+root 3 converged  |r|= 8.02e-06  e= 20.319876183609708  max|de|= -1.06e-10
+davidson 20 31  |r|= 0.00737  e= [19.95196602 19.95206712 20.0262185  20.31987618 20.32198314 20.32203691
+ 20.35094195 20.35096028]  max|de|= -4.58e-05  lindep= 0.933
+davidson 21 35  |r|= 0.00628  e= [19.95196602 19.95206712 20.0262185  20.31987618 20.32194265 20.32199478
+ 20.35094114 20.35096028]  max|de|= -4.21e-05  lindep= 0.954
+davidson 22 39  |r|= 0.00475  e= [19.95196602 19.95206712 20.0262185  20.31987618 20.32191925 20.32197054
+ 20.35094088 20.35096028]  max|de|= -2.42e-05  lindep= 0.944
+davidson 23 43  |r|= 0.00342  e= [19.95196602 19.95206712 20.0262185  20.31987618 20.32190621 20.32195712
+ 20.35094079 20.35096028]  max|de|= -1.34e-05  lindep= 0.961
+davidson 24 47  |r|= 0.00268  e= [19.95196602 19.95206712 20.0262185  20.31987618 20.32189851 20.32194923
+ 20.35094075 20.35096028]  max|de|= -7.89e-06  lindep= 0.931
+davidson 25 51  |r|= 0.00152  e= [19.95196602 19.95206712 20.0262185  20.31987618 20.32189485 20.32194549
+ 20.35094071 20.35096028]  max|de|= -3.74e-06  lindep= 0.971
+davidson 26 55  |r|= 0.00115  e= [19.95196602 19.95206712 20.0262185  20.31987618 20.32189341 20.32194402
+ 20.35094066 20.35096028]  max|de|= -1.47e-06  lindep= 0.971
+root 7 converged  |r|= 9.81e-06  e= 20.350960281404472  max|de|= -8.25e-11
+davidson 27 59  |r|= 0.00127  e= [19.95196602 19.95206712 20.0262185  20.31987618 20.32189228 20.32194284
+ 20.35094059 20.35096028]  max|de|= -1.17e-06  lindep= 0.962
+davidson 28 62  |r|= 0.00148  e= [19.95196602 19.95206712 20.0262185  20.31987618 20.32189101 20.32194153
+ 20.35094056 20.35096028]  max|de|= -1.32e-06  lindep= 0.951
+davidson 29 65  |r|= 0.000908  e= [19.95196602 19.95206712 20.0262185  20.31987618 20.3218899  20.32194038
+ 20.35094054 20.35096028]  max|de|= -1.15e-06  lindep= 0.955
+davidson 30 68  |r|= 0.000684  e= [19.95196602 19.95206712 20.0262185  20.31987618 20.32188933 20.32193979
+ 20.35094053 20.35096028]  max|de|= -5.89e-07  lindep= 0.924
+davidson 31 71  |r|= 0.000318  e= [19.95196602 19.95206712 20.0262185  20.31987618 20.32188912 20.32193957
+ 20.35094053 20.35096028]  max|de|= -2.13e-07  lindep= 0.936
+davidson 32 74  |r|= 0.000146  e= [19.95196602 19.95206712 20.0262185  20.31987618 20.32188907 20.32193953
+ 20.35094053 20.35096028]  max|de|= -4.58e-08  lindep= 0.946
+davidson 33 77  |r|= 8.9e-05  e= [19.95196602 19.95206712 20.0262185  20.31987618 20.32188906 20.32193952
+ 20.35094053 20.35096028]  max|de|= -9.78e-09  lindep= 0.946
+root 6 converged  |r|= 9.37e-06  e= 20.35094053063535  max|de|= -8.67e-11
+davidson 34 80  |r|= 5.15e-05  e= [19.95196602 19.95206712 20.0262185  20.31987618 20.32188906 20.32193951
+ 20.35094053 20.35096028]  max|de|= -4.19e-09  lindep= 0.965
+davidson 35 82  |r|= 2.5e-05  e= [19.95196602 19.95206712 20.0262185  20.31987618 20.32188906 20.32193951
+ 20.35094053 20.35096028]  max|de|= -8.21e-10  lindep= 0.962
+root 4 converged  |r|= 9.64e-06  e= 20.32188905941637  max|de|= -2.19e-10
+root 5 converged  |r|= 9.59e-06  e= 20.32193951307314  max|de|= -2.2e-10
+converged 36 84  |r|= 9.81e-06  e= [19.95196602 19.95206712 20.0262185  20.31987618 20.32188906 20.32193951
+ 20.35094053 20.35096028]  max|de|= -2.2e-10
+
+Summary of results for the CVS-IP-MR-ADC(2)-X calculation with the CASCI reference:
+------------------------------------------------------------------------------------------------
+  State        dE(a.u.)        dE(eV)      dE(nm)       dE(cm-1)       Intensity
+------------------------------------------------------------------------------------------------
+    1        19.95196602      542.9207     2.2837    4378950.3883      1.327234
+    2        19.95206712      542.9234     2.2836    4378972.5756      1.327199
+    3        20.02621850      544.9412     2.2752    4395246.9219      1.521448
+    4        20.31987618      552.9320     2.2423    4459697.3347      0.000000
+    5        20.32188906      552.9868     2.2421    4460139.1099      0.000000
+    6        20.32193951      552.9881     2.2421    4460150.1832      0.000000
+    7        20.35094053      553.7773     2.2389    4466515.1709      0.030171
+    8        20.35096028      553.7778     2.2389    4466519.5056      0.029920
+------------------------------------------------------------------------------------------------
+> CPU time for total CVS-IP-MR-ADC(2)-X calculation   1528.52 sec, wall time    350.67 sec
+
+******** <class 'pyscf.mcscf.df.DFCASCI'> ********
+CAS (3e+3e, 6o), ncore = 9, nvir = 39
+natorb = False
+canonicalization = True
+sorting_mo_energy = False
+max_memory 10000 MB (current use 240 MB)
+******** <class 'pyscf.fci.direct_spin1.FCISolver'> ********
+max. cycles = 200
+conv_tol = 1e-08
+davidson only = False
+linear dependence = 1e-12
+level shift = 0.001
+max iter space = 12
+max_memory 10000 MB
+nroots = 1
+pspace_size = 400
+spin = None
+DFCASCI/DFCASSCF: density fitting for JK matrix and 2e integral transformation
+Density matrix diagonal elements [1.70763788 1.27886834 1.71726824 1.28243362 0.0075447  0.00624723]
+CASCI converged
+CASCI E = -224.314766842481  E(CI) = -10.1288118296626  S^2 = 0.0000000
+
+
+------------------------------------------------------------------------------
+
+            PRISM: Open-Source implementation of ab initio methods
+                    for excited states and spectroscopy
+
+                               Version 0.9
+
+                   Copyright (C) 2026 Prism Developers
+                   Contributors: Nicholas Yiching Chiang
+                                 Carlos E. V. de Moura
+                                 Nishshanka M. Lakshan
+                                 Rajat S. Majumder
+                                 Ilia M. Mazin
+                                 Donna H. Odhiambo
+                                 Bryce Pickett
+                                 James D. Serna
+                                 Alexander Yu. Sokolov
+
+            Unless required by applicable law or agreed to in
+            writing, software distributed under the GNU General
+            Public License v3.0 and is distributed on an "AS IS"
+            BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+            either express or implied.
+
+            See the License for the specific language governing
+            permissions and limitations.
+
+            Available at https://github.com/sokolov-group/prism
+
+------------------------------------------------------------------------------
+
+Importing Pyscf objects...
+
+Collecting reference wavefunction information...
+Reference wavefunction: casci
+Canonicalizing molecular orbitals using reference wavefunction manifold...
+
+Summary of reference wavefunction manifold:
+Total number of reference states: 1
+  State       S^2        S      (2S+1)        E(total)              E(CAS)
+-----------------------------------------------------------------------------------
+    1       0.00000     0.0        1     -224.314766842481     -10.128811829663
+-----------------------------------------------------------------------------------
+
+Importing Pyscf density-fitting objects...
+
+Initializing MR-ADC...
+
+Computing MR-ADC excitation energies...
+
+Method:                                            cvs-ip-mr-adc(2)-x
+Nuclear repulsion energy:                         68.352982634200
+Number of electrons:                               24
+Number of basis functions:                         54
+Reference wavefunction type:                       casci
+Number of core orbitals:                           9
+Number of active orbitals:                         6
+Number of external orbitals:                       39
+Number of active electrons:                        [(3, 3)]
+Reference state active-space energy:             -10.128811829663
+Reference state spin multiplicity:                 [1]
+Number of MR-ADC roots requested:                  8
+Number of CVS orbitals:                            3
+Number of valence (non-CVS) orbitals:              6
+Reference density fitting?                         True
+Correlation density fitting?                       True
+Temporary directory path:                          /scratch/25175018
+
+Internal contraction:                              Full
+Overlap truncation parameter (singles):            1.00e-05
+Overlap truncation parameter (doubles):            1.00e-10
+Projector for the semi-internal amplitudes:        gno
+
+Einsum Backend:                                    opt_einsum
+
+Transforming integrals to MO basis...
+******** <class 'pyscf.df.df.DF'> ********
+auxbasis = None
+max_memory = 10000
+ETB for O: l = 0, exps = 0.6046 * 2^n , n = 0..12
+ETB for O: l = 1, exps = 0.5769685953325363 * 2^n , n = 0..9
+ETB for O: l = 2, exps = 0.5506 * 2^n , n = 0..7
+ETB for O: l = 3, exps = 1.1423318256968944 * 2^n , n = 0..3
+ETB for O: l = 4, exps = 2.37 * 2^n , n = 0..0
+
+WARN: Even tempered Gaussians are generated as DF auxbasis for  O
+
+
+Computing reference wavefunction RDMs...
+
+Computing NEVPT2 amplitudes...
+Correlation energy [0']:                          -0.083588833489
+Correlation energy [+1']:                         -0.008885369065
+Correlation energy [-1']:                         -0.020823982609
+Correlation energy [0]:                           -0.278382117050
+Correlation energy [+1]:                          -0.053985207038
+Correlation energy [-1]:                          -0.107884096216
+Correlation energy [+2]:                          -0.005036326645
+Correlation energy [-2]:                          -0.034582327993
+
+Reference energy:                               -224.314766842481
+NEVPT2 correlation energy:                        -0.593168260104
+Total NEVPT2 energy:                            -224.907935102585
+
+Transforming integrals for the CVS calculation...
+
+Dimension of h0 excitation manifold:                       3
+Dimension of h1 excitation manifold:                       5400
+Total dimension of the excitation manifold:                5403
+Dimension of the orthogonalized excitation manifold:       5382
+
+tol 1e-08  toloose 1e-05
+max_cycle 100  max_space 128  max_memory 4000  incore True
+davidson 0 8  |r|= 0.656  e= [20.66498348 20.66501698 20.70686366 20.71569518 20.71575829 20.72130418
+ 20.7280067  20.7786573 ]  max|de|= 20.8  lindep=    1
+Old state -> New state
+    1     ->     0 
+    0     ->     1 
+    3     ->     2 
+    4     ->     3 
+    6     ->     4 
+    7     ->     5 
+    2     ->     6 
+    5     ->     7 
+davidson 1 16  |r|= 0.623  e= [20.47232262 20.47233987 20.51642317 20.51645757 20.52600955 20.57643581
+ 20.60727605 20.61371738]  max|de|= -0.202  lindep= 0.969
+Old state -> New state
+    5     ->     0 
+    4     ->     1 
+    0     ->     2 
+    1     ->     3 
+    2     ->     4 
+    3     ->     5 
+davidson 2 24  |r|= 0.481  e= [20.31369251 20.32135538 20.37739384 20.37747892 20.42296905 20.42303765
+ 20.60229944 20.60978827]  max|de|= -0.263  lindep= 0.934
+davidson 3 32  |r|= 0.223  e= [20.18476653 20.20725532 20.32092467 20.32100706 20.34613841 20.34633813
+ 20.5938539  20.6049736 ]  max|de|= -0.129  lindep= 0.955
+davidson 4 40  |r|= 0.574  e= [20.15167596 20.17745136 20.3126432  20.31272329 20.32011931 20.32039616
+ 20.56727271 20.5699858 ]  max|de|= 20.6  lindep= 0.961
+Old state -> New state
+    7     ->     2 
+    4     ->     3 
+    2     ->     4 
+    3     ->     5 
+    5     ->     6 
+    6     ->     7 
+davidson 5 48  |r|= 0.55  e= [20.08941958 20.16921791 20.30477434 20.31131935 20.31155107 20.31163208
+ 20.31181695 20.46814388]  max|de|= -0.265  lindep= 0.927
+Old state -> New state
+    6     ->     4 
+    4     ->     5 
+    5     ->     6 
+    3     ->     7 
+davidson 6 56  |r|= 0.273  e= [20.01636236 20.16432495 20.22021887 20.26931026 20.27143675 20.31108898
+ 20.31117027 20.36660482]  max|de|= -0.0846  lindep= 0.971
+davidson 7 64  |r|= 0.186  e= [19.99539834 20.16288555 20.20211083 20.22060524 20.22385712 20.31091743
+ 20.31099885 20.33579949]  max|de|= -0.0487  lindep= 0.973
+davidson 8 72  |r|= 0.0945  e= [19.98728642 20.16244905 20.19172814 20.20038753 20.20228624 20.31082611
+ 20.31090767 20.32981504]  max|de|= -0.0216  lindep= 0.978
+davidson 9 80  |r|= 0.0538  e= [19.98538958 20.16233284 20.18803652 20.19611453 20.19624024 20.31078019
+ 20.31086179 20.32863101]  max|de|= -0.00605  lindep= 0.983
+davidson 10 88  |r|= 0.0324  e= [19.98488253 20.16230806 20.18666014 20.19466636 20.19480051 20.31075773
+ 20.31083934 20.32808983]  max|de|= -0.00145  lindep= 0.967
+davidson 11 96  |r|= 0.0164  e= [19.9847705  20.16230329 20.18616765 20.19425094 20.19426398 20.31074748
+ 20.3108291  20.32785435]  max|de|= -0.000537  lindep= 0.972
+Old state -> New state
+    4     ->     3 
+    3     ->     4 
+davidson 12 104  |r|= 0.0109  e= [19.98474573 20.16230208 20.18599643 20.19413421 20.19416466 20.31074346
+ 20.31082508 20.32777777]  max|de|= -0.000171  lindep= 0.956
+davidson 13 112  |r|= 0.288  e= [19.98474157 20.16230184 20.18592064 20.19410165 20.1941419  20.3107417
+ 20.31082332 20.3269462 ]  max|de|= 20.3  lindep= 0.952
+Old state -> New state
+    7     ->     5 
+    5     ->     6 
+    6     ->     7 
+davidson 14 120  |r|= 0.159  e= [19.98474084 20.16230179 20.18589285 20.19409106 20.19413515 20.30076023
+ 20.31074004 20.31082167]  max|de|= -0.0262  lindep= 0.96
+davidson 15 128  |r|= 0.101  e= [19.98474068 20.16230177 20.18588071 20.19408788 20.19413364 20.29035637
+ 20.31073933 20.31082096]  max|de|= -0.0104  lindep= 0.876
+davidson 16 8  |r|= 0.101  e= [19.98474506 20.16230107 20.18587934 20.19408927 20.19413459 20.29034406
+ 20.31073883 20.31082046]  max|de|= -1.23e-05  lindep= 0.999
+davidson 17 16  |r|= 0.0577  e= [19.98474504 20.16230107 20.18587577 20.19408884 20.19413439 20.28696397
+ 20.3107387  20.31082032]  max|de|= -0.00338  lindep= 0.966
+davidson 18 24  |r|= 0.0522  e= [19.98474503 20.16230107 20.18587378 20.19408867 20.19413433 20.28467109
+ 20.31073865 20.31082027]  max|de|= -0.00229  lindep= 0.96
+davidson 19 32  |r|= 0.0408  e= [19.98474503 20.16230107 20.18587292 20.19408861 20.19413431 20.2832516
+ 20.31073864 20.31082026]  max|de|= -0.00142  lindep= 0.949
+root 1 converged  |r|= 6.6e-06  e= 20.16230106561726  max|de|= -5.01e-11
+davidson 20 40  |r|= 0.0259  e= [19.98474503 20.16230107 20.1858727  20.19408859 20.1941343  20.28270205
+ 20.31073863 20.31082026]  max|de|= -0.00055  lindep= 0.922
+root 0 converged  |r|= 6.91e-06  e= 19.984745025523914  max|de|= -7.51e-11
+davidson 21 47  |r|= 0.0194  e= [19.98474503 20.16230107 20.1858726  20.19408858 20.1941343  20.28238638
+ 20.31073863 20.31082026]  max|de|= -0.000316  lindep= 0.953
+davidson 22 53  |r|= 0.0103  e= [19.98474503 20.16230107 20.18587257 20.19408858 20.1941343  20.28226458
+ 20.31073863 20.31082025]  max|de|= -0.000122  lindep= 0.968
+davidson 23 59  |r|= 0.00493  e= [19.98474503 20.16230107 20.18587257 20.19408858 20.1941343  20.28223566
+ 20.31073863 20.31082025]  max|de|= -2.89e-05  lindep= 0.971
+davidson 24 65  |r|= 0.00338  e= [19.98474503 20.16230107 20.18587257 20.19408858 20.1941343  20.28222492
+ 20.31073863 20.31082025]  max|de|= -1.07e-05  lindep= 0.926
+root 3 converged  |r|= 9.45e-06  e= 20.19408857898262  max|de|= -1.16e-10
+root 4 converged  |r|= 9.3e-06  e= 20.1941342985406  max|de|= -1.44e-10
+davidson 25 71  |r|= 0.00171  e= [19.98474503 20.16230107 20.18587257 20.19408858 20.1941343  20.28222088
+ 20.31073863 20.31082025]  max|de|= -4.04e-06  lindep= 0.926
+root 2 converged  |r|= 4.02e-06  e= 20.18587256595629  max|de|= -4.5e-11
+root 7 converged  |r|= 9.47e-06  e= 20.310820252336395  max|de|= -8.22e-11
+davidson 26 75  |r|= 0.000685  e= [19.98474503 20.16230107 20.18587257 20.19408858 20.1941343  20.2822201
+ 20.31073863 20.31082025]  max|de|= -7.74e-07  lindep= 0.959
+root 6 converged  |r|= 8.29e-06  e= 20.310738625222633  max|de|= -6.92e-11
+davidson 27 77  |r|= 0.000597  e= [19.98474503 20.16230107 20.18587257 20.19408858 20.1941343  20.2822199
+ 20.31073863 20.31082025]  max|de|= -2.03e-07  lindep= 0.921
+davidson 28 78  |r|= 0.000358  e= [19.98474503 20.16230107 20.18587257 20.19408858 20.1941343  20.2822198
+ 20.31073863 20.31082025]  max|de|= -1.04e-07  lindep= 0.97
+davidson 29 79  |r|= 0.000441  e= [19.98474503 20.16230107 20.18587257 20.19408858 20.1941343  20.28221972
+ 20.31073863 20.31082025]  max|de|= -7.41e-08  lindep= 0.95
+davidson 30 80  |r|= 0.000797  e= [19.98474503 20.16230107 20.18587257 20.19408858 20.1941343  20.28221957
+ 20.31073863 20.31082025]  max|de|= -1.58e-07  lindep= 0.935
+Old state -> New state
+    5     ->     2 
+    2     ->     3 
+    3     ->     4 
+    4     ->     5 
+    5     ->     6 
+    6     ->     7 
+davidson 31 81  |r|= 0.658  e= [19.98474503 20.16230107 20.18172961 20.18587257 20.19408858 20.1941343
+ 20.28221986 20.31073863]  max|de|= 20.2  lindep= 0.94
+Old state -> New state
+    2     ->     1 
+    1     ->     2 
+root 3 converged  |r|= 1.2e-06  e= 20.1858725659493  max|de|= -1.18e-11
+davidson 32 84  |r|= 0.359  e= [19.98474503 20.02473497 20.16230107 20.18587257 20.19408858 20.1941343
+ 20.28221972 20.31073863]  max|de|= -0.157  lindep= 0.939
+davidson 33 86  |r|= 0.125  e= [19.98474503 19.99679555 20.16230107 20.18587257 20.19408858 20.1941343
+ 20.2822197  20.31073863]  max|de|= -0.0279  lindep= 0.94
+davidson 34 88  |r|= 0.0851  e= [19.98474503 19.98976176 20.16230107 20.18587257 20.19408858 20.1941343
+ 20.28221969 20.31073863]  max|de|= -0.00703  lindep= 0.935
+davidson 35 90  |r|= 0.431  e= [19.98474503 19.98647203 20.16230107 20.18587257 20.19408858 20.1941343
+ 20.28221949 20.29295242]  max|de|= 20.3  lindep= 0.954
+Old state -> New state
+    7     ->     6 
+    6     ->     7 
+davidson 36 93  |r|= 0.26  e= [19.98474503 19.98498822 20.16230107 20.18587257 20.19408858 20.1941343
+ 20.2118939  20.28221973]  max|de|= -0.0811  lindep= 0.932
+Old state -> New state
+    1     ->     0 
+    0     ->     1 
+    6     ->     4 
+    4     ->     5 
+    5     ->     6 
+davidson 37 96  |r|= 0.125  e= [19.98470629 19.98474503 20.16230107 20.18587257 20.19233432 20.19408858
+ 20.1941343  20.28221972]  max|de|= -0.0196  lindep= 0.932
+davidson 38 99  |r|= 0.0594  e= [19.98464985 19.98474503 20.16230107 20.18587257 20.18717264 20.19408858
+ 20.1941343  20.28221972]  max|de|= -0.00516  lindep= 0.817
+davidson 39 102  |r|= 0.0292  e= [19.98463965 19.98474503 20.16230107 20.18587257 20.18611527 20.19408858
+ 20.1941343  20.28221971]  max|de|= -0.00106  lindep= 0.637
+davidson 40 105  |r|= 0.0153  e= [19.98463823 19.98474503 20.16230107 20.18587257 20.18588682 20.19408858
+ 20.1941343  20.28221971]  max|de|= -0.000228  lindep= 0.444
+Old state -> New state
+    4     ->     3 
+    3     ->     4 
+davidson 41 108  |r|= 0.018  e= [19.98463776 19.98474503 20.16230107 20.18576255 20.18587257 20.19408858
+ 20.1941343  20.28221971]  max|de|= -0.000124  lindep= 0.691
+Old state -> New state
+    3     ->     2 
+    2     ->     3 
+    3     ->     5 
+    5     ->     6 
+    6     ->     7 
+davidson 42 111  |r|= 0.607  e= [19.98463704 19.98474503 20.11451129 20.16230107 20.18587257 20.1862217
+ 20.19408858 20.1941343 ]  max|de|= 20.1  lindep= 0.944
+davidson 43 114  |r|= 0.264  e= [19.98463502 19.98474503 20.01911796 20.16230107 20.18587257 20.18597086
+ 20.19408858 20.1941343 ]  max|de|= -0.0954  lindep= 0.951
+davidson 44 117  |r|= 0.0853  e= [19.98463314 19.98474503 20.00451279 20.16230107 20.18587257 20.18594942
+ 20.19408858 20.1941343 ]  max|de|= -0.0146  lindep= 0.962
+davidson 45 120  |r|= 0.0511  e= [19.98463244 19.98474503 20.00170895 20.16230107 20.18587257 20.18594311
+ 20.19408858 20.1941343 ]  max|de|= -0.0028  lindep= 0.959
+davidson 46 123  |r|= 0.0242  e= [19.98463219 19.98474503 20.00084001 20.16230107 20.18587257 20.18594005
+ 20.19408858 20.1941343 ]  max|de|= -0.000869  lindep= 0.932
+davidson 47 8  |r|= 0.0242  e= [19.98463254 19.98474503 20.00084094 20.16230107 20.18587257 20.18594152
+ 20.19408858 20.1941343 ]  max|de|= 1.47e-06  lindep= 0.999
+davidson 48 11  |r|= 0.00981  e= [19.98463249 19.98474503 20.00069876 20.16230107 20.18587257 20.18594074
+ 20.19408858 20.1941343 ]  max|de|= -0.000142  lindep= 0.974
+davidson 49 14  |r|= 0.00673  e= [19.98463248 19.98474503 20.00064965 20.16230107 20.18587257 20.18594032
+ 20.19408858 20.1941343 ]  max|de|= -4.91e-05  lindep= 0.981
+davidson 50 17  |r|= 0.00362  e= [19.98463248 19.98474503 20.00063257 20.16230107 20.18587257 20.1859401
+ 20.19408858 20.1941343 ]  max|de|= -1.71e-05  lindep= 0.953
+davidson 51 20  |r|= 0.00245  e= [19.98463247 19.98474503 20.00062666 20.16230107 20.18587257 20.18593995
+ 20.19408858 20.1941343 ]  max|de|= -5.91e-06  lindep= 0.945
+davidson 52 23  |r|= 0.00153  e= [19.98463247 19.98474503 20.00062432 20.16230107 20.18587257 20.18593971
+ 20.19408858 20.1941343 ]  max|de|= -2.34e-06  lindep= 0.974
+Old state -> New state
+    5     ->     6 
+    6     ->     7 
+davidson 53 26  |r|= 0.218  e= [19.98463247 19.98474503 20.00062317 20.16230107 20.18587257 20.18593628
+ 20.19019019 20.19408858]  max|de|= 20.2  lindep= 0.957
+Old state -> New state
+    6     ->     4 
+    4     ->     5 
+    5     ->     6 
+root 0 converged  |r|= 7e-06  e= 19.984632472588558  max|de|= -7.97e-11
+davidson 54 30  |r|= 0.135  e= [19.98463247 19.98474503 20.00062283 20.16230107 20.17067209 20.18587257
+ 20.18594092 20.19408858]  max|de|= -0.0195  lindep= 0.957
+davidson 55 33  |r|= 0.0647  e= [19.98463247 19.98474503 20.00062275 20.16230107 20.16441311 20.18587257
+ 20.18594061 20.19408858]  max|de|= -0.00626  lindep= 0.968
+davidson 56 36  |r|= 0.0342  e= [19.98463247 19.98474503 20.00062273 20.16230107 20.16285252 20.18587257
+ 20.18594055 20.19408858]  max|de|= -0.00156  lindep= 0.963
+davidson 57 39  |r|= 0.0189  e= [19.98463247 19.98474503 20.00062273 20.16230107 20.1624731  20.18587257
+ 20.18594054 20.19408858]  max|de|= -0.000379  lindep= 0.955
+Old state -> New state
+    4     ->     3 
+    3     ->     4 
+davidson 58 42  |r|= 0.013  e= [19.98463247 19.98474503 20.00062272 20.16229588 20.16230107 20.18587257
+ 20.18594053 20.19408858]  max|de|= -0.000177  lindep= 0.951
+root 4 converged  |r|= 3.15e-06  e= 20.16230106588494  max|de|= -4.16e-11
+davidson 59 46  |r|= 0.00839  e= [19.98463247 19.98474503 20.00062272 20.16223105 20.16230107 20.18587257
+ 20.18594053 20.19408858]  max|de|= -6.48e-05  lindep= 0.936
+root 2 converged  |r|= 7.73e-06  e= 20.000622723974523  max|de|= -7.51e-11
+davidson 60 49  |r|= 0.00521  e= [19.98463247 19.98474503 20.00062272 20.16220583 20.16230107 20.18587257
+ 20.18594053 20.19408858]  max|de|= -2.52e-05  lindep= 0.937
+davidson 61 51  |r|= 0.00347  e= [19.98463247 19.98474503 20.00062272 20.16219489 20.16230107 20.18587257
+ 20.18594053 20.19408858]  max|de|= -1.09e-05  lindep= 0.951
+davidson 62 53  |r|= 0.00235  e= [19.98463247 19.98474503 20.00062272 20.16218955 20.16230107 20.18587257
+ 20.18594053 20.19408858]  max|de|= -5.34e-06  lindep= 0.953
+davidson 63 55  |r|= 0.00165  e= [19.98463247 19.98474503 20.00062272 20.16218697 20.16230107 20.18587257
+ 20.18594053 20.19408858]  max|de|= -2.58e-06  lindep= 0.945
+root 6 converged  |r|= 8.7e-06  e= 20.18594052916437  max|de|= -6.51e-11
+davidson 64 57  |r|= 0.00112  e= [19.98463247 19.98474503 20.00062272 20.16218581 20.16230107 20.18587257
+ 20.18594053 20.19408858]  max|de|= -1.16e-06  lindep= 0.945
+davidson 65 58  |r|= 0.000703  e= [19.98463247 19.98474503 20.00062272 20.16218531 20.16230107 20.18587257
+ 20.18594053 20.19408858]  max|de|= -5e-07  lindep= 0.952
+davidson 66 59  |r|= 0.000409  e= [19.98463247 19.98474503 20.00062272 20.16218513 20.16230107 20.18587257
+ 20.18594053 20.19408858]  max|de|= -1.77e-07  lindep= 0.957
+davidson 67 60  |r|= 0.00023  e= [19.98463247 19.98474503 20.00062272 20.16218507 20.16230107 20.18587257
+ 20.18594053 20.19408858]  max|de|= -6.16e-08  lindep= 0.965
+davidson 68 61  |r|= 0.000129  e= [19.98463247 19.98474503 20.00062272 20.16218505 20.16230107 20.18587257
+ 20.18594053 20.19408858]  max|de|= -1.96e-08  lindep= 0.974
+davidson 69 62  |r|= 7.75e-05  e= [19.98463247 19.98474503 20.00062272 20.16218505 20.16230107 20.18587257
+ 20.18594053 20.19408858]  max|de|= -6.34e-09  lindep= 0.965
+davidson 70 63  |r|= 4.33e-05  e= [19.98463247 19.98474503 20.00062272 20.16218505 20.16230107 20.18587257
+ 20.18594053 20.19408858]  max|de|= -2.13e-09  lindep= 0.931
+davidson 71 64  |r|= 2.4e-05  e= [19.98463247 19.98474503 20.00062272 20.16218504 20.16230107 20.18587257
+ 20.18594053 20.19408858]  max|de|= -6.03e-10  lindep= 0.881
+davidson 72 65  |r|= 1.61e-05  e= [19.98463247 19.98474503 20.00062272 20.16218504 20.16230107 20.18587257
+ 20.18594053 20.19408858]  max|de|= -1.91e-10  lindep= 0.771
+davidson 73 66  |r|= 1.12e-05  e= [19.98463247 19.98474503 20.00062272 20.16218504 20.16230107 20.18587257
+ 20.18594053 20.19408858]  max|de|= -6.84e-11  lindep= 0.611
+root 3 converged  |r|= 9.35e-06  e= 20.162185044170936  max|de|= -2.58e-11
+converged 74 67  |r|= 9.35e-06  e= [19.98463247 19.98474503 20.00062272 20.16218504 20.16230107 20.18587257
+ 20.18594053 20.19408858]  max|de|= -2.58e-11
+
+Summary of results for the CVS-IP-MR-ADC(2)-X calculation with the CASCI reference:
+------------------------------------------------------------------------------------------------
+  State        dE(a.u.)        dE(eV)      dE(nm)       dE(cm-1)       Intensity
+------------------------------------------------------------------------------------------------
+    1        19.98463247      543.8096     2.2799    4386119.8448      1.404206
+    2        19.98474503      543.8126     2.2799    4386144.5476      1.404137
+    3        20.00062272      544.2447     2.2781    4389629.2994      1.510841
+    4        20.16218504      548.6410     2.2598    4425088.1300      0.000000
+    5        20.16230107      548.6442     2.2598    4425113.5939      0.000000
+    6        20.18587257      549.2856     2.2572    4430286.9418      0.000026
+    7        20.18594053      549.2874     2.2572    4430301.8563      0.000022
+    8        20.19408858      549.5091     2.2563    4432090.1475      0.000000
+------------------------------------------------------------------------------------------------
+> CPU time for total CVS-IP-MR-ADC(2)-X calculation   2327.71 sec, wall time    536.77 sec

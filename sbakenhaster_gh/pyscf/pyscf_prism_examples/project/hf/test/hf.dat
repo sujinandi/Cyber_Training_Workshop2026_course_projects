@@ -1,0 +1,781 @@
+#INFO: **** input file is /vscratch/grp-cyberwksp21/sbakenhaster/tues_7_7/cybertraining_examples/pyscf_prism_examples/project/hf/test/hf.py ****
+import numpy as np
+from pyscf import gto, scf, mcscf, mp, tdscf
+from pyscf import lib
+from pyscf.tools import cubegen
+from pyscf.tools import molden
+import prism.interface
+import prism.nevpt
+
+# Specify geometry and molecular information
+mol = gto.Mole()
+mol.atom = '/projects/academic/cyberwksp21/SOFTWARE_2026/pyscf_prism_examples/geometries/ethylene.xyz'
+mol.basis = 'aug-cc-pvdz'
+mol.verbose = 4
+mol.charge = 0
+mol.max_memory = 100000
+mol.build()
+
+# Run reference Hartree-Fock calculation
+mf = scf.RHF(mol).density_fit("aug-cc-pvdz-jkfit")
+mf.conv_tol = 1e-8
+mf.kernel()
+
+# Run state-avereged CASSCF calculation for singlet states
+n_states = 5
+weights = np.ones(n_states)/n_states
+mc = mcscf.CASSCF(mf, 6, 6).state_average_(weights).density_fit('aug-cc-pvdz-jkfit')
+mc.fix_spin_(ss=0) # Singlet states only
+emc = mc.mc1step()[0]
+
+mo_mc = mc.mo_coeff.copy()
+
+# Run CASCI calculation using SA-CASSCF orbitals to compute relative energies and wavefunctions for each state
+mc = mcscf.CASCI(mf, 6, 6).density_fit('aug-cc-pvdz-jkfit')
+mc.fix_spin_(ss=0) # Singlet states only
+mc.fcisolver.nroots = n_states
+emc = mc.casci(mo_mc)[0]
+
+for state in range(n_states):
+    print("State #%d, dE = " % (state + 1), (emc[state] - emc[0]) * 27.2114, "eV")
+
+# Analyze results
+mc.analyze()
+#INFO: ******************** input file end ********************
+
+
+System: uname_result(system='Linux', node='cpn-c02-36.core.ccr.buffalo.edu', release='6.8.0-124-generic', version='#124-Ubuntu SMP PREEMPT_DYNAMIC Tue May 26 13:00:45 UTC 2026', machine='x86_64')  Threads 4
+Python 3.13.14 | packaged by Anaconda, Inc. | (main, Jun 17 2026, 20:12:46) [GCC 14.3.0]
+numpy 1.26.4  scipy 1.14.1  h5py 3.16.0
+Date: Thu Jul 16 09:29:31 2026
+PySCF version 2.13.1
+PySCF path  /projects/academic/cyberwksp21/SOFTWARE_2026/conda/miniconda3/envs/pyscf/lib/python3.13/site-packages/pyscf
+
+[CONFIG] conf_file None
+[INPUT] verbose = 4
+[INPUT] num. atoms = 6
+[INPUT] num. electrons = 16
+[INPUT] charge = 0
+[INPUT] spin (= nelec alpha-beta = 2S) = 0
+[INPUT] symmetry False subgroup None
+[INPUT] Mole.unit = angstrom
+[INPUT] Symbol           X                Y                Z      unit          X                Y                Z       unit  Magmom
+[INPUT]  1 C      0.000000000000   0.666903960000   0.000000000000 AA    0.000000000000   1.260265835788   0.000000000000 Bohr   0.0
+[INPUT]  2 C      0.000000000000  -0.666903960000   0.000000000000 AA    0.000000000000  -1.260265835788   0.000000000000 Bohr   0.0
+[INPUT]  3 H      0.000000000000   1.229521950000   0.922290640000 AA    0.000000000000   2.323459749641   1.742876716850 Bohr   0.0
+[INPUT]  4 H      0.000000000000  -1.229521950000   0.922290640000 AA    0.000000000000  -2.323459749641   1.742876716850 Bohr   0.0
+[INPUT]  5 H      0.000000000000   1.229521950000  -0.922290640000 AA    0.000000000000   2.323459749641  -1.742876716850 Bohr   0.0
+[INPUT]  6 H      0.000000000000  -1.229521950000  -0.922290640000 AA    0.000000000000  -2.323459749641  -1.742876716850 Bohr   0.0
+
+nuclear repulsion = 33.4093139565633
+number of shells = 36
+number of NR pGTOs = 114
+number of NR cGTOs = 82
+basis = aug-cc-pvdz
+ecp = {}
+CPU time:         0.92
+
+
+******** <class 'pyscf.df.df_jk.DFRHF'> ********
+method = DFRHF
+initial guess = minao
+damping factor = 0
+level_shift factor = 0
+DIIS = <class 'pyscf.scf.diis.CDIIS'>
+diis_start_cycle = 1
+diis_space = 8
+diis_damp = 0
+SCF conv_tol = 1e-08
+SCF conv_tol_grad = None
+SCF max_cycles = 50
+direct_scf = False
+chkfile to save SCF result = /scratch/25274277/tmptq5gs4es
+max_memory 100000 MB (current use 98 MB)
+Set gradient conv threshold to 0.0001
+Initial guess from minao.
+******** <class 'pyscf.df.df.DF'> ********
+auxbasis = aug-cc-pvdz-jkfit
+max_memory = 100000
+init E= -78.1600414730125
+  HOMO = -0.285904608550627  LUMO = 0.0343781415611471
+cycle= 1 E= -78.0230975613459  delta_E= 0.137  |g|= 0.225  |ddm|= 3.39
+  HOMO = -0.391484900067209  LUMO = 0.0398837661696194
+cycle= 2 E= -78.0419831455678  delta_E= -0.0189  |g|= 0.0581  |ddm|= 0.478
+  HOMO = -0.371846691694851  LUMO = 0.0406167318020634
+cycle= 3 E= -78.04343692557  delta_E= -0.00145  |g|= 0.0128  |ddm|= 0.267
+  HOMO = -0.377284852839796  LUMO = 0.0404493550342906
+cycle= 4 E= -78.0434927596312  delta_E= -5.58e-05  |g|= 0.00238  |ddm|= 0.0218
+  HOMO = -0.376349878136313  LUMO = 0.0404450318419345
+cycle= 5 E= -78.0434964510234  delta_E= -3.69e-06  |g|= 0.000609  |ddm|= 0.00812
+  HOMO = -0.376333907902798  LUMO = 0.0404333924175355
+cycle= 6 E= -78.0434967587589  delta_E= -3.08e-07  |g|= 0.000133  |ddm|= 0.00158
+  HOMO = -0.376307716939964  LUMO = 0.04043055186705
+cycle= 7 E= -78.0434967763253  delta_E= -1.76e-08  |g|= 1.22e-05  |ddm|= 0.00054
+  HOMO = -0.376307065536214  LUMO = 0.0404302898320461
+cycle= 8 E= -78.0434967764427  delta_E= -1.17e-10  |g|= 1.64e-06  |ddm|= 4.89e-05
+  HOMO = -0.376306776186759  LUMO = 0.0404303126605154
+Extra cycle  E= -78.0434967764439  delta_E= -1.25e-12  |g|= 5.3e-07  |ddm|= 4.91e-06
+converged SCF energy = -78.0434967764439
+
+******** <class 'pyscf.mcscf.addons.StateAverageDFCASSCF'> ********
+CAS (3e+3e, 6o), ncore = 5, nvir = 71
+max_cycle_macro = 50
+max_cycle_micro = 4
+conv_tol = 1e-07
+conv_tol_grad = None
+orbital rotation max_stepsize = 0.02
+orbital rotation threshold for CI restart = 0.01
+augmented hessian ah_max_cycle = 30
+augmented hessian ah_conv_tol = 1e-12
+augmented hessian ah_linear dependence = 1e-14
+augmented hessian ah_level shift = 1e-08
+augmented hessian ah_start_tol = 2.5
+augmented hessian ah_start_cycle = 3
+augmented hessian ah_grad_trust_region = 3
+kf_trust_region = 3
+kf_interval = 4
+ci_response_space = 4
+ci_grad_trust_region = 3
+with_dep4 0
+natorb = False
+canonicalization = True
+sorting_mo_energy = False
+ao2mo_level = 2
+chkfile = /scratch/25274277/tmptq5gs4es
+max_memory 100000 MB (current use 119 MB)
+internal_rotation = False
+******** <class 'pyscf.fci.addons.SpinPenaltyStateAverageFCISolver'> ********
+max. cycles = 50
+conv_tol = 1e-08
+davidson only = True
+linear dependence = 1e-12
+level shift = 0.001
+max iter space = 12
+max_memory 100000 MB
+nroots = 5
+pspace_size = 400
+spin = None
+State-average over 5 states with weights [0.2 0.2 0.2 0.2 0.2]
+DFCASCI/DFCASSCF: density fitting for JK matrix and 2e integral transformation
+CASCI E = -77.7845307836609  S^2 = 0.0000000
+Set conv_tol_grad to 0.000316228
+macro iter   1 ( 21 JK    4 micro), CASSCF E = -77.8151538649854  dE = -3.06230813e-02  S^2 = 0.0000000
+               |grad[o]|=0.249  |ddm|=0.00288  |maxRot[o]|=0.241
+macro iter   2 ( 21 JK    4 micro), CASSCF E = -77.8171710224902  dE = -2.01715750e-03  S^2 = 0.0000000
+               |grad[o]|=0.0613  |ddm|=0.00239  |maxRot[o]|=0.169
+macro iter   3 ( 21 JK    4 micro), CASSCF E = -77.8172662694692  dE = -9.52469790e-05  S^2 = 0.0000000
+               |grad[o]|=0.015  |ddm|=0.00064  |maxRot[o]|=0.0113
+macro iter   4 ( 21 JK    4 micro), CASSCF E = -77.8172984111849  dE = -3.21417156e-05  S^2 = 0.0000000
+               |grad[o]|=0.00841  |ddm|=0.000459  |maxRot[o]|=0.00939
+macro iter   5 ( 21 JK    4 micro), CASSCF E = -77.8173106162479  dE = -1.22050631e-05  S^2 = 0.0000000
+               |grad[o]|=0.00483  |ddm|=0.00032  |maxRot[o]|=0.00789
+macro iter   6 ( 21 JK    4 micro), CASSCF E = -77.8173156942138  dE = -5.07796584e-06  S^2 = 0.0000000
+               |grad[o]|=0.00277  |ddm|=0.000191  |maxRot[o]|=0.0066
+macro iter   7 (  7 JK    2 micro), CASSCF E = -77.8173494472376  dE = -3.37530239e-05  S^2 = 0.0000000
+               |grad[o]|=0.00163  |ddm|=0.000104  |maxRot[o]|=0.0699
+macro iter   8 (  7 JK    2 micro), CASSCF E = -77.8173821544740  dE = -3.27072363e-05  S^2 = 0.0000000
+               |grad[o]|=0.00151  |ddm|=0.000157  |maxRot[o]|=0.0699
+macro iter   9 (  7 JK    2 micro), CASSCF E = -77.8174120556564  dE = -2.99011824e-05  S^2 = 0.0000000
+               |grad[o]|=0.00135  |ddm|=0.000308  |maxRot[o]|=0.0699
+macro iter  10 (  7 JK    2 micro), CASSCF E = -77.8174376550862  dE = -2.55994298e-05  S^2 = 0.0000000
+               |grad[o]|=0.00116  |ddm|=0.000467  |maxRot[o]|=0.0699
+macro iter  11 (  7 JK    2 micro), CASSCF E = -77.8174578188830  dE = -2.01637968e-05  S^2 = 0.0000000
+               |grad[o]|=0.000938  |ddm|=0.000608  |maxRot[o]|=0.0699
+macro iter  12 (  7 JK    2 micro), CASSCF E = -77.8174718831893  dE = -1.40643063e-05  S^2 = 0.0000000
+               |grad[o]|=0.000686  |ddm|=0.000719  |maxRot[o]|=0.0699
+macro iter  13 (  7 JK    2 micro), CASSCF E = -77.8174797032343  dE = -7.82004503e-06  S^2 = 0.0000000
+               |grad[o]|=0.00042  |ddm|=0.000797  |maxRot[o]|=0.0699
+macro iter  14 (  4 JK    1 micro), CASSCF E = -77.8174814784429  dE = -1.77520857e-06  S^2 = 0.0000000
+               |grad[o]|=0.000157  |ddm|=0.000322  |maxRot[o]|= 0.04
+macro iter  15 (  3 JK    1 micro), CASSCF E = -77.8174816862747  dE = -2.07831761e-07  S^2 = 0.0000000
+               |grad[o]|=3.93e-05  |ddm|=0.00011  |maxRot[o]|=0.0179
+macro iter  16 (  1 JK    1 micro), CASSCF E = -77.8174816863500  dE = -7.53743734e-11  S^2 = 0.0000000
+               |grad[o]|=1.84e-05  |ddm|=4.89e-06  |maxRot[o]|=    0
+1-step CASSCF converged in  16 macro (183 JK  41 micro) steps
+CASSCF canonicalization
+Density matrix diagonal elements [1.99907053 1.79991147 1.39999421 0.40087218 0.20007207 0.20007953]
+CASSCF energy = -77.8174816863500
+CASCI E = -77.8174816863500  E(CI) = -8.21209084625052  S^2 = 0.0000000
+CASCI state-averaged energy = -77.8174816863501
+CASCI energy for each state
+  State 0 weight 0.2  E = -78.0209717032591 S^2 = 0.0000000
+  State 1 weight 0.2  E = -77.8164826897498 S^2 = 0.0000000
+  State 2 weight 0.2  E = -77.7935358366166 S^2 = 0.0000000
+  State 3 weight 0.2  E = -77.7904936705631 S^2 = 0.0000000
+  State 4 weight 0.2  E = -77.6659245315617 S^2 = 0.0000000
+
+******** <class 'pyscf.mcscf.df.DFCASCI'> ********
+CAS (3e+3e, 6o), ncore = 5, nvir = 71
+natorb = False
+canonicalization = True
+sorting_mo_energy = False
+max_memory 100000 MB (current use 182 MB)
+******** <class 'pyscf.fci.addons.SpinPenaltyFCISolver'> ********
+max. cycles = 200
+conv_tol = 1e-08
+davidson only = True
+linear dependence = 1e-12
+level shift = 0.001
+max iter space = 12
+max_memory 100000 MB
+nroots = 5
+pspace_size = 400
+spin = None
+DFCASCI/DFCASSCF: density fitting for JK matrix and 2e integral transformation
+
+WARN: Mulitple states found in CASCI solver. First state is used to compute the Fock matrix and natural orbitals in active space.
+
+Density matrix diagonal elements [1.99919357e+00 1.99993993e+00 1.99997484e+00 8.02057137e-04
+ 3.94211486e-05 5.01876795e-05]
+CASCI converged
+CASCI state   0  E = -78.0209717032510  E(CI) = -8.41558086315148  S^2 = 0.0000000
+CASCI state   1  E = -77.8164826897174  E(CI) = -8.21109184961790  S^2 = 0.0000000
+CASCI state   2  E = -77.7935358364933  E(CI) = -8.18814499639376  S^2 = 0.0000000
+CASCI state   3  E = -77.7904936704758  E(CI) = -8.18510283037631  S^2 = 0.0000000
+CASCI state   4  E = -77.6659245280085  E(CI) = -8.06053368790894  S^2 = 0.0000000
+State #1, dE =  0.0 eV
+State #2, dE =  5.564432342867518 eV
+State #3, dE =  6.188848344690916 eV
+State #4, dE =  6.271629941058185 eV
+State #5, dE =  9.661330704394645 eV
+
+WARN: Mulitple states found in CASCI/CASSCF solver. Density matrix of the first state is generated in .analyze() function.
+
+Natural occ [1.99997484e+00 1.99993993e+00 1.99986007e+00 1.35559147e-04
+ 5.01875758e-05 3.94109206e-05]
+Natural orbital (expansion on meta-Lowdin AOs) in CAS space
+               #1        #2        #3        #4        #5       
+0 C 1s           0.00000   0.00000  -0.00049  -0.00130  -0.00000
+0 C 2s          -0.00000   0.00000   0.25595   0.14061   0.00000
+0 C 3s           0.00000   0.00000  -0.01903  -0.09086  -0.00000
+0 C 4s           0.00000   0.00000  -0.01751  -0.21220  -0.00000
+0 C 2px          0.70502  -0.00000   0.00000  -0.00000   0.00000
+0 C 2py         -0.00000  -0.00000   0.47487   0.12417   0.00000
+0 C 2pz         -0.00000  -0.49947  -0.00000  -0.00000   0.10264
+0 C 3px          0.02982   0.00000   0.00000  -0.00000   0.00000
+0 C 3py          0.00000   0.00000  -0.03380   0.00841   0.00000
+0 C 3pz         -0.00000   0.01333   0.00000   0.00000  -0.17985
+0 C 4px         -0.00226   0.00000   0.00000  -0.00000   0.00000
+0 C 4py          0.00000   0.00000   0.01320   0.02278   0.00000
+0 C 4pz         -0.00000   0.00537   0.00000   0.00000  -0.46400
+0 C 3dxy        -0.04357   0.00000  -0.00000  -0.00000   0.00000
+0 C 3dyz         0.00000  -0.01437  -0.00000  -0.00000   0.02260
+0 C 3dz^2       -0.00000  -0.00000   0.02584   0.01315   0.00000
+0 C 3dxz         0.00000  -0.00000  -0.00000   0.00000  -0.00000
+0 C 3dx2-y2     -0.00000  -0.00000   0.00345  -0.03591  -0.00000
+0 C 4dxy         0.00039  -0.00000   0.00000  -0.00000   0.00000
+0 C 4dyz        -0.00000   0.03467   0.00000   0.00000  -0.02298
+0 C 4dz^2        0.00000  -0.00000  -0.00956  -0.04606  -0.00000
+0 C 4dxz         0.00000   0.00000  -0.00000   0.00000  -0.00000
+0 C 4dx2-y2     -0.00000  -0.00000   0.00293  -0.01609  -0.00000
+1 C 1s           0.00000  -0.00000  -0.00049  -0.00130  -0.00000
+1 C 2s          -0.00000  -0.00000   0.25456   0.13943   0.00000
+1 C 3s          -0.00000   0.00000  -0.01896  -0.09037  -0.00000
+1 C 4s          -0.00000  -0.00000  -0.01753  -0.21151  -0.00000
+1 C 2px          0.70501  -0.00000   0.00000   0.00000  -0.00000
+1 C 2py          0.00000   0.00000  -0.47368  -0.12424  -0.00000
+1 C 2pz          0.00000   0.49942  -0.00000  -0.00000   0.10263
+1 C 3px          0.02982   0.00000  -0.00000   0.00000  -0.00000
+1 C 3py          0.00000   0.00000   0.03369  -0.00957  -0.00000
+1 C 3pz          0.00000  -0.01333   0.00000   0.00000  -0.17985
+1 C 4px         -0.00226   0.00000  -0.00000   0.00000   0.00000
+1 C 4py          0.00000   0.00000  -0.01325  -0.02608  -0.00000
+1 C 4pz         -0.00000  -0.00537   0.00000   0.00000  -0.46399
+1 C 3dxy         0.04357  -0.00000   0.00000  -0.00000   0.00000
+1 C 3dyz         0.00000  -0.01437   0.00000   0.00000  -0.02260
+1 C 3dz^2       -0.00000  -0.00000   0.02578   0.01284   0.00000
+1 C 3dxz         0.00000  -0.00000   0.00000  -0.00000   0.00000
+1 C 3dx2-y2     -0.00000   0.00000   0.00347  -0.03585  -0.00000
+1 C 4dxy        -0.00039   0.00000   0.00000  -0.00000   0.00000
+1 C 4dyz        -0.00000   0.03467  -0.00000  -0.00000   0.02297
+1 C 4dz^2        0.00000   0.00000  -0.00951  -0.04603  -0.00000
+1 C 4dxz         0.00000   0.00000   0.00000  -0.00000   0.00000
+1 C 4dx2-y2      0.00000   0.00000   0.00293  -0.01637  -0.00000
+2 H 1s          -0.00000  -0.35165   0.31971  -0.16846  -0.15818
+2 H 2s          -0.00000   0.00853  -0.02379  -0.32824  -0.26558
+2 H 3s           0.00000  -0.01588   0.01761  -0.24771  -0.11350
+2 H 2px          0.00874   0.00000  -0.00000   0.00000   0.00000
+2 H 2py          0.00000   0.01075  -0.02132  -0.00410  -0.02105
+2 H 2pz         -0.00000   0.01941  -0.00756  -0.04881  -0.06330
+2 H 3px          0.00109   0.00000  -0.00000   0.00000   0.00000
+2 H 3py         -0.00000  -0.00062  -0.01300  -0.01475  -0.02282
+2 H 3pz         -0.00000   0.00300   0.01188  -0.06969  -0.08363
+3 H 1s           0.00000   0.35162   0.31867  -0.16739  -0.15818
+3 H 2s           0.00000  -0.00853  -0.02373  -0.32591  -0.26557
+3 H 3s          -0.00000   0.01587   0.01749  -0.24651  -0.11350
+3 H 2px          0.00874   0.00000   0.00000  -0.00000  -0.00000
+3 H 2py          0.00000   0.01075   0.02126   0.00364   0.02104
+3 H 2pz          0.00000  -0.01940  -0.00752  -0.04861  -0.06330
+3 H 3px          0.00109   0.00000   0.00000  -0.00000  -0.00000
+3 H 3py         -0.00000  -0.00062   0.01299   0.01415   0.02281
+3 H 3pz          0.00000  -0.00300   0.01183  -0.06942  -0.08363
+4 H 1s           0.00000   0.35165   0.31971  -0.16846   0.15818
+4 H 2s           0.00000  -0.00853  -0.02379  -0.32824   0.26558
+4 H 3s          -0.00000   0.01588   0.01761  -0.24771   0.11350
+4 H 2px          0.00874   0.00000   0.00000  -0.00000   0.00000
+4 H 2py         -0.00000  -0.01075  -0.02132  -0.00410   0.02105
+4 H 2pz         -0.00000   0.01941   0.00756   0.04881  -0.06330
+4 H 3px          0.00109   0.00000   0.00000  -0.00000   0.00000
+4 H 3py          0.00000   0.00062  -0.01300  -0.01475   0.02282
+4 H 3pz         -0.00000   0.00300  -0.01188   0.06969  -0.08363
+5 H 1s          -0.00000  -0.35162   0.31867  -0.16739   0.15818
+5 H 2s          -0.00000   0.00853  -0.02373  -0.32591   0.26557
+5 H 3s           0.00000  -0.01587   0.01749  -0.24651   0.11350
+5 H 2px          0.00874   0.00000  -0.00000   0.00000  -0.00000
+5 H 2py         -0.00000  -0.01075   0.02126   0.00364  -0.02104
+5 H 2pz          0.00000  -0.01940   0.00752   0.04861  -0.06330
+5 H 3px          0.00109   0.00000  -0.00000   0.00000  -0.00000
+5 H 3py          0.00000   0.00062   0.01299   0.01415  -0.02281
+5 H 3pz          0.00000  -0.00300  -0.01183   0.06942  -0.08363
+               #6       
+0 C 1s          -0.00043
+0 C 2s           0.13904
+0 C 3s          -0.06081
+0 C 4s          -0.08562
+0 C 2px          0.00000
+0 C 2py         -0.01487
+0 C 2pz         -0.00000
+0 C 3px         -0.00000
+0 C 3py         -0.14318
+0 C 3pz          0.00000
+0 C 4px         -0.00000
+0 C 4py         -0.41223
+0 C 4pz          0.00000
+0 C 3dxy        -0.00000
+0 C 3dyz        -0.00000
+0 C 3dz^2        0.03771
+0 C 3dxz        -0.00000
+0 C 3dx2-y2     -0.00822
+0 C 4dxy        -0.00000
+0 C 4dyz         0.00000
+0 C 4dz^2       -0.00355
+0 C 4dxz        -0.00000
+0 C 4dx2-y2      0.03430
+1 C 1s           0.00044
+1 C 2s          -0.14012
+1 C 3s           0.06152
+1 C 4s           0.08730
+1 C 2px          0.00000
+1 C 2py         -0.01395
+1 C 2pz          0.00000
+1 C 3px         -0.00000
+1 C 3py         -0.14308
+1 C 3pz          0.00000
+1 C 4px         -0.00000
+1 C 4py         -0.41202
+1 C 4pz          0.00000
+1 C 3dxy         0.00000
+1 C 3dyz         0.00000
+1 C 3dz^2       -0.03781
+1 C 3dxz        -0.00000
+1 C 3dx2-y2      0.00852
+1 C 4dxy         0.00000
+1 C 4dyz         0.00000
+1 C 4dz^2        0.00391
+1 C 4dxz        -0.00000
+1 C 4dx2-y2     -0.03416
+2 H 1s          -0.13710
+2 H 2s          -0.29081
+2 H 3s          -0.15117
+2 H 2px         -0.00000
+2 H 2py         -0.05735
+2 H 2pz         -0.02489
+2 H 3px         -0.00000
+2 H 3py         -0.07418
+2 H 3pz         -0.03343
+3 H 1s           0.13847
+3 H 2s           0.29342
+3 H 3s           0.15316
+3 H 2px         -0.00000
+3 H 2py         -0.05737
+3 H 2pz          0.02528
+3 H 3px         -0.00000
+3 H 3py         -0.07428
+3 H 3pz          0.03399
+4 H 1s          -0.13710
+4 H 2s          -0.29081
+4 H 3s          -0.15117
+4 H 2px          0.00000
+4 H 2py         -0.05735
+4 H 2pz          0.02489
+4 H 3px          0.00000
+4 H 3py         -0.07418
+4 H 3pz          0.03343
+5 H 1s           0.13847
+5 H 2s           0.29342
+5 H 3s           0.15316
+5 H 2px          0.00000
+5 H 2py         -0.05737
+5 H 2pz         -0.02528
+5 H 3px          0.00000
+5 H 3py         -0.07428
+5 H 3pz         -0.03399
+<mo_coeff-mcscf|mo_coeff-hf>  1      1        0.99997151
+<mo_coeff-mcscf|mo_coeff-hf>  2      2        0.99997331
+<mo_coeff-mcscf|mo_coeff-hf>  3      3        0.92240488
+<mo_coeff-mcscf|mo_coeff-hf>  4      4        0.99943275
+<mo_coeff-mcscf|mo_coeff-hf>  5      5        0.99899816
+<mo_coeff-mcscf|mo_coeff-hf>  6      6        0.92190137
+<mo_coeff-mcscf|mo_coeff-hf>  7      7        0.99884164
+<mo_coeff-mcscf|mo_coeff-hf>  8      8        0.99847970
+<mo_coeff-mcscf|mo_coeff-hf>  9      9        0.94821704
+<mo_coeff-mcscf|mo_coeff-hf>  10     10       0.94674713
+<mo_coeff-mcscf|mo_coeff-hf>  11     11       0.93312635
+<mo_coeff-mcscf|mo_coeff-hf>  12     12       0.99992009
+<mo_coeff-mcscf|mo_coeff-hf>  13     13       0.98733128
+<mo_coeff-mcscf|mo_coeff-hf>  14     14       0.99882765
+<mo_coeff-mcscf|mo_coeff-hf>  15     15       0.99783518
+<mo_coeff-mcscf|mo_coeff-hf>  16     16       0.96297101
+<mo_coeff-mcscf|mo_coeff-hf>  17     17       0.94012758
+<mo_coeff-mcscf|mo_coeff-hf>  18     18       0.95556348
+<mo_coeff-mcscf|mo_coeff-hf>  19     19       0.99953904
+<mo_coeff-mcscf|mo_coeff-hf>  20     21       0.98110490
+<mo_coeff-mcscf|mo_coeff-hf>  21     20       0.98547341
+<mo_coeff-mcscf|mo_coeff-hf>  22     22       0.98672976
+<mo_coeff-mcscf|mo_coeff-hf>  23     23       0.99174850
+<mo_coeff-mcscf|mo_coeff-hf>  24     25       0.99812833
+<mo_coeff-mcscf|mo_coeff-hf>  25     24       0.99928545
+<mo_coeff-mcscf|mo_coeff-hf>  26     26       0.99985850
+<mo_coeff-mcscf|mo_coeff-hf>  27     27       0.99831307
+<mo_coeff-mcscf|mo_coeff-hf>  28     28       0.99789305
+<mo_coeff-mcscf|mo_coeff-hf>  29     29       0.99944041
+<mo_coeff-mcscf|mo_coeff-hf>  30     30       0.99784551
+<mo_coeff-mcscf|mo_coeff-hf>  31     31       0.99766588
+<mo_coeff-mcscf|mo_coeff-hf>  32     33       0.99815795
+<mo_coeff-mcscf|mo_coeff-hf>  33     32       0.99516835
+<mo_coeff-mcscf|mo_coeff-hf>  34     34       0.99641049
+<mo_coeff-mcscf|mo_coeff-hf>  35     35       0.99451538
+<mo_coeff-mcscf|mo_coeff-hf>  36     36       0.99285183
+<mo_coeff-mcscf|mo_coeff-hf>  37     37       0.99956158
+<mo_coeff-mcscf|mo_coeff-hf>  38     39       0.99627493
+<mo_coeff-mcscf|mo_coeff-hf>  39     40       0.99939109
+<mo_coeff-mcscf|mo_coeff-hf>  40     38       0.99366993
+<mo_coeff-mcscf|mo_coeff-hf>  41     41       0.99561275
+<mo_coeff-mcscf|mo_coeff-hf>  42     42       0.99922311
+<mo_coeff-mcscf|mo_coeff-hf>  43     43       0.98566994
+<mo_coeff-mcscf|mo_coeff-hf>  44     44       0.99826376
+<mo_coeff-mcscf|mo_coeff-hf>  45     45       0.95561596
+<mo_coeff-mcscf|mo_coeff-hf>  46     46       0.97025867
+<mo_coeff-mcscf|mo_coeff-hf>  47     47       0.99977956
+<mo_coeff-mcscf|mo_coeff-hf>  48     49       0.99855475
+<mo_coeff-mcscf|mo_coeff-hf>  49     48       0.99937982
+<mo_coeff-mcscf|mo_coeff-hf>  50     50       0.99921040
+<mo_coeff-mcscf|mo_coeff-hf>  51     51       0.99885064
+<mo_coeff-mcscf|mo_coeff-hf>  52     52       0.99943325
+<mo_coeff-mcscf|mo_coeff-hf>  53     53       0.99701034
+<mo_coeff-mcscf|mo_coeff-hf>  54     54       0.99892494
+<mo_coeff-mcscf|mo_coeff-hf>  55     55       0.99935163
+<mo_coeff-mcscf|mo_coeff-hf>  56     56       0.99932458
+<mo_coeff-mcscf|mo_coeff-hf>  57     58       0.99943295
+<mo_coeff-mcscf|mo_coeff-hf>  58     57       0.99928697
+<mo_coeff-mcscf|mo_coeff-hf>  59     59       0.99941770
+<mo_coeff-mcscf|mo_coeff-hf>  60     60       0.99929802
+<mo_coeff-mcscf|mo_coeff-hf>  61     61       0.99971377
+<mo_coeff-mcscf|mo_coeff-hf>  62     62       0.99947300
+<mo_coeff-mcscf|mo_coeff-hf>  63     63       0.99936685
+<mo_coeff-mcscf|mo_coeff-hf>  64     64       0.99918306
+<mo_coeff-mcscf|mo_coeff-hf>  65     65       0.99967633
+<mo_coeff-mcscf|mo_coeff-hf>  66     66       0.99937117
+<mo_coeff-mcscf|mo_coeff-hf>  67     67       0.99029087
+<mo_coeff-mcscf|mo_coeff-hf>  68     68       0.99938285
+<mo_coeff-mcscf|mo_coeff-hf>  69     69       0.99970598
+<mo_coeff-mcscf|mo_coeff-hf>  70     70       0.98985231
+<mo_coeff-mcscf|mo_coeff-hf>  71     71       0.99946548
+<mo_coeff-mcscf|mo_coeff-hf>  72     72       0.99922471
+<mo_coeff-mcscf|mo_coeff-hf>  73     73       0.99931633
+<mo_coeff-mcscf|mo_coeff-hf>  74     74       0.99951542
+<mo_coeff-mcscf|mo_coeff-hf>  75     75       0.99892047
+<mo_coeff-mcscf|mo_coeff-hf>  76     76       0.99930099
+<mo_coeff-mcscf|mo_coeff-hf>  77     77       0.99967621
+<mo_coeff-mcscf|mo_coeff-hf>  78     78       0.99841268
+<mo_coeff-mcscf|mo_coeff-hf>  79     79       0.99952786
+<mo_coeff-mcscf|mo_coeff-hf>  80     80       0.99971511
+<mo_coeff-mcscf|mo_coeff-hf>  81     81       0.99976460
+<mo_coeff-mcscf|mo_coeff-hf>  82     82       0.99991363
+** Largest CI components **
+  [alpha occ-orbitals] [beta occ-orbitals]  state 0   CI coefficient
+  [0 1 2]              [0 1 2]                        -0.999607952449
+  [alpha occ-orbitals] [beta occ-orbitals]  state 1   CI coefficient
+  [0 1 2]              [0 1 3]                        -0.706811419235
+  [0 1 3]              [0 1 2]                        -0.706811066947
+  [alpha occ-orbitals] [beta occ-orbitals]  state 2   CI coefficient
+  [0 1 2]              [0 1 5]                        -0.706664046102
+  [0 1 5]              [0 1 2]                        -0.706663635098
+  [alpha occ-orbitals] [beta occ-orbitals]  state 3   CI coefficient
+  [0 1 2]              [0 1 4]                         0.706669614167
+  [0 1 4]              [0 1 2]                         0.706669295906
+  [alpha occ-orbitals] [beta occ-orbitals]  state 4   CI coefficient
+  [0 1 2]              [0 2 3]                        -0.706820596647
+  [0 2 3]              [0 1 2]                        -0.706822325986
+ ** Mulliken pop on meta-lowdin orthogonal AOs  **
+ ** Mulliken pop  **
+pop of  0 C 1s            1.99999
+pop of  0 C 2s            1.03900
+pop of  0 C 3s            0.00609
+pop of  0 C 4s            0.00070
+pop of  0 C 2px           0.99410
+pop of  0 C 2py           1.07962
+pop of  0 C 2pz           1.16597
+pop of  0 C 3px           0.00178
+pop of  0 C 3py           0.00745
+pop of  0 C 3pz           0.00641
+pop of  0 C 4px           0.00001
+pop of  0 C 4py           0.00211
+pop of  0 C 4pz           0.00100
+pop of  0 C 3dxy          0.00380
+pop of  0 C 3dyz          0.00072
+pop of  0 C 3dz^2         0.00236
+pop of  0 C 3dxz          0.00000
+pop of  0 C 3dx2-y2       0.00369
+pop of  0 C 4dxy          0.00000
+pop of  0 C 4dyz          0.00249
+pop of  0 C 4dz^2         0.00060
+pop of  0 C 4dxz          0.00000
+pop of  0 C 4dx2-y2       0.00012
+pop of  1 C 1s            1.99999
+pop of  1 C 2s            1.03905
+pop of  1 C 3s            0.00609
+pop of  1 C 4s            0.00070
+pop of  1 C 2px           0.99408
+pop of  1 C 2py           1.07964
+pop of  1 C 2pz           1.16597
+pop of  1 C 3px           0.00178
+pop of  1 C 3py           0.00746
+pop of  1 C 3pz           0.00641
+pop of  1 C 4px           0.00001
+pop of  1 C 4py           0.00211
+pop of  1 C 4pz           0.00100
+pop of  1 C 3dxy          0.00380
+pop of  1 C 3dyz          0.00072
+pop of  1 C 3dz^2         0.00236
+pop of  1 C 3dxz          0.00000
+pop of  1 C 3dx2-y2       0.00369
+pop of  1 C 4dxy          0.00000
+pop of  1 C 4dyz          0.00249
+pop of  1 C 4dz^2         0.00060
+pop of  1 C 4dxz          0.00000
+pop of  1 C 4dx2-y2       0.00012
+pop of  2 H 1s            0.82408
+pop of  2 H 2s            0.00561
+pop of  2 H 3s            0.00461
+pop of  2 H 2px           0.00015
+pop of  2 H 2py           0.00216
+pop of  2 H 2pz           0.00223
+pop of  2 H 3px           0.00000
+pop of  2 H 3py           0.00145
+pop of  2 H 3pz           0.00070
+pop of  3 H 1s            0.82403
+pop of  3 H 2s            0.00562
+pop of  3 H 3s            0.00461
+pop of  3 H 2px           0.00015
+pop of  3 H 2py           0.00216
+pop of  3 H 2pz           0.00223
+pop of  3 H 3px           0.00000
+pop of  3 H 3py           0.00145
+pop of  3 H 3pz           0.00070
+pop of  4 H 1s            0.82408
+pop of  4 H 2s            0.00561
+pop of  4 H 3s            0.00461
+pop of  4 H 2px           0.00015
+pop of  4 H 2py           0.00216
+pop of  4 H 2pz           0.00223
+pop of  4 H 3px           0.00000
+pop of  4 H 3py           0.00145
+pop of  4 H 3pz           0.00070
+pop of  5 H 1s            0.82403
+pop of  5 H 2s            0.00562
+pop of  5 H 3s            0.00461
+pop of  5 H 2px           0.00015
+pop of  5 H 2py           0.00216
+pop of  5 H 2pz           0.00223
+pop of  5 H 3px           0.00000
+pop of  5 H 3py           0.00145
+pop of  5 H 3pz           0.00070
+ ** Mulliken atomic charges  **
+charge of    0C =     -0.31802
+charge of    1C =     -0.31806
+charge of    2H =      0.15900
+charge of    3H =      0.15904
+charge of    4H =      0.15900
+charge of    5H =      0.15904
+Mulliken spin population analysis on meta-Lowdin AOs:
+ ** Mulliken pop on meta-lowdin orthogonal AOs  **
+ ** Mulliken pop  **
+pop of  0 C 1s            0.00000
+pop of  0 C 2s            0.00000
+pop of  0 C 3s           -0.00000
+pop of  0 C 4s           -0.00000
+pop of  0 C 2px          -0.00000
+pop of  0 C 2py          -0.00000
+pop of  0 C 2pz           0.00000
+pop of  0 C 3px           0.00000
+pop of  0 C 3py          -0.00000
+pop of  0 C 3pz           0.00000
+pop of  0 C 4px          -0.00000
+pop of  0 C 4py           0.00000
+pop of  0 C 4pz           0.00000
+pop of  0 C 3dxy          0.00000
+pop of  0 C 3dyz          0.00000
+pop of  0 C 3dz^2        -0.00000
+pop of  0 C 3dxz         -0.00000
+pop of  0 C 3dx2-y2       0.00000
+pop of  0 C 4dxy         -0.00000
+pop of  0 C 4dyz          0.00000
+pop of  0 C 4dz^2        -0.00000
+pop of  0 C 4dxz          0.00000
+pop of  0 C 4dx2-y2       0.00000
+pop of  1 C 1s            0.00000
+pop of  1 C 2s            0.00000
+pop of  1 C 3s           -0.00000
+pop of  1 C 4s           -0.00000
+pop of  1 C 2px          -0.00000
+pop of  1 C 2py          -0.00000
+pop of  1 C 2pz           0.00000
+pop of  1 C 3px           0.00000
+pop of  1 C 3py           0.00000
+pop of  1 C 3pz           0.00000
+pop of  1 C 4px          -0.00000
+pop of  1 C 4py           0.00000
+pop of  1 C 4pz           0.00000
+pop of  1 C 3dxy         -0.00000
+pop of  1 C 3dyz         -0.00000
+pop of  1 C 3dz^2         0.00000
+pop of  1 C 3dxz          0.00000
+pop of  1 C 3dx2-y2      -0.00000
+pop of  1 C 4dxy          0.00000
+pop of  1 C 4dyz          0.00000
+pop of  1 C 4dz^2         0.00000
+pop of  1 C 4dxz         -0.00000
+pop of  1 C 4dx2-y2      -0.00000
+pop of  2 H 1s           -0.00000
+pop of  2 H 2s            0.00000
+pop of  2 H 3s           -0.00000
+pop of  2 H 2px           0.00000
+pop of  2 H 2py           0.00000
+pop of  2 H 2pz           0.00000
+pop of  2 H 3px           0.00000
+pop of  2 H 3py           0.00000
+pop of  2 H 3pz          -0.00000
+pop of  3 H 1s           -0.00000
+pop of  3 H 2s            0.00000
+pop of  3 H 3s           -0.00000
+pop of  3 H 2px          -0.00000
+pop of  3 H 2py           0.00000
+pop of  3 H 2pz           0.00000
+pop of  3 H 3px          -0.00000
+pop of  3 H 3py           0.00000
+pop of  3 H 3pz          -0.00000
+pop of  4 H 1s            0.00000
+pop of  4 H 2s           -0.00000
+pop of  4 H 3s            0.00000
+pop of  4 H 2px          -0.00000
+pop of  4 H 2py          -0.00000
+pop of  4 H 2pz          -0.00000
+pop of  4 H 3px          -0.00000
+pop of  4 H 3py          -0.00000
+pop of  4 H 3pz           0.00000
+pop of  5 H 1s            0.00000
+pop of  5 H 2s           -0.00000
+pop of  5 H 3s            0.00000
+pop of  5 H 2px           0.00000
+pop of  5 H 2py          -0.00000
+pop of  5 H 2pz          -0.00000
+pop of  5 H 3px           0.00000
+pop of  5 H 3py          -0.00000
+pop of  5 H 3pz           0.00000
+ ** Mulliken atomic charges  **
+charge of    0C =      6.00000
+charge of    1C =      6.00000
+charge of    2H =      1.00000
+charge of    3H =      1.00000
+charge of    4H =      1.00000
+charge of    5H =      1.00000
+spop of 0 C 1s          0.00000
+spop of 0 C 2s          0.00000
+spop of 0 C 3s         -0.00000
+spop of 0 C 4s         -0.00000
+spop of 0 C 2px        -0.00000
+spop of 0 C 2py        -0.00000
+spop of 0 C 2pz         0.00000
+spop of 0 C 3px         0.00000
+spop of 0 C 3py        -0.00000
+spop of 0 C 3pz         0.00000
+spop of 0 C 4px        -0.00000
+spop of 0 C 4py         0.00000
+spop of 0 C 4pz         0.00000
+spop of 0 C 3dxy        0.00000
+spop of 0 C 3dyz        0.00000
+spop of 0 C 3dz^2      -0.00000
+spop of 0 C 3dxz       -0.00000
+spop of 0 C 3dx2-y2     0.00000
+spop of 0 C 4dxy       -0.00000
+spop of 0 C 4dyz        0.00000
+spop of 0 C 4dz^2      -0.00000
+spop of 0 C 4dxz        0.00000
+spop of 0 C 4dx2-y2     0.00000
+spop of 1 C 1s          0.00000
+spop of 1 C 2s          0.00000
+spop of 1 C 3s         -0.00000
+spop of 1 C 4s         -0.00000
+spop of 1 C 2px        -0.00000
+spop of 1 C 2py        -0.00000
+spop of 1 C 2pz         0.00000
+spop of 1 C 3px         0.00000
+spop of 1 C 3py         0.00000
+spop of 1 C 3pz         0.00000
+spop of 1 C 4px        -0.00000
+spop of 1 C 4py         0.00000
+spop of 1 C 4pz         0.00000
+spop of 1 C 3dxy       -0.00000
+spop of 1 C 3dyz       -0.00000
+spop of 1 C 3dz^2       0.00000
+spop of 1 C 3dxz        0.00000
+spop of 1 C 3dx2-y2    -0.00000
+spop of 1 C 4dxy        0.00000
+spop of 1 C 4dyz        0.00000
+spop of 1 C 4dz^2       0.00000
+spop of 1 C 4dxz       -0.00000
+spop of 1 C 4dx2-y2    -0.00000
+spop of 2 H 1s         -0.00000
+spop of 2 H 2s          0.00000
+spop of 2 H 3s         -0.00000
+spop of 2 H 2px         0.00000
+spop of 2 H 2py         0.00000
+spop of 2 H 2pz         0.00000
+spop of 2 H 3px         0.00000
+spop of 2 H 3py         0.00000
+spop of 2 H 3pz        -0.00000
+spop of 3 H 1s         -0.00000
+spop of 3 H 2s          0.00000
+spop of 3 H 3s         -0.00000
+spop of 3 H 2px        -0.00000
+spop of 3 H 2py         0.00000
+spop of 3 H 2pz         0.00000
+spop of 3 H 3px        -0.00000
+spop of 3 H 3py         0.00000
+spop of 3 H 3pz        -0.00000
+spop of 4 H 1s          0.00000
+spop of 4 H 2s         -0.00000
+spop of 4 H 3s          0.00000
+spop of 4 H 2px        -0.00000
+spop of 4 H 2py        -0.00000
+spop of 4 H 2pz        -0.00000
+spop of 4 H 3px        -0.00000
+spop of 4 H 3py        -0.00000
+spop of 4 H 3pz         0.00000
+spop of 5 H 1s          0.00000
+spop of 5 H 2s         -0.00000
+spop of 5 H 3s          0.00000
+spop of 5 H 2px         0.00000
+spop of 5 H 2py        -0.00000
+spop of 5 H 2pz        -0.00000
+spop of 5 H 3px         0.00000
+spop of 5 H 3py        -0.00000
+spop of 5 H 3pz         0.00000
+Mulliken atomic spins:
+spin of  0C =      0.00000
+spin of  1C =      0.00000
+spin of  2H =     -0.00000
+spin of  3H =      0.00000
+spin of  4H =      0.00000
+spin of  5H =      0.00000
